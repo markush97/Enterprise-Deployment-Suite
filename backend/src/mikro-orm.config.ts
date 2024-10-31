@@ -7,9 +7,10 @@ import { Image } from './images/entities/image.entity';
 import { Job } from './jobs/entities/job.entity';
 import { VpnProfile } from './vpn/entities/vpn-profile.entity';
 import { User } from './users/entities/user.entity';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 const config: Options = {
-  type: 'sqlite',
+  driver: SqliteDriver,
   dbName: 'data/db.sqlite',
   entities: [Customer, Device, Image, Job, VpnProfile, User],
   entitiesTs: ['src/**/*.entity.ts'],
@@ -18,7 +19,7 @@ const config: Options = {
   metadataProvider: TsMorphMetadataProvider,
   migrations: {
     path: 'src/database/migrations',
-    pattern: /^[\w-]+\d+\.ts$/,
+    glob: '*.ts',
   },
   seeder: {
     path: 'src/database/seeders',

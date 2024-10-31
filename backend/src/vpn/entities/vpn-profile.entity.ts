@@ -11,6 +11,37 @@ export enum VpnType {
   GP = 'gp'
 }
 
+
+@Embeddable()
+export class wireGuardConfig {
+  @Property()
+  privateKey: string;
+
+  @Property()
+  publicKey: string;
+
+  @Property()
+  endpoint: string;
+
+  @Property()
+  allowedIPs: string[];
+
+  @Property()
+  persistentKeepalive: number;
+}
+
+@Embeddable()
+export class OpenConnectConfig {
+  @Property()
+  username: string;
+
+  @Property()
+  password: string;
+
+  @Property()
+  authGroup: string;
+}
+
 @Entity()
 export class VpnProfile extends CoreBaseEntity {
   @Property()
@@ -42,34 +73,4 @@ export class VpnProfile extends CoreBaseEntity {
 
   @Embedded(() => OpenConnectConfig, {nullable: true})
   openConnectConfig?: OpenConnectConfig;
-}
-
-@Embeddable()
-export class wireGuardConfig {
-  @Property()
-  privateKey: string;
-
-  @Property()
-  publicKey: string;
-
-  @Property()
-  endpoint: string;
-
-  @Property()
-  allowedIPs: string[];
-
-  @Property()
-  persistentKeepalive: number;
-}
-
-@Embeddable()
-export class OpenConnectConfig {
-  @Property()
-  username: string;
-
-  @Property()
-  password: string;
-
-  @Property()
-  authGroup: string;
 }

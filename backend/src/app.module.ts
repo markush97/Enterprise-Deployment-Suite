@@ -11,6 +11,7 @@ import { VpnModule } from './vpn/vpn.module';
 import { NetworkModule } from './network/network.module';
 
 import config from './mikro-orm.config';
+import { CoreConfigModule } from './core/config/core.config.module';
 
 @Module({
     imports: [
@@ -35,7 +36,8 @@ import config from './mikro-orm.config';
       ImagesModule,
       JobsModule,
       VpnModule,
-      NetworkModule
+      NetworkModule,
+      CoreConfigModule
       ],
   })
 export class AppModule { }

@@ -1,10 +1,10 @@
 import { Entity, Property, Collection, OneToMany } from '@mikro-orm/core';
-import { BaseEntity } from '../../shared/base.entity';
 import { Device } from '../../devices/entities/device.entity';
 import { VpnProfile } from '../../vpn/entities/vpn-profile.entity';
+import { CoreBaseEntity } from 'src/core/persistence/base.entity';
 
 @Entity()
-export class Customer extends BaseEntity {
+export class Customer extends CoreBaseEntity {
   @Property()
   name: string;
 

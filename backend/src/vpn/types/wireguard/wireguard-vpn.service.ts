@@ -2,11 +2,15 @@ import { Injectable, Logger } from '@nestjs/common';
 import { join } from 'path';
 import { WgConfig } from 'wireguard-tools'
 import { rm } from 'fs/promises';
-import { VPNTypeService } from './vpn-type.service';
+import { VPNTypeService } from '../vpn-type.service';
 import { VpnProfile, VpnType } from 'src/vpn/entities/vpn-profile.entity';
 import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-request.mti-exception';
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
 import { VPNConnection } from 'src/vpn/vpn.connection.interface';
+
+const wireguardConfigFile = (connectionId: string): string => {
+    return join('./', '/config', `/wg-${connectionId}.conf`);
+}
 
 @Injectable()
 export class VPNWireguardService extends VPNTypeService {
@@ -63,8 +67,4 @@ export class VPNWireguardService extends VPNTypeService {
 
         return super.disconnectTunnel(connection);        
     }
-}
-
-const wireguardConfigFile = (connectionId: string): string => {
-    return join('./', '/config', `/wg-${connectionId}.conf`);
 }
