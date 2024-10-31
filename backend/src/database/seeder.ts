@@ -42,7 +42,7 @@ export class DatabaseSeeder extends Seeder {
       hostname: 'vpn.example.com',
       port: 443,
       username: 'vpnuser',
-      encryptedPassword: 'encrypted-password',
+      password: 'encrypted-password',
       protocol: 'tcp',
       testIp: '192.168.1.1',
       isDefault: true,

@@ -9,35 +9,33 @@ import { ImagesModule } from './images/images.module';
 import { JobsModule } from './jobs/jobs.module';
 import { VpnModule } from './vpn/vpn.module';
 import { NetworkModule } from './network/network.module';
-import { UsersModule } from './users/users.module';
 
 import config from './mikro-orm.config';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
-    LoggerModule.forRoot({
-      pinoHttp: {
-        transport: {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            levelFirst: true,
-            translateTime: true,
+    imports: [
+      ConfigModule.forRoot({
+        isGlobal: true,
+      }),
+      LoggerModule.forRoot({
+        pinoHttp: {
+          transport: {
+            target: 'pino-pretty',
+            options: {
+              colorize: true,
+              levelFirst: true,
+              translateTime: true,
+            },
           },
         },
-      },
-    }),
-    MikroOrmModule.forRoot(config),
-    CustomersModule,
-    DevicesModule,
-    ImagesModule,
-    JobsModule,
-    VpnModule,
-    NetworkModule,
-    UsersModule,
-  ],
-})
-export class AppModule {}
+      }),
+      MikroOrmModule.forRoot(config),
+      CustomersModule,
+      DevicesModule,
+      ImagesModule,
+      JobsModule,
+      VpnModule,
+      NetworkModule
+      ],
+  })
+export class AppModule { }
