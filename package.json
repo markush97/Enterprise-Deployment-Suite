@@ -12,6 +12,7 @@
   "dependencies": {
     "@azure/msal-browser": "^3.10.0",
     "@azure/msal-react": "^2.0.12",
+    "@mikro-orm/seeder": "^6.3.13",
     "@tiptap/extension-code-block-lowlight": "^2.2.4",
     "@tiptap/pm": "^2.2.4",
     "@tiptap/react": "^2.2.4",
