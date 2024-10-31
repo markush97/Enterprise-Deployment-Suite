@@ -31,7 +31,7 @@ export class ImagesController {
   @UseInterceptors(FileInterceptor('file'))
   async create(
     @Body() createImageDto: CreateImageDto,
-    @UploadedFile() file?: Express.Multer.File,
+    @UploadedFile() file?,
   ): Promise<Image> {
     return this.imagesService.create(createImageDto, file);
   }

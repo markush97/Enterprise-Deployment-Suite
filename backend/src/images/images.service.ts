@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityRepository } from '@mikro-orm/sqlite';
+import { EntityManager, EntityRepository } from '@mikro-orm/sqlite';
 import { Image } from './entities/image.entity';
 import { CreateImageDto } from './dto/create-image.dto';
 import * as fs from 'fs/promises';
@@ -11,6 +11,7 @@ export class ImagesService {
   constructor(
     @InjectRepository(Image)
     private readonly imageRepository: EntityRepository<Image>,
+    private readonly em: EntityManager
   ) {}
 
   async findAll(): Promise<Image[]> {
@@ -25,7 +26,7 @@ export class ImagesService {
     return image;
   }
 
-  async create(createImageDto: CreateImageDto, file?: Express.Multer.File): Promise<Image> {
+  async create(createImageDto: CreateImageDto, file?): Promise<Image> {
     let imagePath = createImageDto.imagePath;
 
     if (file) {
@@ -45,14 +46,14 @@ export class ImagesService {
       size: file?.size || 0,
     });
 
-    await this.imageRepository.persistAndFlush(image);
+    await this.em.persistAndFlush(image);
     return image;
   }
 
   async update(id: string, updateImageDto: Partial<CreateImageDto>): Promise<Image> {
     const image = await this.findOne(id);
     this.imageRepository.assign(image, updateImageDto);
-    await this.imageRepository.flush();
+    await this.em.flush();
     return image;
   }
 
@@ -68,6 +69,6 @@ export class ImagesService {
       }
     }
 
-    await this.imageRepository.removeAndFlush(image);
+    await this.em.removeAndFlush(image);
   }
 }
