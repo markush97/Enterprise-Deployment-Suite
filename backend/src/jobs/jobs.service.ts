@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityRepository } from '@mikro-orm/sqlite';
+import { EntityManager, EntityRepository } from '@mikro-orm/sqlite';
 import { Job, JobStatus } from './entities/job.entity';
 import { CreateJobDto } from './dto/create-job.dto';
 import { DevicesService } from '../devices/devices.service';
@@ -15,6 +15,7 @@ export class JobsService {
     private readonly devicesService: DevicesService,
     private readonly customersService: CustomersService,
     private readonly imagesService: ImagesService,
+    private readonly em: EntityManager
   ) {}
 
   async findAll(): Promise<Job[]> {
@@ -46,7 +47,7 @@ export class JobsService {
       status: createJobDto.status || JobStatus.PREPARING,
     });
 
-    await this.jobRepository.persistAndFlush(job);
+    await this.em.persistAndFlush(job);
     return job;
   }
 
@@ -58,12 +59,12 @@ export class JobsService {
       job.completedAt = new Date();
     }
 
-    await this.jobRepository.flush();
+    await this.em.flush();
     return job;
   }
 
   async remove(id: string): Promise<void> {
     const job = await this.findOne(id);
-    await this.jobRepository.removeAndFlush(job);
+    await this.em.removeAndFlush(job);
   }
 }
