@@ -1,17 +1,18 @@
-import { Entity, Property, ManyToOne, Enum } from '@mikro-orm/core';
-import { BaseEntity } from '../../shared/base.entity';
+import { Entity, Property, ManyToOne, Enum, Embeddable, Embedded } from '@mikro-orm/core';
 import { Customer } from '../../customers/entities/customer.entity';
+import { CoreBaseEntity } from 'src/core/persistence/base.entity';
 
 export enum VpnType {
-  CISCO_ANYCONNECT = 'cisco-anyconnect',
+  CISCO_ANYCONNECT = 'anyconnect',
   OPENCONNECT = 'openconnect',
   FORTINET = 'fortinet',
   WIREGUARD = 'wireguard',
   LOCAL = 'local',
+  GP = 'gp'
 }
 
 @Entity()
-export class VpnProfile extends BaseEntity {
+export class VpnProfile extends CoreBaseEntity {
   @Property()
   name: string;
 
@@ -27,12 +28,6 @@ export class VpnProfile extends BaseEntity {
   @Property()
   port: number;
 
-  @Property({ nullable: true })
-  username?: string;
-
-  @Property({ nullable: true })
-  encryptedPassword?: string;
-
   @Property()
   protocol: string;
 
@@ -42,12 +37,39 @@ export class VpnProfile extends BaseEntity {
   @Property()
   isDefault: boolean = false;
 
-  @Property({ type: 'json', nullable: true })
-  wireGuardConfig?: {
-    privateKey: string;
-    publicKey: string;
-    endpoint: string;
-    allowedIPs: string[];
-    persistentKeepalive: number;
-  };
+  @Embedded(() => wireGuardConfig, {nullable: true})
+  wireGuardConfig?: wireGuardConfig;
+
+  @Embedded(() => OpenConnectConfig, {nullable: true})
+  openConnectConfig?: OpenConnectConfig;
+}
+
+@Embeddable()
+export class wireGuardConfig {
+  @Property()
+  privateKey: string;
+
+  @Property()
+  publicKey: string;
+
+  @Property()
+  endpoint: string;
+
+  @Property()
+  allowedIPs: string[];
+
+  @Property()
+  persistentKeepalive: number;
+}
+
+@Embeddable()
+export class OpenConnectConfig {
+  @Property()
+  username: string;
+
+  @Property()
+  password: string;
+
+  @Property()
+  authGroup: string;
 }
