@@ -1,13 +1,9 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { join } from 'path';
-import { rm } from 'fs/promises';
 import { checkOpenconnectIsInstalled, connect } from './lib/openconnect.helper'
 import { VPNTypeService } from '../vpn-type.service';
 import { VpnProfile, VpnType } from 'src/vpn/entities/vpn-profile.entity';
 import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-request.mti-exception';
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
-import { Connection } from '@mikro-orm/core';
-import { profile } from 'console';
 import { VPNConnection } from 'src/vpn/vpn.connection.interface';
 
 @Injectable()

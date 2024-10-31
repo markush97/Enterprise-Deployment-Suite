@@ -12,13 +12,7 @@ export class Customer extends BaseEntity {
   shortCode: string;
 
   @Property()
-  pulsewayId: string;
-
-  @Property({ type: 'json' })
-  settings: {
-    defaultClientImage?: string;
-    defaultServerImage?: string;
-  };
+  zohoId: string;
 
   @OneToMany(() => Device, device => device.customer)
   devices = new Collection<Device>(this);

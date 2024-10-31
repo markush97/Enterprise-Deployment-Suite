@@ -15,13 +15,5 @@ export class CreateCustomerDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  pulsewayId: string;
-
-  @ApiProperty({ required: false })
-  @IsObject()
-  @IsOptional()
-  settings?: {
-    defaultClientImage?: string;
-    defaultServerImage?: string;
-  };
+  zohoId: string;
 }
