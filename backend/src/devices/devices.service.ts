@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityRepository } from '@mikro-orm/sqlite';
+import { EntityManager, EntityRepository } from '@mikro-orm/sqlite';
 import { Device } from './entities/device.entity';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { CustomersService } from '../customers/customers.service';
@@ -11,6 +11,7 @@ export class DevicesService {
     @InjectRepository(Device)
     private readonly deviceRepository: EntityRepository<Device>,
     private readonly customersService: CustomersService,
+    private readonly em: EntityManager
   ) {}
 
   async findAll(): Promise<Device[]> {
@@ -31,7 +32,7 @@ export class DevicesService {
       ...createDeviceDto,
       customer,
     });
-    await this.deviceRepository.persistAndFlush(device);
+    await this.em.persistAndFlush(device);
     return device;
   }
 
@@ -42,12 +43,12 @@ export class DevicesService {
       device.customer = customer;
     }
     this.deviceRepository.assign(device, updateDeviceDto);
-    await this.deviceRepository.flush();
+    await this.em.flush();
     return device;
   }
 
   async remove(id: string): Promise<void> {
     const device = await this.findOne(id);
-    await this.deviceRepository.removeAndFlush(device);
+    await this.em.removeAndFlush(device);
   }
 }
