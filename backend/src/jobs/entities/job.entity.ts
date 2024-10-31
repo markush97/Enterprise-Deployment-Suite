@@ -1,8 +1,8 @@
 import { Entity, Property, ManyToOne, Enum } from '@mikro-orm/core';
-import { BaseEntity } from '../../shared/base.entity';
 import { Customer } from '../../customers/entities/customer.entity';
 import { Device } from '../../devices/entities/device.entity';
 import { Image } from '../../images/entities/image.entity';
+import { CoreBaseEntity } from 'src/core/persistence/base.entity';
 
 export enum JobStatus {
   PREPARING = 'preparing',
@@ -14,7 +14,7 @@ export enum JobStatus {
 }
 
 @Entity()
-export class Job extends BaseEntity {
+export class Job extends CoreBaseEntity {
   @ManyToOne(() => Device)
   device: Device;
 

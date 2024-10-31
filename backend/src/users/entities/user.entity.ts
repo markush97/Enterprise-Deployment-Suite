@@ -1,5 +1,5 @@
 import { Entity, Property, Enum } from '@mikro-orm/core';
-import { BaseEntity } from '../../shared/base.entity';
+import { CoreBaseEntity } from 'src/core/persistence/base.entity';
 
 export enum UserRole {
   ADMINISTRATOR = 'administrator',
@@ -8,7 +8,7 @@ export enum UserRole {
 }
 
 @Entity()
-export class User extends BaseEntity {
+export class User extends CoreBaseEntity {
   @Property()
   email: string;
 

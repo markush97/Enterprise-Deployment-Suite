@@ -1,6 +1,6 @@
 import { Entity, Property, ManyToOne, Enum } from '@mikro-orm/core';
-import { BaseEntity } from '../../shared/base.entity';
 import { Customer } from '../../customers/entities/customer.entity';
+import { CoreBaseEntity } from 'src/core/persistence/base.entity';
 
 export enum DeviceType {
   PC = 'PC',
@@ -12,7 +12,7 @@ export enum DeviceType {
 }
 
 @Entity()
-export class Device extends BaseEntity {
+export class Device extends CoreBaseEntity {
   @Property()
   name: string;
 
