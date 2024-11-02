@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { LoggerModule } from 'nestjs-pino';
 
 import { CustomersModule } from './customers/customers.module';
 import { DevicesModule } from './devices/devices.module';
@@ -12,24 +10,13 @@ import { NetworkModule } from './network/network.module';
 
 import config from './mikro-orm.config';
 import { CoreConfigModule } from './core/config/core.config.module';
+import { StaticFileModule } from './staticFile/static-file.module';
+import { PXEModule } from './pxe/pxe.module';
+import { CoreLoggingModule } from './core/logging/logging.module';
 
 @Module({
     imports: [
-      ConfigModule.forRoot({
-        isGlobal: true,
-      }),
-      LoggerModule.forRoot({
-        pinoHttp: {
-          transport: {
-            target: 'pino-pretty',
-            options: {
-              colorize: true,
-              levelFirst: true,
-              translateTime: true,
-            },
-          },
-        },
-      }),
+      CoreLoggingModule,
       MikroOrmModule.forRoot(config),
       CustomersModule,
       DevicesModule,
@@ -37,7 +24,10 @@ import { CoreConfigModule } from './core/config/core.config.module';
       JobsModule,
       VpnModule,
       NetworkModule,
-      CoreConfigModule
+      CoreConfigModule,
+      StaticFileModule,
+      PXEModule,
+
       ],
   })
 export class AppModule { }
