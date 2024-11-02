@@ -54,10 +54,12 @@ async function bootstrap() {
   // Disable x-powered-by header
   app.disable('x-powered-by');
 
+  app.setGlobalPrefix(config.globalPrefix)
+
   // Setup Swagger documentation
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Image Assistant API')
-    .setDescription('API documentation for Image Assistant')
+    .setTitle('Enterprise Deployment Suite API')
+    .setDescription('API documentation for Enterprise Deployment Suite')
     .setVersion(DEFAULT_VERSION)
     .build();
 
