@@ -8,11 +8,13 @@ import { Job } from './jobs/entities/job.entity';
 import { VpnProfile } from './vpn/entities/vpn-profile.entity';
 import { User } from './users/entities/user.entity';
 import { SqliteDriver } from '@mikro-orm/sqlite';
+import { NetworkInterfaceEntity } from './network/entities/networkinterface.entity';
+import { DHCPServerConfigEntity } from './network/dhcp/entities/dhcp-config.entity';
 
 const config: Options = {
   driver: SqliteDriver,
   dbName: 'data/db.sqlite',
-  entities: [Customer, Device, Image, Job, VpnProfile, User],
+  entities: [Customer, Device, Image, Job, VpnProfile, User, NetworkInterfaceEntity, DHCPServerConfigEntity],
   entitiesTs: ['src/**/*.entity.ts'],
   debug: true,
   highlighter: new SqlHighlighter(),
