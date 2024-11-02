@@ -7,12 +7,13 @@ import { MTIErrorCodes } from './core/errorhandling/exceptions/mti.error-codes.e
 import { CoreConfigService } from './core/config/core.config.service';
 import { Logger as PinoLogger } from 'nestjs-pino';
 import { CoreLogger } from './core/logging/logging.service';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 
 const DEFAULT_VERSION = '1';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
 
   const config = app.get<CoreConfigService>(CoreConfigService);
 
@@ -49,6 +50,9 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors();
+
+  // Disable x-powered-by header
+  app.disable('x-powered-by');
 
   // Setup Swagger documentation
   const swaggerConfig = new DocumentBuilder()
