@@ -1,5 +1,5 @@
 import { Entity, Property, Collection, OneToMany } from '@mikro-orm/core';
-import { Device } from '../../devices/entities/device.entity';
+import { DeviceEntity } from '../../devices/entities/device.entity';
 import { VpnProfile } from '../../vpn/entities/vpn-profile.entity';
 import { CoreBaseEntity } from 'src/core/persistence/base.entity';
 
@@ -14,8 +14,8 @@ export class Customer extends CoreBaseEntity {
   @Property()
   zohoId: string;
 
-  @OneToMany(() => Device, device => device.customer)
-  devices = new Collection<Device>(this);
+  @OneToMany(() => DeviceEntity, device => device.customer)
+  devices = new Collection<DeviceEntity>(this);
 
   @OneToMany(() => VpnProfile, profile => profile.customer)
   vpnProfiles = new Collection<VpnProfile>(this);

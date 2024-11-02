@@ -6,13 +6,17 @@ import { Network } from 'inspector/promises';
 import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-request.mti-exception';
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
 import { DHCPService } from './dhcp/dhcp.service';
+import { EntityManager, EntityRepository } from '@mikro-orm/core';
+import { NetworkInterfaceEntity } from './entities/networkinterface.entity';
+import { InjectRepository } from '@mikro-orm/nestjs';
 
 @Injectable()
 export class NetworkService implements OnModuleInit {
   private readonly logger = new Logger('NetworkService')
   private interfaces: Record<string, NetworkInterface>;
 
-  constructor(private readonly dhcpService: DHCPService) {}
+  constructor(private readonly dhcpService: DHCPService, @InjectRepository(NetworkInterfaceEntity)
+  private readonly networkRepository: EntityRepository<NetworkInterfaceEntity>, private readonly em: EntityManager) { }
 
   onModuleInit() {
     this.reloadInterfaces();
@@ -47,8 +51,10 @@ export class NetworkService implements OnModuleInit {
 
     if (iface === undefined) {
       throw new BadRequestMTIException(MTIErrorCodes.UNKNOWN_INTERFACE, 'Cannot configure unknown interface!');
-    } 
+    }
 
+    await this.networkRepository.upsert({ name: interfaceName, mac: iface.mac, dhcpConfig: dhcpConfig })
+    await this.em.flush();
 
     await this.dhcpService.stopServer(interfaceName);
     await this.dhcpService.initializeServer(iface, dhcpConfig);

@@ -5,5 +5,5 @@ export const DEFAULT_DB_SETTINGS = {
     password: '',
     database: 'mti',
     debug: false,
-    dbFile: 'data/db/mti-sql.sqlite3'
+    dbFile: './data/db/mti-sql.sqlite3'
 };
