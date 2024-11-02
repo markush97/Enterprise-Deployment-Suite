@@ -1,7 +1,7 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { NetworkService } from './network.service';
-import * as os from 'os';
+import { NetworkInterface } from './networkInterface.interface';
 
 
 @ApiTags('network')
@@ -12,7 +12,7 @@ export class NetworkController {
   @Get('interfaces')
   @ApiOperation({ summary: 'Get all network interfaces' })
   @ApiResponse({ status: 200, description: 'Returns all network interfaces' })
-  async getInterfaces(): Promise<NodeJS.Dict<os.NetworkInterfaceInfo[]>> {
-    return this.networkService.getInterfaces();
+  async getInterfaces(@Query('internal') includeInternalInterfaces?: string): Promise<NetworkInterface[]> {
+    return this.networkService.getInterfaces(!!includeInternalInterfaces);
   }
 }
