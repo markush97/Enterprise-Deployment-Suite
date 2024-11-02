@@ -27,7 +27,7 @@ import { CoreLoggingModule } from './core/logging/logging.module';
       CoreConfigModule,
       StaticFileModule,
       PXEModule,
-
+      NetworkModule
       ],
   })
 export class AppModule { }

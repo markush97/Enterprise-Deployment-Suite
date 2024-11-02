@@ -12,7 +12,7 @@ export class NetworkController {
   @Get('interfaces')
   @ApiOperation({ summary: 'Get all network interfaces' })
   @ApiResponse({ status: 200, description: 'Returns all network interfaces' })
-  async getInterfaces(): Promise<os.NetworkInterfaceInfo[]> {
+  async getInterfaces(): Promise<NodeJS.Dict<os.NetworkInterfaceInfo[]>> {
     return this.networkService.getInterfaces();
   }
 }
