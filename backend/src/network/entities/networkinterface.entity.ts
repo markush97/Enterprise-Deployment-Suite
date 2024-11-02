@@ -4,10 +4,10 @@ import { CoreBaseEntity } from "src/core/persistence/base.entity";
 
 @Entity()
 export class NetworkInterfaceEntity extends CoreBaseEntity {
-    @Property()
+    @Property({unique: true})
     name: string;
 
-    @Property()
+    @Property({unique: true})
     mac: string;
 
     @Embedded({nullable: true})

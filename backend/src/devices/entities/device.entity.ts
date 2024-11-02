@@ -12,7 +12,7 @@ export enum DeviceType {
 }
 
 @Entity()
-export class Device extends CoreBaseEntity {
+export class DeviceEntity extends CoreBaseEntity {
   @Property()
   name: string;
 

@@ -8,16 +8,15 @@ import { JobsModule } from './jobs/jobs.module';
 import { VpnModule } from './vpn/vpn.module';
 import { NetworkModule } from './network/network.module';
 
-import config from './mikro-orm.config';
 import { CoreConfigModule } from './core/config/core.config.module';
 import { StaticFileModule } from './staticFile/static-file.module';
 import { PXEModule } from './pxe/pxe.module';
 import { CoreLoggingModule } from './core/logging/logging.module';
+import { CorePersistenceModule } from './core/persistence/core-persistence.module';
 
 @Module({
     imports: [
       CoreLoggingModule,
-      MikroOrmModule.forRoot(config),
       CustomersModule,
       DevicesModule,
       ImagesModule,
@@ -27,7 +26,8 @@ import { CoreLoggingModule } from './core/logging/logging.module';
       CoreConfigModule,
       StaticFileModule,
       PXEModule,
-      NetworkModule
+      NetworkModule,
+      CorePersistenceModule,
       ],
   })
 export class AppModule { }

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityManager, EntityRepository } from '@mikro-orm/sqlite';
+import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { Job, JobStatus } from './entities/job.entity';
 import { CreateJobDto } from './dto/create-job.dto';
 import { DevicesService } from '../devices/devices.service';

@@ -15,6 +15,16 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { MsSqlDriver } from '@mikro-orm/mssql';
+import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
+import { Customer } from 'src/customers/entities/customer.entity';
+import { DeviceEntity } from 'src/devices/entities/device.entity';
+import { Job } from 'src/jobs/entities/job.entity';
+import { VpnProfile } from 'src/vpn/entities/vpn-profile.entity';
+import { User } from 'src/users/entities/user.entity';
+import { NetworkInterfaceEntity } from 'src/network/entities/networkinterface.entity';
+import { DHCPServerConfigEntity } from 'src/network/dhcp/entities/dhcp-config.entity';
+import { ImageEntity } from 'src/images/entities/image.entity';
 
 /**
  * ConfigService managing every persistence-related configuration
@@ -36,11 +46,13 @@ export class PersistenceConfigService implements MikroOrmOptionsFactory {
             autoLoadEntities: true,
             charset: 'utf8mb4',
             collate: 'utf8mb4_unicode_ci',
+            highlighter: new SqlHighlighter(),
             debug:
                 this.config.get('DB_DEBUG', DEFAULT_DB_SETTINGS.debug) ===
                 'true',
             loadStrategy: LoadStrategy.JOINED,
-            logger: console.log,
+            metadataProvider: TsMorphMetadataProvider,
+            logger: this.logger.log,
             entityRepository: CoreBaseRepository,
             findOneOrFailHandler: (entityName: string) =>
                 new NotFoundMTIException(
@@ -71,7 +83,9 @@ export class PersistenceConfigService implements MikroOrmOptionsFactory {
             case 'PostgreSQL':
                 return this.createPostgresqlConfig();
             case 'SQLite':
+            default: 
                 return this.createSQLiteConfig();
+            
         }
     }
 

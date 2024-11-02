@@ -3,7 +3,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiConsumes } from '@nestjs/swagger';
 import { ImagesService } from './images.service';
 import { CreateImageDto } from './dto/create-image.dto';
-import { Image } from './entities/image.entity';
+import { ImageEntity } from './entities/image.entity';
 
 @ApiTags('images')
 @Controller('images')
@@ -13,14 +13,14 @@ export class ImagesController {
   @Get()
   @ApiOperation({ summary: 'Get all images' })
   @ApiResponse({ status: 200, description: 'Returns all images' })
-  async findAll(): Promise<Image[]> {
+  async findAll(): Promise<ImageEntity[]> {
     return this.imagesService.findAll();
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get image by id' })
   @ApiResponse({ status: 200, description: 'Returns an image' })
-  async findOne(@Param('id') id: string): Promise<Image> {
+  async findOne(@Param('id') id: string): Promise<ImageEntity> {
     return this.imagesService.findOne(id);
   }
 
@@ -32,7 +32,7 @@ export class ImagesController {
   async create(
     @Body() createImageDto: CreateImageDto,
     @UploadedFile() file?,
-  ): Promise<Image> {
+  ): Promise<ImageEntity> {
     return this.imagesService.create(createImageDto, file);
   }
 
@@ -42,7 +42,7 @@ export class ImagesController {
   async update(
     @Param('id') id: string,
     @Body() updateImageDto: Partial<CreateImageDto>,
-  ): Promise<Image> {
+  ): Promise<ImageEntity> {
     return this.imagesService.update(id, updateImageDto);
   }
 

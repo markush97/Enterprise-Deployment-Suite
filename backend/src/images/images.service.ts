@@ -1,24 +1,24 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityManager, EntityRepository } from '@mikro-orm/sqlite';
-import { Image } from './entities/image.entity';
+import { ImageEntity } from './entities/image.entity';
 import { CreateImageDto } from './dto/create-image.dto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { EntityManager, EntityRepository } from '@mikro-orm/core';
 
 @Injectable()
 export class ImagesService {
   constructor(
-    @InjectRepository(Image)
-    private readonly imageRepository: EntityRepository<Image>,
+    @InjectRepository(ImageEntity)
+    private readonly imageRepository: EntityRepository<ImageEntity>,
     private readonly em: EntityManager
   ) {}
 
-  async findAll(): Promise<Image[]> {
+  async findAll(): Promise<ImageEntity[]> {
     return this.imageRepository.findAll();
   }
 
-  async findOne(id: string): Promise<Image> {
+  async findOne(id: string): Promise<ImageEntity> {
     const image = await this.imageRepository.findOne(id);
     if (!image) {
       throw new NotFoundException(`Image with ID ${id} not found`);
@@ -26,7 +26,7 @@ export class ImagesService {
     return image;
   }
 
-  async create(createImageDto: CreateImageDto, file?): Promise<Image> {
+  async create(createImageDto: CreateImageDto, file?): Promise<ImageEntity> {
     let imagePath = createImageDto.imagePath;
 
     if (file) {
@@ -50,7 +50,7 @@ export class ImagesService {
     return image;
   }
 
-  async update(id: string, updateImageDto: Partial<CreateImageDto>): Promise<Image> {
+  async update(id: string, updateImageDto: Partial<CreateImageDto>): Promise<ImageEntity> {
     const image = await this.findOne(id);
     this.imageRepository.assign(image, updateImageDto);
     await this.em.flush();
