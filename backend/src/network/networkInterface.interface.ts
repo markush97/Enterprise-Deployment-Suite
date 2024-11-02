@@ -1,8 +1,10 @@
+import { DHCPServerConfig } from "./dhcp/dhcp-config.interface";
+
 export interface NetworkInterface {
     name: string;
     mac: string;
-    addresses: NetworkAddress[]
-    
+    addresses: NetworkAddress[];
+    dhcpConfig?: DHCPServerConfig;
 }
 
 export interface NetworkAddress {
