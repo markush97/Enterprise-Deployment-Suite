@@ -1,11 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { Logger, ValidationError, ValidationPipe, VersioningType } from '@nestjs/common';
+import { Logger, ValidationError, ValidationPipe } from '@nestjs/common';
 import { BadRequestMTIException } from './core/errorhandling/exceptions/bad-request.mti-exception'
 import { MTIErrorCodes } from './core/errorhandling/exceptions/mti.error-codes.enum';
 import { CoreConfigService } from './core/config/core.config.service';
 import { Logger as PinoLogger } from 'nestjs-pino';
+import { CoreLogger } from './core/logging/logging.service';
 
 
 const DEFAULT_VERSION = '1';
@@ -44,7 +45,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   // Enable logging
-  app.useLogger(app.get(PinoLogger));
+  app.useLogger(app.get(CoreLogger));
 
   // Enable CORS
   app.enableCors();
@@ -53,7 +54,7 @@ async function bootstrap() {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Image Assistant API')
     .setDescription('API documentation for Image Assistant')
-    .setVersion('1.0')
+    .setVersion(DEFAULT_VERSION)
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);

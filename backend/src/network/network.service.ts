@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import * as os from 'os';
+import { NetworkInterfaceInfo, networkInterfaces } from 'os';
 
 @Injectable()
 export class NetworkService {
-  async getInterfaces(): Promise<os.NetworkInterfaceInfo[]> {
-    const interfaces = os.networkInterfaces();
-    const result: os.NetworkInterfaceInfo[] = [];
+  async getInterfaces(): Promise<NodeJS.Dict<NetworkInterfaceInfo[]>> {
+    const interfaces = networkInterfaces();
 
-    return result;
+    return interfaces;
   }
 }
