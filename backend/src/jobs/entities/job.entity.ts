@@ -8,7 +8,7 @@ import { JobConnectionsEntity } from './job-connections.entity';
 export enum JobStatus {
   PREPARING = 'preparing',
   IMAGING = 'imaging',
-  CONNECTED = 'connected',
+  PXE_SELECTION = 'pxe_selection',
   INSTALLING = 'installing',
   VERIFYING = 'verifying',
   READY = 'ready',

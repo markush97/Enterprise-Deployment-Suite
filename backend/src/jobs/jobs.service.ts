@@ -74,9 +74,9 @@ export class JobsService {
     let job = await this.jobRepository.findOne({device: { macAddress: clientInfo.clientMac }, $not: {status: JobStatus.DONE}});
 
     if (job) {
-      await this.updateStatus(job.id, JobStatus.CONNECTED);
+      await this.updateStatus(job.id, JobStatus.PXE_SELECTION);
     } else {
-      job = this.jobRepository.create({status: JobStatus.CONNECTED})
+      job = this.jobRepository.create({status: JobStatus.PXE_SELECTION})
     }
 
     job.connections.add(new JobConnectionsEntity(clientInfo));
