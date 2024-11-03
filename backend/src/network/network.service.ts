@@ -70,7 +70,7 @@ export class NetworkService implements OnModuleInit {
    * Synchronizes database interfaces with system interfaces
    */
   private async syncInterfaces(systemInterfaces: Record<string, NetworkInterface>): Promise<void> {
-    const dbInterfaces = await this.em.findAll(NetworkInterfaceEntity);
+    const dbInterfaces = await this.em.findAll(NetworkInterfaceEntity, {populate: ['dhcpConfig', 'addresses']});
     const dbInterfaceMap = new Map(dbInterfaces.map(iface => [iface.name, iface]));
 
     // Handle new and existing interfaces
@@ -91,7 +91,7 @@ export class NetworkService implements OnModuleInit {
     // Mark interfaces as non-existent that are not accessable anymore
     // Do this instead of removing them to keep config
     const removedInterfaces = dbInterfaces.filter(
-      iface => !!systemInterfaces[iface.name]
+      iface => !systemInterfaces[iface.name]
     );
     if (removedInterfaces.length > 0) {
       this.em.remove(removedInterfaces);

@@ -49,11 +49,10 @@ export class PersistenceConfigService implements MikroOrmOptionsFactory {
             collate: 'utf8mb4_unicode_ci',
             highlighter: new SqlHighlighter(),
             debug:
-                this.config.get('DB_DEBUG', DEFAULT_DB_SETTINGS.debug) ===
-                'true',
+                this.config.get<boolean>('DB_DEBUG', DEFAULT_DB_SETTINGS.debug),
             loadStrategy: LoadStrategy.JOINED,
             metadataProvider: TsMorphMetadataProvider,
-            logger: this.logger.log,
+            logger: console.log,
             entityRepository: CoreBaseRepository,
             findOneOrFailHandler: (entityName: string) =>
                 new NotFoundMTIException(
