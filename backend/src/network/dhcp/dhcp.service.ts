@@ -51,7 +51,7 @@ export class DHCPService implements OnModuleDestroy {
       return;
     }
 
-    this.dhcpServers[interfaceName].listen(6868);
+    this.dhcpServers[interfaceName].listen(this.dhcpConfig.port);
   }
 
   async stopServer(interfaceName: string) {
