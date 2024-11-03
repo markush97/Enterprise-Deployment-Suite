@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsNumber, IsArray, IsIP, IsPort, IsUrl, IsFQDN, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsArray, IsIP, IsPort, IsUrl, IsFQDN, IsOptional, IsBoolean } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ConfigureDHCPDto {
@@ -34,4 +34,8 @@ export class ConfigureDHCPDto {
   @IsIP('4', {each: true})
   @IsOptional()
   dns: string[];
+
+  @ApiProperty()
+  @IsBoolean()
+  active: boolean;
 }

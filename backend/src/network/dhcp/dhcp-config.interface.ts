@@ -3,7 +3,6 @@ export interface DHCPServerConfig {
     leaseTime:number ;
     range: [string, string];
     domainName: string;
-    nameServer: string;
     timeServer: string;
     router: string[];
     dns: string[];

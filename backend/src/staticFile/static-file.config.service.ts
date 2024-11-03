@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ServeStaticModuleOptions, ServeStaticModuleOptionsFactory } from '@nestjs/serve-static';
+import { CoreConfigService } from 'src/core/config/core.config.service';
 
 
 @Injectable() 
 export class StaticFileConfigService implements ServeStaticModuleOptionsFactory {
-    constructor(private readonly config: ConfigService) {
+    constructor(private readonly config: CoreConfigService) {
     }
 
     createLoggerOptions(): ServeStaticModuleOptions[] {
