@@ -1,9 +1,9 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Embeddable, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { NetworkInterfaceEntity } from './network-interface.entity';
 import { CoreBaseEntity } from 'src/core/persistence/base.entity';
 
-@Entity()
-export class NetworkAddressEntity extends CoreBaseEntity {
+@Embeddable()
+export class NetworkAddressEntity {
   @Property()
   address!: string;
 
