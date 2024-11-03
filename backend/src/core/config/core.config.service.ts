@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { hostname } from 'os';
 
 type ProcessEnvs = 'development' | 'test' | 'production' | 'staging';
 
@@ -28,6 +29,27 @@ export class CoreConfigService extends ConfigService{
      */
     public get httpsPort(): number {
         return this.get<number>('API_PORT', 3333)
+    }
+
+    /**
+     * Hostname under which this server is reachable
+     */
+    public get hostname(): string {
+        return this.get<string>('API_HOSTNAME', hostname())
+    }
+
+    /**
+     * Domain under which this server is reachable (Without the hostname part)
+     */
+    public get domainName(): string {
+        return this.get<string>('API_DOMAINNAME', 'local');
+    }
+
+    /**
+     * FQDN under which this server is reachable
+     */
+    public fqdn(): string {
+        return `${this.hostname}.${this.domainName}`
     }
 
 }

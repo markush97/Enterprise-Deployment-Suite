@@ -6,4 +6,6 @@ export interface DHCPServerConfig {
     timeServer: string;
     router: string[];
     dns: string[];
+    tftpServer: string;
+    bootFile: string;
 }

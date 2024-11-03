@@ -1,11 +1,8 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { DHCPConfigService } from './dhcp.config.service';
-import { DHCPOptions, createServer, ServerConfig, Server as DHCPServer } from 'dhcp'
+import { createServer, ServerConfig, Server as DHCPServer } from 'dhcp'
 import { promisify } from 'util';
-import { DHCPServerConfigEntity } from './entities/dhcp-config.entity';
-import { NetworkInterface } from '../networkInterface.interface';
-import { getBroadcast } from '../utils/network.helper';
-import { ConfigureDHCPDto } from './dto/configure-dhcp.dto';
+import { DHCPBootFilesEntity, DHCPServerConfigEntity } from './entities/dhcp-config.entity';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/core';
 
@@ -38,7 +35,7 @@ export class DHCPService implements OnModuleDestroy {
   private async reloadServer(dhcpConfig: DHCPServerConfigEntity) {
     await this.stopServer(dhcpConfig.interface.name);
     await this.initializeServer(dhcpConfig);
-    
+
     if (dhcpConfig.active) {
       this.startServer(dhcpConfig.interface.name)
     }
@@ -66,19 +63,10 @@ export class DHCPService implements OnModuleDestroy {
 
     const mergedConfig: ServerConfig = {
       ...dhcpConfig,
+      bootFile: getBootFile(dhcpConfig.bootFiles),
       server: interfaceAddress.address,
-      broadcast: getBroadcast(interfaceAddress.address, interfaceAddress.netmask),
       randomIP: false,
       static: this.getClientIp,
-      bootFile: function (req, res) {
-
-        // res.ip - the actual ip allocated for the client
-        if (req.clientId === 'foo bar') {
-          return 'x86linux.0';
-        } else {
-          return 'x64linux.0';
-        }
-      }
     }
 
     const dhcpServer = createServer(mergedConfig);
@@ -93,6 +81,39 @@ export class DHCPService implements OnModuleDestroy {
   }
 
   private async getConfigByInterface(interfaceName: string): Promise<DHCPServerConfigEntity> {
-    return this.dhcpRepository.findOne({interface: {name: interfaceName}});
+    return this.dhcpRepository.findOne({ interface: { name: interfaceName } });
+  }
+}
+
+const getBootFile = (bootFiles: DHCPBootFilesEntity) => {
+  return (packet) => {
+    // Extract architecture from DHCP options
+    const archOption = packet.options.find((opt: [number, string]) => opt[0] === 93);
+    const arch = archOption ? archOption[1] : null;
+
+    // Architecture codes (IANA)
+    const ARCH = {
+      ARM64_UEFI: 0x0b,    // ARM64 UEFI
+      X86_UEFI: 0x06,      // x86 UEFI
+      X86_64_UEFI: 0x07,   // x86-64 UEFI
+      X86_BIOS: 0x00       // x86 BIOS
+    };
+
+    // Boot file paths
+    switch (arch) {
+      case ARCH.ARM64_UEFI:
+        return bootFiles.efiARMx64;
+
+      case ARCH.X86_UEFI:
+        return bootFiles.efiAMDx86;
+
+      case ARCH.X86_64_UEFI:
+        return bootFiles.efiAMDx64;
+
+      case ARCH.X86_BIOS:
+      default:
+        // Legacy BIOS boot
+        return bootFiles.bios;
+    }
   }
 }
