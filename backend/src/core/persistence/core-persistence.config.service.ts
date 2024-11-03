@@ -19,7 +19,7 @@ import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { Customer } from 'src/customers/entities/customer.entity';
 import { DeviceEntity } from 'src/devices/entities/device.entity';
-import { Job } from 'src/jobs/entities/job.entity';
+import { JobEntity } from 'src/jobs/entities/job.entity';
 import { VpnProfile } from 'src/vpn/entities/vpn-profile.entity';
 import { User } from 'src/users/entities/user.entity';
 import { NetworkInterfaceEntity } from 'src/network/entities/network-interface.entity';
