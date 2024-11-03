@@ -31,7 +31,7 @@ export class DHCPServerConfigEntity extends CoreBaseEntity {
     @Property()
     active = false;
 
-    @OneToOne(() => NetworkInterfaceEntity)
+    @OneToOne(() => NetworkInterfaceEntity, {eager: true})
     interface: NetworkInterfaceEntity;
 
 }
