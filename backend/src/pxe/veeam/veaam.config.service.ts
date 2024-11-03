@@ -1,10 +1,11 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { CoreConfigService } from 'src/core/config/core.config.service';
 
 
 @Injectable() 
 export class VeeamConfigService {
-    constructor(private readonly config: ConfigService) {
+    constructor(private readonly config: CoreConfigService) {
     }
     
     public get serverIp(): string {

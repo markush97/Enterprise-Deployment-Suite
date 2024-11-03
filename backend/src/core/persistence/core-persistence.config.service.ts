@@ -22,9 +22,10 @@ import { DeviceEntity } from 'src/devices/entities/device.entity';
 import { Job } from 'src/jobs/entities/job.entity';
 import { VpnProfile } from 'src/vpn/entities/vpn-profile.entity';
 import { User } from 'src/users/entities/user.entity';
-import { NetworkInterfaceEntity } from 'src/network/entities/networkinterface.entity';
+import { NetworkInterfaceEntity } from 'src/network/entities/network-interface.entity';
 import { DHCPServerConfigEntity } from 'src/network/dhcp/entities/dhcp-config.entity';
 import { ImageEntity } from 'src/images/entities/image.entity';
+import { CoreConfigService } from '../config/core.config.service';
 
 /**
  * ConfigService managing every persistence-related configuration
@@ -33,7 +34,7 @@ import { ImageEntity } from 'src/images/entities/image.entity';
 export class PersistenceConfigService implements MikroOrmOptionsFactory {
     private readonly logger = new Logger('Mikroorm-Database');
 
-    constructor(private readonly config: ConfigService) {}
+    constructor(private readonly config: CoreConfigService) {}
 
     /**
      * Loads and parses the configuration for the mikroOrmConnection from the Nest-Config service

@@ -11,7 +11,6 @@ import { CoreConfigService } from './core.config.service';
     imports: [
         ConfigModule.forRoot({
             cache: true,
-            isGlobal: true,
             expandVariables: true,
         }),
     ],

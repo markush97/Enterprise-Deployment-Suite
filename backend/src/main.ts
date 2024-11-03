@@ -8,6 +8,7 @@ import { CoreConfigService } from './core/config/core.config.service';
 import { Logger as PinoLogger } from 'nestjs-pino';
 import { CoreLogger } from './core/logging/logging.service';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { MikroORM } from '@mikro-orm/core';
 
 
 const DEFAULT_VERSION = '1';
@@ -55,6 +56,10 @@ async function bootstrap() {
   app.disable('x-powered-by');
 
   app.setGlobalPrefix(config.globalPrefix)
+
+  // Setup database
+  const orm = app.get(MikroORM);
+  await orm.getSchemaGenerator().updateSchema();
 
   // Setup Swagger documentation
   const swaggerConfig = new DocumentBuilder()

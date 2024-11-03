@@ -1,14 +1,14 @@
 import {
+    BaseEntity,
     Entity,
     Index,
     PrimaryKey,
     Property,
 } from '@mikro-orm/core';
 import { generateSecureRandomUUID } from '../utils/crypto.helper';
-import { UUID } from 'crypto';
 
 @Entity({ abstract: true })
-export abstract class CoreBaseEntity {
+export abstract class CoreBaseEntity extends BaseEntity {
     @PrimaryKey({ type: 'uuid' })
     @Index()
     id: string = generateSecureRandomUUID();

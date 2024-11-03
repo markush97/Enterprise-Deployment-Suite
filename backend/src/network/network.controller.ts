@@ -13,14 +13,27 @@ export class NetworkController {
   @Get('interfaces')
   @ApiOperation({ summary: 'Get all network interfaces' })
   @ApiResponse({ status: 200, description: 'Returns all network interfaces' })
-  async getInterfaces(): Promise<Record<string, NetworkInterface>> {
+  async getInterfaces() {
     return this.networkService.getInterfaces();
+  }
+
+  @Get('interfaces/reset')
+  @ApiOperation({ summary: 'Resets all interfaces' })
+  async resetInterfaces() {
+    return this.networkService.resetInterfaces();
+  }
+
+  @Get('interfaces/reload')
+  @ApiOperation({ summary: 'Reloads all interfaces' })
+  async reloadInterfaces() {
+    return this.networkService.reloadInterfaces();
   }
 
   @Post('interfaces/:name/dhcp')
   @ApiOperation({ summary: 'Configure a network interfaces dhcp-server' })
   @ApiResponse({ status: 201, description: 'Network interface succesfully updated' })
   async configureDHCP(@Param('name') interfaceName: string, @Body() dhcpConfig: ConfigureDHCPDto) {
-    
+      return this.networkService.updateDHCPConfig(interfaceName, dhcpConfig); 
   }
+
 }
