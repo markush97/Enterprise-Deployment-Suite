@@ -49,20 +49,23 @@ export class NetworkService implements OnModuleInit {
       throw new BadRequestMTIException(MTIErrorCodes.UNKNOWN_INTERFACE, 'Cannot configure unknown interface!');
     }
 
-    // Create or update DHCP config
-    if (!networkInterface.dhcpConfig) {
-      networkInterface.dhcpConfig = this.em.create(DHCPServerConfigEntity,dhcpConfig);
-      networkInterface.dhcpConfig.interface = networkInterface;
-    }
+    let newDHCP = networkInterface.dhcpConfig;
 
-    //networkInterface.dhcpConfig, dhcpConfig);
+    // Create or update DHCP config
+    if (!newDHCP) {
+      newDHCP = this.em.create(DHCPServerConfigEntity,dhcpConfig);
+      newDHCP.interface = networkInterface;
+    }
 
     const tmpIface = networkInterface.addresses[0];
 
-    networkInterface.dhcpConfig.broadcast ??= getBroadcast(tmpIface.address,tmpIface.netmask);
-    networkInterface.dhcpConfig.dns ??= [tmpIface.address];
-    networkInterface.dhcpConfig.router ??= [tmpIface.address];
+    newDHCP.broadcast ??= getBroadcast(tmpIface.address,tmpIface.netmask);
+    newDHCP.dns ??= [tmpIface.address];
+    newDHCP.router ??= [tmpIface.address];
+    newDHCP.tftpServer ??= this.networkConfig.hostName;
+    newDHCP.domainName ??= this.networkConfig.domainName;
 
+    networkInterface.dhcpConfig = newDHCP;
     await this.em.persistAndFlush(networkInterface);
     return networkInterface;
   }

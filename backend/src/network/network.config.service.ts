@@ -12,4 +12,12 @@ export class NetworkConfigService {
     get ipv4Only(): boolean {
         return this.config.get<boolean>('NET_INTERFACE_IPv4_ONLY', true);
     }
+
+    get hostName(): string {
+        return this.config.hostname;
+    }
+
+    get domainName(): string {
+        return this.config.domainName
+    }
 }
