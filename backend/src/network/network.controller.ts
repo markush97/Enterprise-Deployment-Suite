@@ -3,12 +3,13 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { NetworkService } from './network.service';
 import { NetworkInterface } from './networkInterface.interface';
 import { ConfigureDHCPDto } from './dhcp/dto/configure-dhcp.dto';
+import { DHCPService } from './dhcp/dhcp.service';
 
 
 @ApiTags('network')
 @Controller('network')
 export class NetworkController {
-  constructor(private readonly networkService: NetworkService) {}
+  constructor(private readonly networkService: NetworkService, private readonly dhcpService: DHCPService) {}
 
   @Get('interfaces')
   @ApiOperation({ summary: 'Get all network interfaces' })
@@ -34,6 +35,20 @@ export class NetworkController {
   @ApiResponse({ status: 201, description: 'Network interface succesfully updated' })
   async configureDHCP(@Param('name') interfaceName: string, @Body() dhcpConfig: ConfigureDHCPDto) {
       return this.networkService.updateDHCPConfig(interfaceName, dhcpConfig); 
+  }
+
+  @Post('interfaces/:name/dhcp/reload')
+  @ApiOperation({ summary: 'Reload DHCP Server of interface' })
+  @ApiResponse({ status: 201, description: 'DHCP Server succesfully restarted' })
+  async reloadDhcpByInterfaceName(@Param('name') interfaceName: string) {
+      return this.dhcpService.reloadServerByInterfaceName(interfaceName); 
+  }
+
+  @Post('interfaces/dhcp/reload')
+  @ApiOperation({ summary: 'Reload all DHCP Servers' })
+  @ApiResponse({ status: 201, description: 'DHCP Server succesfully restarted' })
+  async reloadAllDhcp(@Param('name') interfaceName: string, @Body() dhcpConfig: ConfigureDHCPDto) {
+      return this.dhcpService.reloadAllServers(); 
   }
 
 }

@@ -1,11 +1,13 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { DHCPConfigService } from './dhcp.config.service';
-import { DHCPOptions, Server as DHCPServer, ServerConfig } from 'dhcp'
+import { DHCPOptions, createServer, ServerConfig, Server as DHCPServer } from 'dhcp'
 import { promisify } from 'util';
 import { DHCPServerConfigEntity } from './entities/dhcp-config.entity';
 import { NetworkInterface } from '../networkInterface.interface';
 import { getBroadcast } from '../utils/network.helper';
 import { ConfigureDHCPDto } from './dto/configure-dhcp.dto';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityRepository } from '@mikro-orm/core';
 
 @Injectable()
 export class DHCPService implements OnModuleDestroy {
@@ -14,14 +16,32 @@ export class DHCPService implements OnModuleDestroy {
 
   private readonly getClientIp = (macAddress: string) => "10.123.0.100";
 
-  constructor(private readonly dhcpConfig: DHCPConfigService) { }
-
-  async onModuleInit() {
-
-  }
+  constructor(private readonly dhcpConfig: DHCPConfigService, @InjectRepository(DHCPServerConfigEntity) private readonly dhcpRepository: EntityRepository<DHCPServerConfigEntity>) { }
 
   async onModuleDestroy() {
-    await this.shutdownServers();
+    await this.stopAllServers();
+  }
+
+  async reloadServerByInterfaceName(interfaceName: string) {
+    const dhcpConfig = await this.getConfigByInterface(interfaceName);
+    await this.reloadServer(dhcpConfig);
+  }
+
+  async reloadAllServers() {
+    const dhcpConfigs = await this.dhcpRepository.findAll();
+
+    for (const config of dhcpConfigs) {
+      await this.reloadServer(config);
+    }
+  }
+
+  private async reloadServer(dhcpConfig: DHCPServerConfigEntity) {
+    await this.stopServer(dhcpConfig.interface.name);
+    await this.initializeServer(dhcpConfig);
+    
+    if (dhcpConfig.active) {
+      this.startServer(dhcpConfig.interface.name)
+    }
   }
 
   async startServer(interfaceName: string) {
@@ -31,21 +51,21 @@ export class DHCPService implements OnModuleDestroy {
       return;
     }
 
-    this.dhcpServers[interfaceName].listen();
+    this.dhcpServers[interfaceName].listen(6868);
   }
 
   async stopServer(interfaceName: string) {
-    this.logger.log(`DHCPServer on ${interfaceName} stopping...`);
     if (this.dhcpServers[interfaceName]) {
+      this.logger.log(`DHCPServer on ${interfaceName} stopping...`);
       return promisify(this.dhcpServers[interfaceName].close)
     }
   }
 
-  async initializeServer(iface: NetworkInterface, serverConfig: ConfigureDHCPDto) {
-    const interfaceAddress = iface.addresses[0];
+  private async initializeServer(dhcpConfig: DHCPServerConfigEntity) {
+    const interfaceAddress = dhcpConfig.interface.addresses[0];
 
     const mergedConfig: ServerConfig = {
-      ...serverConfig,
+      ...dhcpConfig,
       server: interfaceAddress.address,
       broadcast: getBroadcast(interfaceAddress.address, interfaceAddress.netmask),
       randomIP: false,
@@ -61,15 +81,18 @@ export class DHCPService implements OnModuleDestroy {
       }
     }
 
-    const dhcpServer = new DHCPServer(mergedConfig);
-    this.dhcpServers[iface.name] = dhcpServer;
-
+    const dhcpServer = createServer(mergedConfig);
+    this.dhcpServers[dhcpConfig.interface.name] = dhcpServer;
   }
 
-  async shutdownServers() {
+  async stopAllServers() {
     this.logger.log(`Shutting down all dhcp services...`)
     const promises = Object.values(this.dhcpServers).map(server => promisify(server.close));
     await Promise.all(promises);
     this.logger.log(`Shutdown of DHCP-Servers done!`)
+  }
+
+  private async getConfigByInterface(interfaceName: string): Promise<DHCPServerConfigEntity> {
+    return this.dhcpRepository.findOne({interface: {name: interfaceName}});
   }
 }

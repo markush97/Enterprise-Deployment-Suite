@@ -23,6 +23,7 @@ export class NetworkService implements OnModuleInit {
     this.logger.log(`Fetching and synchronising interface-configuration...`);
     await RequestContext.create(this.em, async () => {
       await this.reloadInterfaces();
+      await this.dhcpService.reloadAllServers();
     });
   }
 
@@ -132,13 +133,12 @@ export class NetworkService implements OnModuleInit {
   }
 
   /**
-* Reloads all network interfaces
-*/
+  * Reloads all network interfaces
+  */
   async resetInterfaces() {
     await this.networkRepository.nativeDelete({});
 
     const systemInterfaces = this.getSystemInterfaces();
     await this.syncInterfaces(systemInterfaces);
   }
-
 }
