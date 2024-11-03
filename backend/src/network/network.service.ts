@@ -10,8 +10,7 @@ import { NetworkInterfaceEntity } from './entities/network-interface.entity';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { NetworkConfigService } from './network.config.service';
 import { DHCPServerConfigEntity } from './dhcp/entities/dhcp-config.entity';
-import { sys } from 'ping';
-import { NetworkAddressEntity } from './entities/network-address.entity';
+import { getBroadcast } from './utils/network.helper';
 
 @Injectable()
 export class NetworkService implements OnModuleInit {
@@ -26,7 +25,6 @@ export class NetworkService implements OnModuleInit {
       await this.reloadInterfaces();
     });
   }
-
 
   /**
    * Get all interfaces
@@ -51,11 +49,18 @@ export class NetworkService implements OnModuleInit {
     }
 
     // Create or update DHCP config
-    if (!networkInterface?.dhcpConfig) {
-      networkInterface.dhcpConfig = new DHCPServerConfigEntity();
+    if (!networkInterface.dhcpConfig) {
+      networkInterface.dhcpConfig = this.em.create(DHCPServerConfigEntity,dhcpConfig);
+      networkInterface.dhcpConfig.interface = networkInterface;
     }
 
-    Object.assign(networkInterface.dhcpConfig, dhcpConfig);
+    //networkInterface.dhcpConfig, dhcpConfig);
+
+    const tmpIface = networkInterface.addresses[0];
+
+    networkInterface.dhcpConfig.broadcast ??= getBroadcast(tmpIface.address,tmpIface.netmask);
+    networkInterface.dhcpConfig.dns ??= [tmpIface.address];
+    networkInterface.dhcpConfig.router ??= [tmpIface.address];
 
     await this.em.persistAndFlush(networkInterface);
     return networkInterface;
@@ -71,18 +76,14 @@ export class NetworkService implements OnModuleInit {
     // Handle new and existing interfaces
     for (const [name, sysInterface] of Object.entries(systemInterfaces)) {
       const dbInterface = dbInterfaceMap.get(name);
-      const ifaceAddresses = sysInterface.addresses.map(iface => this.em.create(NetworkAddressEntity, iface))
 
       if (dbInterface) {
         // Update existing interface
         dbInterface.mac = sysInterface.mac;
-        dbInterface.addresses.set(ifaceAddresses);
-        console.log(dbInterface.addresses)
-        await this.em.persistAndFlush(dbInterface);
+        this.em.persist(dbInterface);
       } else {
         // Create new interface
         const newInterface = this.networkRepository.create(sysInterface);
-        newInterface.addresses.set((ifaceAddresses));
         this.em.persist(newInterface);
       }
     }

@@ -1,7 +1,9 @@
-import { Embeddable, Property } from "@mikro-orm/core";
+import { Embeddable, Entity, OneToOne, Property } from "@mikro-orm/core";
+import { CoreBaseEntity } from "src/core/persistence/base.entity";
+import { NetworkInterfaceEntity } from "src/network/entities/network-interface.entity";
 
-@Embeddable()
-export class DHCPServerConfigEntity {
+@Entity()
+export class DHCPServerConfigEntity extends CoreBaseEntity {
     @Property()
     port = 67
 
@@ -9,26 +11,27 @@ export class DHCPServerConfigEntity {
     leaseTime = 3600;
 
     @Property()
-    range?: [string, string];
+    range: [string, string];
 
     @Property()
-    broadcast?: string;
+    broadcast: string;
 
     @Property()
-    domainName?: string;
+    domainName = "enterprise-deployment.local";
 
-    @Property()
-    nameServer?: string;
-
-    @Property()
+    @Property({nullable: true})
     timeServer?: string;
 
     @Property()
-    router?: string[];
+    router: string[];
 
     @Property()
-    dns?: string[];
+    dns: string[];
 
     @Property()
     active = false;
+
+    @OneToOne(() => NetworkInterfaceEntity)
+    interface: NetworkInterfaceEntity;
+
 }

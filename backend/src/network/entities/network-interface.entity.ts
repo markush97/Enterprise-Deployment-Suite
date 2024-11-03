@@ -1,19 +1,21 @@
-import { Cascade, Collection, Embedded, Entity, OneToMany, Property } from "@mikro-orm/core";
+import { Cascade, 
+    Embedded, Entity, OneToMany, OneToOne, Property } from "@mikro-orm/core";
 import { DHCPServerConfigEntity } from "../dhcp/entities/dhcp-config.entity";
 import { CoreBaseEntity } from "src/core/persistence/base.entity";
+import { NetworkAddress } from "../networkInterface.interface";
 import { NetworkAddressEntity } from "./network-address.entity";
 
 @Entity()
 export class NetworkInterfaceEntity extends CoreBaseEntity {
-    @Property({unique: true})
+    @Property({ unique: true })
     name: string;
 
-    @Property({unique: true})
+    @Property({ unique: true })
     mac: string;
 
-    @Embedded(() => DHCPServerConfigEntity, { nullable: true })
-    dhcpConfig?: DHCPServerConfigEntity = new DHCPServerConfigEntity();
+    @OneToOne(() => DHCPServerConfigEntity, { nullable: true, eager: true, cascade: [Cascade.ALL] })
+    dhcpConfig?: DHCPServerConfigEntity;
 
-    @OneToMany(() => NetworkAddressEntity, address => address.interface, {eager: true, cascade: [Cascade.ALL], orphanRemoval: true})
-    addresses = new Collection<NetworkAddressEntity>(this);
+    @Embedded({ entity: () => NetworkAddressEntity, array: true })
+    addresses: NetworkAddress[] = [];
 }

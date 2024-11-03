@@ -17,13 +17,13 @@ export class NetworkController {
     return this.networkService.getInterfaces();
   }
 
-  @Get('interfaces/reset')
+  @Post('interfaces/reset')
   @ApiOperation({ summary: 'Resets all interfaces' })
   async resetInterfaces() {
     return this.networkService.resetInterfaces();
   }
 
-  @Get('interfaces/reload')
+  @Post('interfaces/reload')
   @ApiOperation({ summary: 'Reloads all interfaces' })
   async reloadInterfaces() {
     return this.networkService.reloadInterfaces();
