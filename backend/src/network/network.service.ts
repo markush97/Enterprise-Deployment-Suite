@@ -55,15 +55,17 @@ export class NetworkService implements OnModuleInit {
     if (!newDHCP) {
       newDHCP = this.em.create(DHCPServerConfigEntity,dhcpConfig);
       newDHCP.interface = networkInterface;
+    } else {
+      this.em.assign(newDHCP, dhcpConfig);
     }
 
     const tmpIface = networkInterface.addresses[0];
 
-    newDHCP.broadcast ??= getBroadcast(tmpIface.address,tmpIface.netmask);
     newDHCP.dns ??= [tmpIface.address];
     newDHCP.router ??= [tmpIface.address];
     newDHCP.tftpServer ??= this.networkConfig.hostName;
     newDHCP.domainName ??= this.networkConfig.domainName;
+    
 
     networkInterface.dhcpConfig = newDHCP;
     await this.em.persistAndFlush(networkInterface);

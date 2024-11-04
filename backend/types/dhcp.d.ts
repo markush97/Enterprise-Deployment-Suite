@@ -229,42 +229,42 @@ declare module 'dhcp' {
   /**
    * DHCP message type for DISCOVER messages
    */
-  export const DHCPDISCOVER: number;
+  export const DHCPDISCOVER = 1;
 
   /**
    * DHCP message type for OFFER messages
    */
-  export const DHCPOFFER: number;
+  export const DHCPOFFER = 2;
 
   /**
    * DHCP message type for REQUEST messages
    */
-  export const DHCPREQUEST: number;
+  export const DHCPREQUEST = 3;
 
   /**
    * DHCP message type for DECLINE messages
    */
-  export const DHCPDECLINE: number;
+  export const DHCPDECLINE = 4;
 
   /**
    * DHCP message type for ACK messages
    */
-  export const DHCPACK: number;
+  export const DHCPACK = 5;
 
   /**
    * DHCP message type for NAK messages
    */
-  export const DHCPNAK: number;
+  export const DHCPNAK = 6;
 
   /**
    * DHCP message type for RELEASE messages
    */
-  export const DHCPRELEASE: number;
+  export const DHCPRELEASE = 7;
 
   /**
    * DHCP message type for INFORM messages
    */
-  export const DHCPINFORM: number;
+  export const DHCPINFORM = 8;
 
   /**
    * Creates a new DHCP server instance
@@ -290,7 +290,7 @@ declare module 'dhcp' {
    * Adds a custom DHCP option to the protocol
    * @param opt The option configuration to add
    */
-  export function addOption(opt: any): void;
+  export function addOption(optCode:number, opt: any): void;
 
   export default {
     createServer,

@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { DHCPConfigService } from './dhcp.config.service';
-import { createServer, ServerConfig, Server as DHCPServer } from 'dhcp'
+import { createServer, ServerConfig, Server as DHCPServer, addOption, DHCPDISCOVER } from 'dhcp'
 import { promisify } from 'util';
 import { DHCPBootFilesEntity, DHCPServerConfigEntity } from './entities/dhcp-config.entity';
 import { InjectRepository } from '@mikro-orm/nestjs';
@@ -11,9 +11,24 @@ export class DHCPService implements OnModuleDestroy {
   private readonly logger = new Logger('DHCPService');
   private dhcpServers: Record<string, DHCPServer> = {};
 
-  private readonly getClientIp = (macAddress: string) => "10.123.0.100";
-
-  constructor(private readonly dhcpConfig: DHCPConfigService, @InjectRepository(DHCPServerConfigEntity) private readonly dhcpRepository: EntityRepository<DHCPServerConfigEntity>) { }
+  constructor(private readonly dhcpConfig: DHCPConfigService, @InjectRepository(DHCPServerConfigEntity) private readonly dhcpRepository: EntityRepository<DHCPServerConfigEntity>) {
+    // Add DHCP-Options to the global DHCP service
+    addOption(93, {
+      config: 'clientSystemArchitecture',
+      type: 'ASCII',
+      name: 'Client System Architecture'
+    })
+    addOption(94, {
+      config: 'clientNetworkDeviceInterface',
+      type: 'ASCII',
+      name: 'Client Network Device Interface'
+    })
+    addOption(97, {
+      config: 'UUID',
+      type: 'ASCII',
+      name: 'uuid'
+    })
+  }
 
   async onModuleDestroy() {
     await this.stopAllServers();
@@ -64,12 +79,17 @@ export class DHCPService implements OnModuleDestroy {
     const mergedConfig: ServerConfig = {
       ...dhcpConfig,
       bootFile: getBootFile(dhcpConfig.bootFiles),
+      forceOptions: ['hostname', 'domainName', 'tftpServer'],
       server: interfaceAddress.address,
       randomIP: false,
-      static: this.getClientIp,
+      // static: () =>  "10.119.33.125"
     }
 
     const dhcpServer = createServer(mergedConfig);
+    dhcpServer.on('message', (request) => {
+      this.logger.debug(`Request from client: ${JSON.stringify(request)}`)
+    })
+
     this.dhcpServers[dhcpConfig.interface.name] = dhcpServer;
   }
 
@@ -86,9 +106,9 @@ export class DHCPService implements OnModuleDestroy {
 }
 
 const getBootFile = (bootFiles: DHCPBootFilesEntity) => {
-  return (packet) => {
+  return (request) => {
     // Extract architecture from DHCP options
-    const archOption = packet.options.find((opt: [number, string]) => opt[0] === 93);
+    const archOption = request[93];
     const arch = archOption ? archOption[1] : null;
 
     // Architecture codes (IANA)
@@ -99,6 +119,8 @@ const getBootFile = (bootFiles: DHCPBootFilesEntity) => {
       X86_BIOS: 0x00       // x86 BIOS
     };
 
+    console.log(arch);
+
     // Boot file paths
     switch (arch) {
       case ARCH.ARM64_UEFI:
@@ -107,13 +129,13 @@ const getBootFile = (bootFiles: DHCPBootFilesEntity) => {
       case ARCH.X86_UEFI:
         return bootFiles.efiAMDx86;
 
-      case ARCH.X86_64_UEFI:
-        return bootFiles.efiAMDx64;
-
       case ARCH.X86_BIOS:
-      default:
         // Legacy BIOS boot
         return bootFiles.bios;
+
+      case ARCH.X86_64_UEFI:
+      default:
+        return bootFiles.efiAMDx64;
     }
   }
 }

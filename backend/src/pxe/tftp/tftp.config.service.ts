@@ -9,7 +9,7 @@ export class TFTPConfigService {
     }
     
     public get port(): number {
-        return this.config.get<number>('TFTP_PORT', 6969);
+        return this.config.get<number>('TFTP_PORT', 69);
     }
 
     public get fileRoot(): string {

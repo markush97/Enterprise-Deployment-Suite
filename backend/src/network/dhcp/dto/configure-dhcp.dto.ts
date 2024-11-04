@@ -38,4 +38,9 @@ export class ConfigureDHCPDto {
   @ApiProperty()
   @IsBoolean()
   active: boolean;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  tftpServer: string;
 }
