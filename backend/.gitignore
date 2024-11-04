@@ -67,3 +67,5 @@ resources/networkboot/grub/locale
 resources/networkboot/grub/mods
 resources/networkboot/grub/x86_64-efi
 resources/networkboot/grub/*.efi
+resources/networkboot/media/**/vmlinuz
+resources/networkboot/media/**/initrd.img
