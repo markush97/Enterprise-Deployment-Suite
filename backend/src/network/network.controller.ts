@@ -1,7 +1,6 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { NetworkService } from './network.service';
-import { NetworkInterface } from './networkInterface.interface';
 import { ConfigureDHCPDto } from './dhcp/dto/configure-dhcp.dto';
 import { DHCPService } from './dhcp/dhcp.service';
 

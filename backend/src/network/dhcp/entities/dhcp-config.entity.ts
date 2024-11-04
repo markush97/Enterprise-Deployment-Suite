@@ -30,9 +30,6 @@ export class DHCPServerConfigEntity extends CoreBaseEntity {
     range: [string, string];
 
     @Property()
-    broadcast: string;
-
-    @Property()
     domainName: string;
 
     @Property()

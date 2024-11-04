@@ -66,4 +66,4 @@ resources/networkboot/grub/fonts
 resources/networkboot/grub/locale
 resources/networkboot/grub/mods
 resources/networkboot/grub/x86_64-efi
-resources/networkboot/grub/grubx64.efi
+resources/networkboot/grub/*.efi
