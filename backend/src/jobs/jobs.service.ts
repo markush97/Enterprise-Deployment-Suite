@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { JobEntity, JobStatus } from './entities/job.entity';
@@ -11,6 +11,8 @@ import { JobConnectionsEntity } from './entities/job-connections.entity';
 
 @Injectable()
 export class JobsService {
+  private readonly logger = new Logger('JobsService')
+  
   constructor(
     @InjectRepository(JobEntity)
     private readonly jobRepository: EntityRepository<JobEntity>,
@@ -70,7 +72,8 @@ export class JobsService {
     await this.em.removeAndFlush(job);
   }
 
-  async clientNotification(clientInfo: ClientInfoDto) {
+  async clientNotification(clientInfo: ClientInfoDto): Promise<string> {
+    this.logger.log(`Client ${clientInfo.clientIp} notified us about connection...`)
     let job = await this.jobRepository.findOne({device: { macAddress: clientInfo.clientMac }, $not: {status: JobStatus.DONE}});
 
     if (job) {
@@ -82,6 +85,10 @@ export class JobsService {
     job.connections.add(new JobConnectionsEntity(clientInfo));
 
     await this.em.persistAndFlush(job);
+  
+    return `
+echo "Server connection successfull!"
+configfile grub/config/main.cfg
+    `
   }
-
 }

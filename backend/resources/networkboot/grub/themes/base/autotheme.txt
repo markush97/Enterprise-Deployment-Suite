@@ -1,10 +1,9 @@
-# Global properties
-title-text: "Network Boot Menu"
-title-color: "#ffffff"
-title-font: "Terminus Regular 18"
+# Main options
+title-text: ""
 desktop-image: "background.png"
 desktop-color: "#000000"
 terminal-font: "Terminus Regular 14"
+terminal-box: "terminal_box_*.png"
 terminal-left: "0"
 terminal-top: "0"
 terminal-width: "100%"
@@ -13,22 +12,20 @@ terminal-border: "0"
 
 # Boot menu
 + boot_menu {
-    left = 15%
-    width = 70%
-    top = 20%
-    height = 60%
-    item_font = "DejaVu Sans Regular 12"
-    item_color = "#cccccc"
-    selected_item_color = "#ffffff"
-    selected_item_pixel_fill = "false"
-    icon_width = 32
-    icon_height = 32
-    item_height = 32
-    item_padding = 5
-    item_spacing = 10
-    scrollbar = true
-    scrollbar_width = 20
-    scrollbar_thumb = "slider_c.png"
+  left = 15%
+  top = 40%
+  width = 55%
+  height = 65%
+  item_font = "Ubuntu Regular 20"
+  item_color = "#cccccc"
+  selected_item_color = "#ffffff"
+  icon_width = 36
+  icon_height = 36
+  item_icon_space = 20
+  item_height = 40
+  item_padding = 2
+  item_spacing = 10
+  selected_item_pixmap_style = "select_*.png"
 }
 
 # Info text
@@ -37,18 +34,32 @@ terminal-border: "0"
     width = 100%
     top = 85%
     height = 20
-    text = "Press SPACE for manual menu | ESC for local boot"
+    text = ""
     color = "#ffffff"
     align = "center"
-    font = "DejaVu Sans Regular 10"
+    font = "Ubuntu Regular 17"
 }
 
-# Loading animation
-+ animation {
-    left = 50%-32
-    top = 95%
-    width = 64
-    height = 64
-    id = "__loading__"
-    speed = 1000
+# Countdown label
+# You can change the name of default starting OS here
++ label {
+  left = 15%
+  top = 31%
+  align = "center"
+  id = "__timeout__"
+  text = "Retrying connecting in %d seconds"
+  color = "#cccccc"
+  font = "Ubuntu Regular 17"
 }
+
+# Waiting animation
+#+ animation {
+#    id = "__loading__"
+#    left = 50%-32
+#    top = 95%
+#    width = 64
+#    height = 64
+#    speed = 10
+#    frames = 24 
+#    file = "loading/loading.png"
+#}

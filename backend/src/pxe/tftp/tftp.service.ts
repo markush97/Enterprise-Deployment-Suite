@@ -1,11 +1,11 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { TFTPServer, createServer } from 'tftp2';
 import { readFileSync,writeFileSync } from 'fs';
 import { TFTPConfigService } from './tftp.config.service';
 import { resolve } from 'path';
 
 @Injectable() 
-export class TFTPService implements OnModuleInit {
+export class TFTPService implements OnModuleInit, OnModuleDestroy {
     private readonly logger = new Logger('TFTPService');
     private tftpServer: TFTPServer;
 
@@ -24,5 +24,11 @@ export class TFTPService implements OnModuleInit {
 
         await this.tftpServer.listen(this.tftpConfig.port);
         this.logger.log(`TFTP-Server listening on port ${this.tftpConfig.port}`);
+    }
+
+    onModuleDestroy() {
+        this.logger.log(`Shutting down TFTP Server`);
+        this.tftpServer.close()
+
     }
 }

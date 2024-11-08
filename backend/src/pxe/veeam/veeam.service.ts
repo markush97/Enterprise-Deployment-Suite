@@ -24,22 +24,4 @@ label veeam
       configContent
     );
   }
-
-  async getVeeamRecoveryInstructions(): Promise<string> {
-    return `
-1. Exportieren Sie die Veeam Recovery Media vom Backup-Server:
-   - Öffnen Sie Veeam Backup & Replication Console
-   - Gehen Sie zu: Tools -> Recovery Media Builder
-   - Erstellen Sie ein neues ISO Image
-   - Extrahieren Sie kernel.efi und initrd.img aus dem ISO
-
-2. Kopieren Sie die Dateien in den TFTP-Server:
-   - kernel.efi -> tftp-root/veeam/kernel.efi
-   - initrd.img -> tftp-root/veeam/initrd.img
-
-3. Starten Sie den Client-Computer via PXE
-   - Das System wird automatisch die Veeam Recovery Environment laden
-   - Der Restore-Prozess startet automatisch mit den konfigurierten Parametern
-    `;
-  }
 }
