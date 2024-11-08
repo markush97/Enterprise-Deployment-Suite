@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { DHCPConfigService } from './dhcp.config.service';
-import { createServer, ServerConfig, Server as DHCPServer, addOption, DHCPDISCOVER } from 'dhcp'
+import { createServer, ServerConfig, Server as DHCPServer, addOption, DHCPDISCOVER, LeaseState } from 'dhcp'
 import { promisify } from 'util';
 import { DHCPBootFilesEntity, DHCPServerConfigEntity } from './entities/dhcp-config.entity';
 import { InjectRepository } from '@mikro-orm/nestjs';
@@ -27,6 +27,46 @@ export class DHCPService implements OnModuleDestroy {
       config: 'UUID',
       type: 'ASCII',
       name: 'uuid'
+    })
+    addOption(128, {
+      config: 'Call Server Information',
+      type: 'ASCII',
+      name: 'callServer'
+    })
+    addOption(129, {
+      config: 'Voice VLan',
+      type: 'ASCII',
+      name: 'voiceVlan'
+    })
+    addOption(130, {
+      config: 'Phone Model',
+      type: 'ASCII',
+      name: 'phoneModel'
+    })
+    addOption(131, {
+      config: 'Remote Statistics Server IP Address',
+      type: 'ASCII',
+      name: 'statisticsServer'
+    })
+    addOption(132, {
+      config: 'default VLAN Id',
+      type: 'ASCII',
+      name: 'vlanId'
+    })
+    addOption(133, {
+      config: 'Priority Class',
+      type: 'ASCII',
+      name: 'priorityClass'
+    })
+    addOption(134, {
+      config: 'Diffserv Code Point',
+      type: 'ASCII',
+      name: 'dscp'
+    })
+    addOption(135, {
+      config: 'dns suffix',
+      type: 'ASCII',
+      name: 'dnsSuffix'
     })
   }
 
@@ -88,6 +128,10 @@ export class DHCPService implements OnModuleDestroy {
     const dhcpServer = createServer(mergedConfig);
     dhcpServer.on('message', (request) => {
       this.logger.debug(`Request from client: ${JSON.stringify(request)}`)
+    })
+
+    dhcpServer.on('bound', (lease) => {
+      this.logger.debug(`Bound client ${JSON.stringify(lease)}`);
     })
 
     this.dhcpServers[dhcpConfig.interface.name] = dhcpServer;

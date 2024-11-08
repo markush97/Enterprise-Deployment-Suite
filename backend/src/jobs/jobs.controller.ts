@@ -17,10 +17,10 @@ export class JobsController {
     return this.jobsService.findAll();
   }
 
-  @Get('notify')
+  @Get('notify/:mac/:clientIp/:clientPlatform')
   @ApiOperation({summary: 'Notify the server about a pxe-connection'})
-  async clientNotification(@Query() clientInfo: ClientInfoDto) {
-    return this.jobsService.clientNotification(clientInfo);
+  async clientNotification(@Param('mac') clientMac?: string, @Param('clientIp') clientIp?: string, @Param('clientPlatform') clientPlatform?: "UEFI" | "PC") {
+    return this.jobsService.clientNotification({clientIp, clientMac, clientPlatform });
   }
 
   @Get(':id')

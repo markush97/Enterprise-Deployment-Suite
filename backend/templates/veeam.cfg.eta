@@ -1,0 +1,7 @@
+set default=0
+set timeout=0
+
+menuentry "Veeam Recovery (no-secure-boot)" --class veeam --class gnu-linux --class os {
+    linux (tftp)/media/veeam/<%= it.arch %>/vmlinuz ip=dhcp veeam.server=<%= it.serverIp %> veeam.port=<%= it.port %> veeam.backup=<%= it.backupId %> veeam.restore_point=<%= it.restorePointId %> quiet
+    initrd (tftp)/media/veeam/<%= it.arch %>/initrd.img
+}
