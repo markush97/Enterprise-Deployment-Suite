@@ -13,6 +13,10 @@ export class StaticFileConfigService implements ServeStaticModuleOptionsFactory 
         return [{
             rootPath: this.staticPath,
             serveRoot: '/static',
+            serveStaticOptions: {
+                index: false,
+                
+            }
         }];
     }
     
