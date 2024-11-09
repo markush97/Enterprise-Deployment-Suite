@@ -68,3 +68,5 @@ resources/networkboot/grub/mods
 resources/networkboot/grub/x86_64-efi
 resources/networkboot/grub/*.efi
 resources/networkboot/media/**
+
+!resources/networkboot/media/index.html
