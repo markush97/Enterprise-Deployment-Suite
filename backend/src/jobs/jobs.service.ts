@@ -10,6 +10,9 @@ import { ClientInfoDto } from './dto/client-info.dto';
 import { JobConnectionsEntity } from './entities/job-connections.entity';
 import { ClientConfig } from 'dhcp';
 import { DeviceConfigDto } from 'src/devices/dto/device-config.dto';
+import { DeviceType } from 'src/devices/entities/device.entity';
+import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-request.mti-exception';
+import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
 
 @Injectable()
 export class JobsService {
@@ -43,15 +46,48 @@ export class JobsService {
     return job;
   }
 
+  async assignJobToCustomer(jobId: string, customerId: string): Promise<JobEntity> {
+    this.logger.debug(`Assigning job with ID ${jobId} to customer with ID ${customerId}`);
+    const job = await this.findOne(jobId);
+    const customer = await this.customersService.findOne(customerId);
+    job.customer = customer;
+    await this.em.flush();
+    return job;
+  }
+
+  async createDeviceForJobAutomatically(jobId: string, deviceType: DeviceType = DeviceType.PC): Promise<JobEntity> {
+    this.logger.debug(`Creating device for job with ID ${jobId} and device type ${deviceType}`);
+    const job = await this.findOne(jobId);
+
+    if (job.device) {
+      throw new BadRequestMTIException(MTIErrorCodes.AUTODEVICECREATION_DEVICE_EXISTS, 'Autoassign is only possible if the job has no device assigned');
+    }
+
+    if (!job.customer) {
+      throw new BadRequestMTIException(MTIErrorCodes.AUTODEVICECREATION_NEEDS_CUSTOMER, 'Autoassign is only possible if the job has a customer assigned');
+    }
+
+    const newDevice = await this.devicesService.create({
+      name: `${job.customer.shortCode}-${deviceType}${(await this.customersService.increaseDeviceNumber(job.customer.id, deviceType)).toString().padStart(3, '0')}`,
+      type: deviceType,
+      customerId: job.customer.id,
+      macAddress: job.mac,
+      createdBy: 'system',
+    })
+
+    job.device = newDevice;
+
+    this.em.persist(newDevice);
+    this.em.persist(job);
+
+    await this.em.flush();
+    return job;
+  }
+
   async getJobIDByMac(mac: string): Promise<string> {
     this.logger.debug(`Searching for job with mac ${mac}`);
 
-    const job = await this.jobRepository.findOne({ mac: mac, $not: { status: JobStatus.DONE } });
-
-    if (!job) {
-      throw new NotFoundException(`Job with mac ${mac} not found`);
-    }
-
+    const job = await this.jobRepository.findOneOrFail({ mac: mac, $not: { status: JobStatus.DONE } });
     return job.id;
   }
 
@@ -67,7 +103,7 @@ export class JobsService {
       deviceId: job.device?.id,
       deviceName: job.device?.name,
       deviceMac: job.mac,
-      }
+    }
   }
 
   async create(createJobDto: CreateJobDto): Promise<JobEntity> {

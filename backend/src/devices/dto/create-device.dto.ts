@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { DeviceType } from '../entities/device.entity';
 
@@ -29,16 +29,16 @@ export class CreateDeviceDto {
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
-  bitlockerKey: string;
+  @IsOptional()
+  bitlockerKey?: string;
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
-  osVersion: string;
+  @IsOptional()
+  osVersion?: string;
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
-  imageName: string;
+  @IsOptional()
+  imageName?: string;
 }
