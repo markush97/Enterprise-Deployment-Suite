@@ -3,7 +3,6 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { JobEntity, JobStatus } from './entities/job.entity';
-import { ClientInfoDto } from './dto/client-info.dto';
 import { DeviceType } from 'src/devices/entities/device.entity';
 
 @ApiTags('jobs')
@@ -32,8 +31,6 @@ export class JobsController {
   ) {
     return this.jobsService.clientNotification(jobId, jobStatus);
   }
-
-
 
   @Get('mac/:mac')
   @ApiOperation({ summary: 'Get a job-ID by client mac' })

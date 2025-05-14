@@ -40,4 +40,13 @@ export class DeviceEntity extends CoreBaseEntity {
 
   @Property({ hidden: true })
   deviceSecret: string = generateSecureRandomString(32);
+
+  @Property()
+  language: string = 'de-DE';
+
+  @Property()
+  locale: string = 'de-AT';
+
+  @Property({ nullable: true })
+  inputLocaleWin: string = '0c07:00000407'
 }
