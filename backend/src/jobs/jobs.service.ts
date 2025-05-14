@@ -125,9 +125,9 @@ export class JobsService {
     return job;
   }
 
-  async updateStatus(id: string, status: string): Promise<JobEntity> {
+  async updateStatus(id: string, status: JobStatus): Promise<JobEntity> {
     const job = await this.findOne(id);
-    job.status = status as JobStatus;
+    job.status = status;
 
     if (status === JobStatus.DONE) {
       job.completedAt = new Date();
@@ -142,7 +142,7 @@ export class JobsService {
     await this.em.removeAndFlush(job);
   }
 
-  async clientNotification(clientInfo: ClientInfoDto): Promise<string> {
+  async clientPxeNotification(clientInfo: ClientInfoDto): Promise<string> {
     this.logger.log(`Client ${clientInfo.clientIp} notified us about connection...`)
     let job = await this.jobRepository.findOne({ mac: clientInfo.clientMac, $not: { status: JobStatus.DONE } });
 
@@ -161,5 +161,10 @@ export class JobsService {
 echo "Server connection successfull!"
 configfile grub/config/main.cfg
     `
+  }
+
+  async clientNotification(jobId: string, status: JobStatus): Promise<void> {
+    this.logger.debug(`Client notified us about current status ${status} for job  ${jobId}...`)
+    await this.updateStatus(jobId, status);
   }
 }

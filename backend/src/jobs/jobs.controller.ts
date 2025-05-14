@@ -2,7 +2,7 @@ import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
-import { JobEntity } from './entities/job.entity';
+import { JobEntity, JobStatus } from './entities/job.entity';
 import { ClientInfoDto } from './dto/client-info.dto';
 import { DeviceType } from 'src/devices/entities/device.entity';
 
@@ -20,9 +20,20 @@ export class JobsController {
 
   @Get('notify/:mac/:clientIp')
   @ApiOperation({ summary: 'Notify the server about a pxe-connection' })
-  async clientNotification(@Param('mac') clientMac?: string, @Param('clientIp') clientIp?: string, @Query('clientPlatform') clientPlatform?: "UEFI" | "PC") {
-    return this.jobsService.clientNotification({ clientIp, clientMac, clientPlatform });
+  async clientPxeNotification(@Param('mac') clientMac?: string, @Param('clientIp') clientIp?: string, @Query('clientPlatform') clientPlatform?: "UEFI" | "PC") {
+    return this.jobsService.clientPxeNotification({ clientIp, clientMac, clientPlatform });
   }
+
+  @Post('notify/:jobid')
+  @ApiOperation({ summary: 'Notify the server about the current device-status' })
+  async clientNotification(
+    @Param('jobid') jobId: string,
+    @Query('jobStatus') jobStatus: JobStatus,
+  ) {
+    return this.jobsService.clientNotification(jobId, jobStatus);
+  }
+
+
 
   @Get('mac/:mac')
   @ApiOperation({ summary: 'Get a job-ID by client mac' })
@@ -40,7 +51,7 @@ export class JobsController {
   @Get('setupBundle/:mac/:clientIp/bundle')
   @ApiOperation({ summary: 'Notify the server about a pxe-connection' })
   async getClientSetupBundle(@Param('mac') clientMac?: string, @Param('clientIp') clientIp?: string, @Query('clientPlatform') clientPlatform?: "UEFI" | "PC") {
-    return this.jobsService.clientNotification({ clientIp, clientMac, clientPlatform });
+    return this.jobsService.clientPxeNotification({ clientIp, clientMac, clientPlatform });
   }
 
   @Get(':id')
@@ -65,17 +76,6 @@ export class JobsController {
     @Query('type') deviceType: DeviceType) {
     return this.jobsService.createDeviceForJobAutomatically(id, deviceType);
   }
-
-  @Put(':id/status')
-  @ApiOperation({ summary: 'Update job status' })
-  @ApiResponse({ status: 200, description: 'Job status updated successfully' })
-  async updateStatus(
-    @Param('id') id: string,
-    @Body('status') status: string,
-  ): Promise<JobEntity> {
-    return this.jobsService.updateStatus(id, status);
-  }
-
 
   @Put(':id/customer/:customerId')
   @ApiOperation({ summary: 'Assign a customer to a job' })
