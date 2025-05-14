@@ -94,15 +94,18 @@ export class JobsService {
   async getJobConfigByMac(mac: string): Promise<DeviceConfigDto> {
     this.logger.debug(`Searching for job with mac ${mac}`);
     const job = await this.jobRepository.findOne({ mac: mac, $not: { status: JobStatus.DONE } });
+    const device = await this.devicesService.findOneWithSecret(job.device.id);
 
     if (!job) {
       throw new NotFoundException(`Job with mac ${mac} not found`);
     }
+
     return {
       jobId: job.id,
       deviceId: job.device?.id,
       deviceName: job.device?.name,
-      deviceMac: job.mac,
+      deviceType: job.device?.type,
+      deviceMac: job.mac
     }
   }
 

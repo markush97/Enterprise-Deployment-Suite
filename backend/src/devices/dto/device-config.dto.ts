@@ -3,5 +3,6 @@ export class DeviceConfigDto {
     deviceId: string;
     deviceName: string;
     deviceMac: string;
+    deviceType: string;
 
 }

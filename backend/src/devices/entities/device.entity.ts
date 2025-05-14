@@ -38,6 +38,6 @@ export class DeviceEntity extends CoreBaseEntity {
   @Property({ nullable: true })
   imageName: string;
 
-  @Property()
+  @Property({ hidden: true })
   deviceSecret: string = generateSecureRandomString(32);
 }
