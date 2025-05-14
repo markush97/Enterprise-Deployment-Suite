@@ -19,4 +19,22 @@ export class Customer extends CoreBaseEntity {
 
   @OneToMany(() => VpnProfile, profile => profile.customer)
   vpnProfiles = new Collection<VpnProfile>(this);
+
+  @Property()
+  deviceCounterPc: number = 0;
+
+  @Property()
+  deviceCounterNb: number = 0;
+
+  @Property()
+  deviceCounterTab: number = 0;
+
+  @Property()
+  deviceCounterMac: number = 0;
+
+  @Property()
+  deviceCounterSrv: number = 0;
+
+  @Property()
+  deviceCounterDiv: number = 0;
 }

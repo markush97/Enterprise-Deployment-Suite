@@ -5,11 +5,11 @@ import { generateSecureRandomString } from 'src/core/utils/crypto.helper';
 
 export enum DeviceType {
   PC = 'PC',
-  NB = 'NB',
-  TAB = 'TAB',
+  NOTEBOOK = 'NB',
+  TABLET = 'TAB',
   MAC = 'MAC',
-  SRV = 'SRV',
-  DIV = 'DIV',
+  SERVER = 'SRV',
+  OTHER = 'DIV',
 }
 
 @Entity()
