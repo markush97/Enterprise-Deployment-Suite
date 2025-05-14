@@ -15,6 +15,7 @@ export class StaticFileConfigService implements ServeStaticModuleOptionsFactory 
             serveRoot: '/static',
             serveStaticOptions: {
                 index: false,
+                fallthrough: false
                 
             }
         }];

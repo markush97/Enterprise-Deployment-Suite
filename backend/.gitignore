@@ -70,3 +70,4 @@ resources/networkboot/grub/*.efi
 resources/networkboot/media/**
 
 !resources/networkboot/media/index.html
+!resources/networkboot/media/**/*.ipxe

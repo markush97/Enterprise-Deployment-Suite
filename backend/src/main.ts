@@ -14,7 +14,7 @@ import { MikroORM } from '@mikro-orm/core';
 const DEFAULT_VERSION = '1';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule/*, { bufferLogs: true }*/);
 
   const config = app.get<CoreConfigService>(CoreConfigService);
 

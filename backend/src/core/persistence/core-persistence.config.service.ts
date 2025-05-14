@@ -48,8 +48,7 @@ export class PersistenceConfigService implements MikroOrmOptionsFactory {
             charset: 'utf8mb4',
             collate: 'utf8mb4_unicode_ci',
             highlighter: new SqlHighlighter(),
-            debug:
-                this.config.get<boolean>('DB_DEBUG', DEFAULT_DB_SETTINGS.debug),
+            debug: this.config.get<boolean>('DB_DEBUG', DEFAULT_DB_SETTINGS.debug),
             loadStrategy: LoadStrategy.JOINED,
             metadataProvider: TsMorphMetadataProvider,
             logger: console.log,
@@ -83,9 +82,9 @@ export class PersistenceConfigService implements MikroOrmOptionsFactory {
             case 'PostgreSQL':
                 return this.createPostgresqlConfig();
             case 'SQLite':
-            default: 
+            default:
                 return this.createSQLiteConfig();
-            
+
         }
     }
 

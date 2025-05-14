@@ -8,11 +8,13 @@ import { CustomersService } from '../customers/customers.service';
 import { ImagesService } from '../images/images.service';
 import { ClientInfoDto } from './dto/client-info.dto';
 import { JobConnectionsEntity } from './entities/job-connections.entity';
+import { ClientConfig } from 'dhcp';
+import { DeviceConfigDto } from 'src/devices/dto/device-config.dto';
 
 @Injectable()
 export class JobsService {
   private readonly logger = new Logger('JobsService')
-  
+
   constructor(
     @InjectRepository(JobEntity)
     private readonly jobRepository: EntityRepository<JobEntity>,
@@ -20,9 +22,10 @@ export class JobsService {
     private readonly customersService: CustomersService,
     private readonly imagesService: ImagesService,
     private readonly em: EntityManager
-  ) {}
+  ) { }
 
   async findAll(): Promise<JobEntity[]> {
+    this.logger.debug('Fetching all jobs');
     return this.jobRepository.findAll({
       populate: ['device', 'customer', 'image'],
       orderBy: { createdAt: 'DESC' },
@@ -30,6 +33,7 @@ export class JobsService {
   }
 
   async findOne(id: string): Promise<JobEntity> {
+    this.logger.debug(`Searching for job with ID ${id}`);
     const job = await this.jobRepository.findOne(id, {
       populate: ['device', 'customer', 'image'],
     });
@@ -37,6 +41,33 @@ export class JobsService {
       throw new NotFoundException(`Job with ID ${id} not found`);
     }
     return job;
+  }
+
+  async getJobIDByMac(mac: string): Promise<string> {
+    this.logger.debug(`Searching for job with mac ${mac}`);
+
+    const job = await this.jobRepository.findOne({ mac: mac, $not: { status: JobStatus.DONE } });
+
+    if (!job) {
+      throw new NotFoundException(`Job with mac ${mac} not found`);
+    }
+
+    return job.id;
+  }
+
+  async getJobConfigByMac(mac: string): Promise<DeviceConfigDto> {
+    this.logger.debug(`Searching for job with mac ${mac}`);
+    const job = await this.jobRepository.findOne({ mac: mac, $not: { status: JobStatus.DONE } });
+
+    if (!job) {
+      throw new NotFoundException(`Job with mac ${mac} not found`);
+    }
+    return {
+      jobId: job.id,
+      deviceId: job.device?.id,
+      deviceName: job.device?.name,
+      deviceMac: job.mac,
+      }
   }
 
   async create(createJobDto: CreateJobDto): Promise<JobEntity> {
@@ -58,7 +89,7 @@ export class JobsService {
   async updateStatus(id: string, status: string): Promise<JobEntity> {
     const job = await this.findOne(id);
     job.status = status as JobStatus;
-    
+
     if (status === JobStatus.DONE) {
       job.completedAt = new Date();
     }
@@ -74,18 +105,19 @@ export class JobsService {
 
   async clientNotification(clientInfo: ClientInfoDto): Promise<string> {
     this.logger.log(`Client ${clientInfo.clientIp} notified us about connection...`)
-    let job = await this.jobRepository.findOne({device: { macAddress: clientInfo.clientMac }, $not: {status: JobStatus.DONE}});
+    let job = await this.jobRepository.findOne({ mac: clientInfo.clientMac, $not: { status: JobStatus.DONE } });
 
     if (job) {
+      this.logger.debug(`Found job for client ${clientInfo.clientIp} with ID ${job.id}, updating status to "pxe-selection"`);
       await this.updateStatus(job.id, JobStatus.PXE_SELECTION);
     } else {
-      job = this.jobRepository.create({status: JobStatus.PXE_SELECTION})
+      this.logger.debug(`No job found for client ${clientInfo.clientIp}, creating new job...`);
+      job = this.jobRepository.create({ status: JobStatus.PXE_SELECTION, mac: clientInfo.clientMac });
     }
 
     job.connections.add(new JobConnectionsEntity(clientInfo));
-
     await this.em.persistAndFlush(job);
-  
+
     return `
 echo "Server connection successfull!"
 configfile grub/config/main.cfg

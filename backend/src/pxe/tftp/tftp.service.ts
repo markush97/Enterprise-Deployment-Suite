@@ -4,7 +4,7 @@ import { readFileSync,writeFileSync } from 'fs';
 import { TFTPConfigService } from './tftp.config.service';
 import { resolve } from 'path';
 
-@Injectable() 
+@Injectable()
 export class TFTPService implements OnModuleInit, OnModuleDestroy {
     private readonly logger = new Logger('TFTPService');
     private tftpServer: TFTPServer;
@@ -22,7 +22,7 @@ export class TFTPService implements OnModuleInit, OnModuleDestroy {
             await send(readFileSync(resolve(this.tftpConfig.fileRoot,filename)));
         });
 
-        await this.tftpServer.listen(this.tftpConfig.port);
+        //await this.tftpServer.listen(this.tftpConfig.port);
         this.logger.log(`TFTP-Server listening on port ${this.tftpConfig.port}`);
     }
 
