@@ -2,6 +2,7 @@ import { Entity, Property, Collection, OneToMany, Embedded, Embeddable } from '@
 import { DeviceEntity } from '../../devices/entities/device.entity';
 import { VpnProfile } from '../../vpn/entities/vpn-profile.entity';
 import { CoreBaseEntity } from 'src/core/persistence/base.entity';
+import { generateSecureRandomString } from 'src/core/utils/crypto.helper';
 
 @Embeddable()
 export class DeviceEnrollmentCredentials {
@@ -72,7 +73,7 @@ export class Customer extends CoreBaseEntity {
   deviceOUDiv: string;
 
   @Property({ hidden: true })
-  localAdministratorPassword: string;
+  localAdministratorPassword: string = generateSecureRandomString(10);
 
   @Embedded(() => DeviceEnrollmentCredentials, { nullable: true })
   deviceEnrollmentCredentials?: DeviceEnrollmentCredentials;
