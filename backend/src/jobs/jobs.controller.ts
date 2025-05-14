@@ -8,7 +8,7 @@ import { ClientInfoDto } from './dto/client-info.dto';
 @ApiTags('jobs')
 @Controller('jobs')
 export class JobsController {
-  constructor(private readonly jobsService: JobsService) {}
+  constructor(private readonly jobsService: JobsService) { }
 
   @Get()
   @ApiOperation({ summary: 'Get all jobs' })
@@ -17,10 +17,29 @@ export class JobsController {
     return this.jobsService.findAll();
   }
 
-  @Get('notify/:mac/:clientIp/:clientPlatform')
-  @ApiOperation({summary: 'Notify the server about a pxe-connection'})
-  async clientNotification(@Param('mac') clientMac?: string, @Param('clientIp') clientIp?: string, @Param('clientPlatform') clientPlatform?: "UEFI" | "PC") {
-    return this.jobsService.clientNotification({clientIp, clientMac, clientPlatform });
+  @Get('notify/:mac/:clientIp')
+  @ApiOperation({ summary: 'Notify the server about a pxe-connection' })
+  async clientNotification(@Param('mac') clientMac?: string, @Param('clientIp') clientIp?: string, @Query('clientPlatform') clientPlatform?: "UEFI" | "PC") {
+    return this.jobsService.clientNotification({ clientIp, clientMac, clientPlatform });
+  }
+
+  @Get('mac/:mac')
+  @ApiOperation({ summary: 'Get a job-ID by client mac' })
+  async getJobIdByMac(@Param('mac') clientMac: string) {
+    return this.jobsService.getJobIDByMac(clientMac);
+  }
+
+  @Get('mac/:mac/config')
+  @ApiOperation({ summary: 'Get a clientConfig by client mac' })
+  async getClientConfigByMac(@Param('mac') clientMac: string) {
+    return this.jobsService.getJobConfigByMac(clientMac);
+  }
+
+
+  @Get('setupBundle/:mac/:clientIp/bundle')
+  @ApiOperation({ summary: 'Notify the server about a pxe-connection' })
+  async getClientSetupBundle(@Param('mac') clientMac?: string, @Param('clientIp') clientIp?: string, @Query('clientPlatform') clientPlatform?: "UEFI" | "PC") {
+    return this.jobsService.clientNotification({ clientIp, clientMac, clientPlatform });
   }
 
   @Get(':id')

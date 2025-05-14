@@ -13,13 +13,16 @@ export enum JobStatus {
   VERIFYING = 'verifying',
   READY = 'ready',
   DONE = 'done',
-  
+
 }
 
 @Entity()
 export class JobEntity extends CoreBaseEntity {
   @ManyToOne(() => DeviceEntity, {nullable: true})
   device?: DeviceEntity;
+
+  @Property({ type: StringType, nullable: true })
+  mac: string;
 
   @ManyToOne(() => Customer, {nullable: true})
   customer?: Customer;

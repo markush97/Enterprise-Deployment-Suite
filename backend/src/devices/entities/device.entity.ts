@@ -1,6 +1,7 @@
 import { Entity, Property, ManyToOne, Enum } from '@mikro-orm/core';
 import { Customer } from '../../customers/entities/customer.entity';
 import { CoreBaseEntity } from 'src/core/persistence/base.entity';
+import { generateSecureRandomString } from 'src/core/utils/crypto.helper';
 
 export enum DeviceType {
   PC = 'PC',
@@ -36,4 +37,7 @@ export class DeviceEntity extends CoreBaseEntity {
 
   @Property()
   imageName: string;
+
+  @Property()
+  deviceSecret: string = generateSecureRandomString(32);
 }
