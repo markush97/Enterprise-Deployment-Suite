@@ -26,6 +26,14 @@ export class DevicesService {
     return device;
   }
 
+  async findOneWithSecret(id: string): Promise<DeviceEntity> {
+    const device = await this.deviceRepository.findOne(id, {fields: ['*']} );
+    if (!device) {
+      throw new NotFoundException(`Device with ID ${id} not found`);
+    }
+    return device;
+  }
+
   async create(createDeviceDto: CreateDeviceDto): Promise<DeviceEntity> {
     const customer = await this.customersService.findOne(createDeviceDto.customerId);
     const device = this.deviceRepository.create({
