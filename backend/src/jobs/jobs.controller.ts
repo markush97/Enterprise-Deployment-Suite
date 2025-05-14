@@ -4,6 +4,7 @@ import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { JobEntity } from './entities/job.entity';
 import { ClientInfoDto } from './dto/client-info.dto';
+import { DeviceType } from 'src/devices/entities/device.entity';
 
 @ApiTags('jobs')
 @Controller('jobs')
@@ -56,6 +57,15 @@ export class JobsController {
     return this.jobsService.create(createJobDto);
   }
 
+  @Post(':id/device/autocreate')
+  @ApiOperation({ summary: 'Create a new device for a job' })
+  @ApiResponse({ status: 200, description: 'Device created successfully' })
+  async createDeviceForJob(
+    @Param('id') id: string,
+    @Query('type') deviceType: DeviceType) {
+    return this.jobsService.createDeviceForJobAutomatically(id, deviceType);
+  }
+
   @Put(':id/status')
   @ApiOperation({ summary: 'Update job status' })
   @ApiResponse({ status: 200, description: 'Job status updated successfully' })
@@ -64,6 +74,18 @@ export class JobsController {
     @Body('status') status: string,
   ): Promise<JobEntity> {
     return this.jobsService.updateStatus(id, status);
+  }
+
+
+  @Put(':id/customer/:customerId')
+  @ApiOperation({ summary: 'Assign a customer to a job' })
+  @ApiResponse({ status: 200, description: 'Customer assigned successfully' })
+  async assignCustomerToJob(
+    @Param('id') id: string,
+    @Param('customerId') customerId: string,
+  ): Promise<JobEntity> {
+    return this.jobsService.assignJobToCustomer(id, customerId);
+
   }
 
   @Delete(':id')

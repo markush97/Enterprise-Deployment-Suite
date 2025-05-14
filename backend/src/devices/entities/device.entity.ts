@@ -23,19 +23,19 @@ export class DeviceEntity extends CoreBaseEntity {
   @ManyToOne(() => Customer)
   customer: Customer;
 
-  @Property()
+  @Property({ nullable: true })
   createdBy: string;
 
   @Property()
   macAddress: string;
 
-  @Property()
+  @Property({ nullable: true })
   bitlockerKey: string;
 
-  @Property()
+  @Property({ nullable: true })
   osVersion: string;
 
-  @Property()
+  @Property({ nullable: true })
   imageName: string;
 
   @Property()
