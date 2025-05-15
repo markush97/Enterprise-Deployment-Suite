@@ -27,6 +27,12 @@ export class Customer extends CoreBaseEntity {
   @Property()
   zohoId: string;
 
+  @Property()
+  rmmId: string;
+
+  @Property()
+  itGlueId: string;
+
   @Property({ nullable: true })
   adDomain: string;
 
