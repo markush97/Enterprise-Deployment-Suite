@@ -49,4 +49,10 @@ export class DeviceEntity extends CoreBaseEntity {
 
   @Property({ nullable: true })
   inputLocaleWin: string = '0c07:00000407'
+
+  @Property({ nullable: true })
+  itGlueId: string;
+
+  @Property({ nullable: true })
+  pulsewayId: string;
 }
