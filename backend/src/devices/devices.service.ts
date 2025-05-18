@@ -13,6 +13,7 @@ import { ITGlueType } from 'src/integrations/itglue/interfaces/itglue-type.enum'
 import { ITGlueConfigurationType } from 'src/integrations/itglue/interfaces/configuration-type.enum';
 import { NotFoundMTIException } from 'src/core/errorhandling/exceptions/not-found.mti-exception';
 import { pick } from 'lodash';
+import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-request.mti-exception';
 
 @Injectable()
 export class DevicesService {
@@ -90,6 +91,11 @@ export class DevicesService {
 
   async updateDeviceInfo(deviceToken: string, updateDeviceDto: DeviceInformationDto): Promise<void> {
     this.logger.debug('updateDeviceInfo');
+
+    if (updateDeviceDto.deviceType && ITGlueConfigurationType[updateDeviceDto.deviceType] === undefined) {
+      this.logger.error('Invalid device type');
+      throw new BadRequestMTIException(MTIErrorCodes.DEVICE_TYPE_INVALID, `Device type is invalid`);
+    }
 
     const device = await this.findOneByToken(deviceToken);
 
