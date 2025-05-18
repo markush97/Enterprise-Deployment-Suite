@@ -5,6 +5,7 @@ import { ChevronLeft, Server, Monitor, HardDrive, Key, Network, Image } from 'lu
 interface DevicePageProps {
   device: Device;
   onBack: () => void;
+  onDeviceDeleted?: () => void;
 }
 
 export function DevicePage({ device, onBack }: DevicePageProps) {
