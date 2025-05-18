@@ -23,6 +23,9 @@ export interface Customer {
   name: string;
   shortCode: string;
   pulsewayId: string;
+  zohoId: string;
+  itGlueId: string;
+  adDomain?: string;
   createdAt: string;
   settings: CustomerSettings;
 }
@@ -39,3 +42,6 @@ export interface CustomerState {
   deleteCustomer: (id: string) => Promise<void>;
   setSelectedCustomer: (customer: Customer | null) => void;
 }
+
+export type NewCustomer = Omit<Customer, 'id' | 'createdAt'>;
+export type CustomerUpdate = Partial<Customer>;

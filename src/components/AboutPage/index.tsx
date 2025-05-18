@@ -8,7 +8,7 @@ export function AboutPage() {
         <div className="px-6 py-4">
           <div className="flex items-center space-x-4">
             <img
-              src="/cwi-logo.svg"
+              src="/logo.png"
               alt="CWI Logo"
               className="h-10"
             />
@@ -31,7 +31,7 @@ export function AboutPage() {
             <Activity className="h-6 w-6 text-gray-500 dark:text-gray-400" />
             <h2 className="text-lg font-medium text-gray-900 dark:text-white">System Status</h2>
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -51,7 +51,7 @@ export function AboutPage() {
             <HardDrive className="h-6 w-6 text-gray-500 dark:text-gray-400" />
             <h2 className="text-lg font-medium text-gray-900 dark:text-white">Storage</h2>
           </div>
-          
+
           <div className="space-y-4">
             <div>
               <div className="flex justify-between text-sm mb-2">
@@ -82,7 +82,7 @@ export function AboutPage() {
             <Cpu className="h-6 w-6 text-gray-500 dark:text-gray-400" />
             <h2 className="text-lg font-medium text-gray-900 dark:text-white">CPU</h2>
           </div>
-          
+
           <div className="space-y-4">
             <div>
               <div className="flex justify-between text-sm mb-2">
@@ -96,7 +96,7 @@ export function AboutPage() {
                 ></div>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <span className="text-sm text-gray-500 dark:text-gray-400">Cores</span>

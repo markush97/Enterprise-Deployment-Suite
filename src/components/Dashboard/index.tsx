@@ -30,7 +30,7 @@ export function Dashboard() {
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <img
-                src="/cwi-logo.svg"
+                src="/logo.png"
                 alt="CWI Logo"
                 className="h-8 mr-4"
               />

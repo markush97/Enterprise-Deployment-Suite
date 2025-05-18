@@ -35,7 +35,7 @@ export function LoginForm() {
         <div className="w-full max-w-md space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg">
           <div className="text-center">
             <img
-              src="/cwi-logo.svg"
+              src="/logo.png"
               alt="CWI Logo"
               className="h-16 mx-auto mb-8"
             />
@@ -106,13 +106,13 @@ export function LoginForm() {
           </form>
         </div>
       </div>
-      
+
       <footer className="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
         <p>
           © {new Date().getFullYear()} Markus Hinkel |{' '}
-          <a 
-            href="https://cwi.at" 
-            target="_blank" 
+          <a
+            href="https://cwi.at"
+            target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 dark:text-blue-400 hover:underline"
           >
