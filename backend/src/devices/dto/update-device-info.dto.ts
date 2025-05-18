@@ -1,17 +1,27 @@
 import { IsString, IsNotEmpty, IsEnum, IsOptional, Allow } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { DeviceType } from '../entities/device.entity';
+import { ITGlueConfigurationType } from 'src/integrations/itglue/interfaces/configuration-type.enum';
 
 export class DeviceInformationDto {
   @ApiProperty()
   @IsString()
-  @IsOptional()
   name: string;
 
   @ApiProperty()
   @IsString()
   @IsOptional()
   bitlockerKey?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  assetTag?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  installedBy?: string;
 
   @ApiProperty()
   @IsString()
@@ -29,9 +39,9 @@ export class DeviceInformationDto {
   serialNumber?: string;
 
   @ApiProperty()
-  @IsString()
+  @IsEnum(ITGlueConfigurationType)
   @IsOptional()
-  deviceType?: string;
+  deviceType?: ITGlueConfigurationType = ITGlueConfigurationType.OTHER
 
   @ApiProperty()
   @IsString()
@@ -42,6 +52,16 @@ export class DeviceInformationDto {
   @IsString()
   @IsOptional()
   manufacturer?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  model?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  notes?: string;
 
   @ApiProperty()
   @Allow()

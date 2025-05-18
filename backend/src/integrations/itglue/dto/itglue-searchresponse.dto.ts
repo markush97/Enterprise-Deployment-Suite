@@ -1,4 +1,4 @@
-import { ITGlueBase } from "../interfaces/itglue.base";
+import { ITGlueBase } from "../interfaces/itglue.base.interface";
 
 export class ITGlueResponseList<T extends ITGlueBase> {
     data: T[];
