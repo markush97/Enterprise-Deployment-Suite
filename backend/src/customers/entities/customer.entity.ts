@@ -25,13 +25,13 @@ export class Customer extends CoreBaseEntity {
   shortCode: string;
 
   @Property()
-  zohoId: string;
+  zohoId: number;
 
   @Property()
-  rmmId: string;
+  rmmId: number;
 
   @Property()
-  itGlueId: string;
+  itGlueId: number;
 
   @Property({ nullable: true })
   adDomain: string;

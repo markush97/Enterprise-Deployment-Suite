@@ -8,6 +8,7 @@ import { DeviceInformationDto } from './dto/update-device-info.dto';
 import { MTIHttpException } from 'src/core/errorhandling/exceptions/mit-exception';
 import { ForbiddenMTIException } from 'src/core/errorhandling/exceptions/forbidden.mti-exception';
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
+import { ITGlueService } from 'src/integrations/itglue/itglue.service';
 
 
 @Injectable()
@@ -18,14 +19,25 @@ export class DevicesService {
     @InjectRepository(DeviceEntity)
     private readonly deviceRepository: EntityRepository<DeviceEntity>,
     private readonly customersService: CustomersService,
-    private readonly em: EntityManager
+    private readonly em: EntityManager,
+    private readonly itGlue: ITGlueService
   ) { }
 
   async findAll(): Promise<DeviceEntity[]> {
     return this.deviceRepository.findAll({ populate: ['customer'] });
   }
 
-  async findOne(id: string): Promise<DeviceEntity> {
+  async findOne(id: string): Promise<DeviceEntity | null> {
+    const device = await this.deviceRepository.findOne(id, { populate: ['customer'] });
+    return device;
+  }
+
+  async findOneBySerial(serial: string): Promise<DeviceEntity | null> {
+    const device = await this.deviceRepository.findOne({ serialNumber: serial });
+    return device;
+  }
+
+  async findOneOrFail(id: string): Promise<DeviceEntity> {
     const device = await this.deviceRepository.findOne(id, { populate: ['customer'] });
     if (!device) {
       throw new NotFoundException(`Device with ID ${id} not found`);
@@ -33,7 +45,7 @@ export class DevicesService {
     return device;
   }
 
-  async findOneWithSecret(id: string): Promise<DeviceEntity> {
+  async findOneByToken(id: string): Promise<DeviceEntity> {
     const device = await this.deviceRepository.findOne(id, { fields: ['*'] });
     if (!device) {
       throw new NotFoundException(`Device with ID ${id} not found`);
@@ -77,8 +89,13 @@ export class DevicesService {
       throw new ForbiddenMTIException(MTIErrorCodes.DEVICE_TOKEN_INVALID, `Token is invalid or device not found`);
 
     }
+
+    const itGlueDevice = await this.itGlue.getDeviceBySerial(updateDeviceDto.serialNumber);
+    console.log(itGlueDevice);
+
     this.deviceRepository.assign(device, updateDeviceDto);
     await this.em.flush();
     this.logger.debug('Device information updated successfully');
+
   }
 }

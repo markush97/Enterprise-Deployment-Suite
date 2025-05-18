@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsObject, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsObject, IsOptional, IsNumber } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCustomerDto {
@@ -13,7 +13,15 @@ export class CreateCustomerDto {
   shortCode: string;
 
   @ApiProperty()
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-  zohoId: string;
+  zohoId: number;
+
+  @ApiProperty()
+  @IsNumber()
+  rmmId: number;
+
+  @ApiProperty()
+  @IsNumber()
+  itGlueId: number;
 }

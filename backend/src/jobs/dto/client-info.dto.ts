@@ -3,8 +3,7 @@ import { IsEnum, IsIn, IsIP, IsMACAddress, IsOptional } from "class-validator";
 export class ClientInfoDto {
 
     @IsOptional()
-    @IsMACAddress()
-    clientMac: string;
+    clientSerialNumber: string;
 
     @IsOptional()
     @IsIP()
