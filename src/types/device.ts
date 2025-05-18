@@ -11,6 +11,7 @@ export interface Device {
   bitlockerKey: string;
   osVersion: OperatingSystem;
   imageName: string;
+  serialNumber: string;
 }
 
 export interface DeviceFilters {

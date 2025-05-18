@@ -20,7 +20,7 @@ type ActiveTab = 'devices' | 'customers' | 'images' | 'admin' | 'settings' | 'sy
 export function Dashboard() {
   const { user, logout } = useAuthStore();
   // Start with wiki tab active
-  const [activeTab, setActiveTab] = useState<ActiveTab>('wiki');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('jobs');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
   return (
@@ -58,20 +58,10 @@ export function Dashboard() {
             <div className="mt-4 border-b border-gray-200 dark:border-gray-700">
               <nav className="-mb-px flex space-x-8">
                 <button
-                  onClick={() => setActiveTab('wiki')}
-                  className={`${activeTab === 'wiki'
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
-                    } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                >
-                  <Book className="h-5 w-5 mr-2" />
-                  Documentation
-                </button>
-                <button
                   onClick={() => setActiveTab('jobs')}
                   className={`${activeTab === 'jobs'
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
                     } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
                 >
                   <Play className="h-5 w-5 mr-2" />
@@ -80,8 +70,8 @@ export function Dashboard() {
                 <button
                   onClick={() => setActiveTab('devices')}
                   className={`${activeTab === 'devices'
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
                     } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
                 >
                   <Monitor className="h-5 w-5 mr-2" />
@@ -90,8 +80,8 @@ export function Dashboard() {
                 <button
                   onClick={() => setActiveTab('customers')}
                   className={`${activeTab === 'customers'
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
                     } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
                 >
                   <Users className="h-5 w-5 mr-2" />
@@ -102,8 +92,8 @@ export function Dashboard() {
                     <button
                       onClick={() => setActiveTab('admin')}
                       className={`${activeTab === 'admin'
-                          ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                          : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
+                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
                         } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
                     >
                       <Users className="h-5 w-5 mr-2" />
@@ -112,8 +102,8 @@ export function Dashboard() {
                     <button
                       onClick={() => setActiveTab('settings')}
                       className={`${activeTab === 'settings'
-                          ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                          : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
+                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
                         } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
                     >
                       <Settings className="h-5 w-5 mr-2" />
@@ -124,8 +114,8 @@ export function Dashboard() {
                 <button
                   onClick={() => setActiveTab('system')}
                   className={`${activeTab === 'system'
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
                     } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
                 >
                   <Cpu className="h-5 w-5 mr-2" />

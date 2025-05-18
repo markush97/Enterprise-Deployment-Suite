@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
 import { Play, Clock } from 'lucide-react';
-import { DeviceImagingWizard } from './jobs/DeviceImagingWizard';
 import { JobsList } from './jobs/JobsList';
-import { useJobStore } from '../stores/jobStore';
+import { toast } from 'react-hot-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 export function JobsPage() {
   const [isWizardOpen, setIsWizardOpen] = useState(false);
-  const { jobs } = useJobStore();
+  const queryClient = useQueryClient();
+
+  const handleJobStarted = () => {
+    setIsWizardOpen(false);
+    queryClient.invalidateQueries({ queryKey: ['jobs'] });
+    toast.success('Job started successfully');
+  };
 
   return (
     <div className="space-y-6">
@@ -18,7 +24,7 @@ export function JobsPage() {
               <Clock className="h-8 w-8 text-gray-500 dark:text-gray-400" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Jobs</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Manage and monitor system jobs</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Manage and monitor imaging jobs</p>
               </div>
             </div>
             <button
@@ -38,15 +44,16 @@ export function JobsPage() {
           <h2 className="text-lg font-medium text-gray-900 dark:text-white">Recent Jobs</h2>
         </div>
         <div className="p-6">
-          <JobsList jobs={jobs} />
+          <JobsList />
         </div>
       </div>
 
       {/* Device Imaging Wizard Modal */}
-      <DeviceImagingWizard
+      {/*<DeviceImagingWizard
         isOpen={isWizardOpen}
         onClose={() => setIsWizardOpen(false)}
-      />
+        onJobStarted={handleJobStarted}
+      />*/}
     </div>
   );
 }
