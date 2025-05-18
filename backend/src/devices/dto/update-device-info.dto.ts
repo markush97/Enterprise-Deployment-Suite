@@ -39,9 +39,9 @@ export class DeviceInformationDto {
   serialNumber?: string;
 
   @ApiProperty()
-  @IsEnum(ITGlueConfigurationType)
+  @IsString()
   @IsOptional()
-  deviceType?: ITGlueConfigurationType = ITGlueConfigurationType.OTHER
+  deviceType?: string;
 
   @ApiProperty()
   @IsString()
