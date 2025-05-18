@@ -14,6 +14,8 @@ import { ITGlueConfigurationType } from 'src/integrations/itglue/interfaces/conf
 import { NotFoundMTIException } from 'src/core/errorhandling/exceptions/not-found.mti-exception';
 import { pick } from 'lodash';
 import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-request.mti-exception';
+import { DevicesController } from './devices.controller';
+import { ITGlueOperatingSystem } from 'src/integrations/itglue/interfaces/itglue.operatingsystems.enum';
 
 @Injectable()
 export class DevicesService {
@@ -97,6 +99,11 @@ export class DevicesService {
       throw new BadRequestMTIException(MTIErrorCodes.DEVICE_TYPE_INVALID, `Device type is invalid`);
     }
 
+    if (updateDeviceDto.operatingSystem && ITGlueOperatingSystem[updateDeviceDto.operatingSystem] === undefined) {
+      this.logger.error('Invalid OperatingSystem');
+      throw new BadRequestMTIException(MTIErrorCodes.DEVICE_OS_INVALID, `Device type is invalid`);
+    }
+
     const device = await this.findOneByToken(deviceToken);
 
     if (!device) {
@@ -106,17 +113,11 @@ export class DevicesService {
     }
 
     const serialNumber = updateDeviceDto.serialNumber || device.serialNumber;
-    device.serialNumber = serialNumber;
     updateDeviceDto.serialNumber = serialNumber;
-    const itGlueDevice = await this.itGlue.getDeviceBySerial(serialNumber);
 
-    if (!itGlueDevice) {
-      this.logger.debug('Device not found in ITGlue, creating new device');
-      await this.itGlue.createDevice(updateDeviceDto, device.customer.itGlueId, device.id);
-    } else {
-      this.logger.debug('Device found in ITGlue, updating device');
-      await this.itGlue.updateDevice(itGlueDevice, updateDeviceDto, device.id);
-    }
+    const itGlueDevice = await this.itGlue.upsertDevice(updateDeviceDto, device.customer.itGlueId, device.id)
+    device.itGlueId = itGlueDevice.id;
+    device.serialNumber = serialNumber;
 
     device.assign(pick(updateDeviceDto, DeviceEntity));
 
