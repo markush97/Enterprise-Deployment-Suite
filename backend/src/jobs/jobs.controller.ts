@@ -4,6 +4,8 @@ import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { JobEntity, JobStatus } from './entities/job.entity';
 import { DeviceType } from 'src/devices/entities/device.entity';
+import { RegisterJobDto } from './dto/register-job.dto';
+import { TaskInfoDto } from './dto/task-info.dto';
 
 @ApiTags('jobs')
 @Controller('jobs')
@@ -15,40 +17,6 @@ export class JobsController {
   @ApiResponse({ status: 200, description: 'Returns all jobs' })
   async findAll(): Promise<JobEntity[]> {
     return this.jobsService.findAll();
-  }
-
-  @Get('notify/:mac/:clientIp')
-  @ApiOperation({ summary: 'Notify the server about a pxe-connection' })
-  async clientPxeNotification(@Param('mac') clientMac?: string, @Param('clientIp') clientIp?: string, @Query('clientPlatform') clientPlatform?: "UEFI" | "PC") {
-    return this.jobsService.clientPxeNotification({ clientIp, clientMac, clientPlatform });
-  }
-
-  @Post('notify/:jobid')
-  @ApiOperation({ summary: 'Notify the server about the current device-status' })
-  async clientNotification(
-    @Param('jobid') jobId: string,
-    @Query('jobStatus') jobStatus: JobStatus,
-  ) {
-    return this.jobsService.clientNotification(jobId, jobStatus);
-  }
-
-  @Get('mac/:mac')
-  @ApiOperation({ summary: 'Get a job-ID by client mac' })
-  async getJobIdByMac(@Param('mac') clientMac: string) {
-    return this.jobsService.getJobIDByMac(clientMac);
-  }
-
-  @Get('mac/:mac/config')
-  @ApiOperation({ summary: 'Get a clientConfig by client mac' })
-  async getClientConfigByMac(@Param('mac') clientMac: string) {
-    return this.jobsService.getJobConfigByMac(clientMac);
-  }
-
-
-  @Get('setupBundle/:mac/:clientIp/bundle')
-  @ApiOperation({ summary: 'Notify the server about a pxe-connection' })
-  async getClientSetupBundle(@Param('mac') clientMac?: string, @Param('clientIp') clientIp?: string, @Query('clientPlatform') clientPlatform?: "UEFI" | "PC") {
-    return this.jobsService.clientPxeNotification({ clientIp, clientMac, clientPlatform });
   }
 
   @Get(':id')
@@ -63,6 +31,34 @@ export class JobsController {
   @ApiResponse({ status: 201, description: 'Job created successfully' })
   async create(@Body() createJobDto: CreateJobDto): Promise<JobEntity> {
     return this.jobsService.create(createJobDto);
+  }
+
+  @Post('register')
+  @ApiOperation({
+    summary: 'Register a new job', description: `This endpoint is used to allow a device register itself to the server to be able to provide informations.
+    If the registration is successfull it will return a unique deviceToken that the device can use to update its own information later on. Each serial-Number can only be registered ONCE!`
+  })
+  @ApiResponse({ status: 201, description: 'Job registered successfully. Returns a device Token ONCE' })
+  async register(@Body() RegisterJobDto: RegisterJobDto): Promise<string> {
+    return this.jobsService.registerJob(RegisterJobDto);
+  }
+
+  @Post('notify/:jobid/task')
+  @ApiOperation({ summary: 'Notify the server about the current task-status' })
+  async taskNotification(
+    @Param('jobid') jobId: string,
+    @Body('taskInfo') taskInfo: TaskInfoDto,
+  ) {
+    return this.jobsService.taskNotification(jobId, taskInfo);
+  }
+
+  @Post('notify/:jobid')
+  @ApiOperation({ summary: 'Notify the server about the current setup-status' })
+  async clientNotification(
+    @Param('jobid') jobId: string,
+    @Query('jobStatus') jobStatus: JobStatus,
+  ) {
+    return this.jobsService.clientNotification(jobId, jobStatus);
   }
 
   @Post(':id/device/autocreate')

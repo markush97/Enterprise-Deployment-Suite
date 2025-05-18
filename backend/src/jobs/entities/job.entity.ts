@@ -18,22 +18,22 @@ export enum JobStatus {
 
 @Entity()
 export class JobEntity extends CoreBaseEntity {
-  @ManyToOne(() => DeviceEntity, {nullable: true})
+  @ManyToOne(() => DeviceEntity, { nullable: true })
   device?: DeviceEntity;
 
   @Property({ type: StringType, nullable: true })
-  mac: string;
+  deviceSerialNumber: string;
 
-  @ManyToOne(() => Customer, {nullable: true})
+  @ManyToOne(() => Customer, { nullable: true })
   customer?: Customer;
 
-  @ManyToOne(() => ImageEntity, {nullable: true})
+  @ManyToOne(() => ImageEntity, { nullable: true })
   image: ImageEntity;
 
   @Enum(() => JobStatus)
   status: JobStatus = JobStatus.PREPARING;
 
-  @OneToMany(() => JobConnectionsEntity, (connection) => connection.job, {cascade: [Cascade.ALL], orphanRemoval: true})
+  @OneToMany(() => JobConnectionsEntity, (connection) => connection.job, { cascade: [Cascade.ALL], orphanRemoval: true })
   connections: Collection<JobConnectionsEntity> = new Collection<JobConnectionsEntity>(this);
 
   @Property({ nullable: true })

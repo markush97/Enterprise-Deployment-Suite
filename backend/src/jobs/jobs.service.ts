@@ -8,11 +8,10 @@ import { CustomersService } from '../customers/customers.service';
 import { ImagesService } from '../images/images.service';
 import { ClientInfoDto } from './dto/client-info.dto';
 import { JobConnectionsEntity } from './entities/job-connections.entity';
-import { ClientConfig } from 'dhcp';
-import { DeviceConfigDto } from 'src/devices/dto/device-config.dto';
 import { DeviceType } from 'src/devices/entities/device.entity';
 import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-request.mti-exception';
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
+import { RegisterJobDto } from './dto/register-job.dto';
 
 @Injectable()
 export class JobsService {
@@ -70,8 +69,8 @@ export class JobsService {
     const newDevice = await this.devicesService.create({
       name: `${job.customer.shortCode}-${deviceType}${(await this.customersService.increaseDeviceNumber(job.customer.id, deviceType)).toString().padStart(3, '0')}`,
       type: deviceType,
+      serialNumber: job.deviceSerialNumber,
       customerId: job.customer.id,
-      macAddress: job.mac,
       createdBy: 'system',
     })
 
@@ -84,30 +83,38 @@ export class JobsService {
     return job;
   }
 
-  async getJobIDByMac(mac: string): Promise<string> {
-    this.logger.debug(`Searching for job with mac ${mac}`);
+  async registerJob(registerJobDto: RegisterJobDto): Promise<string> {
+    this.logger.debug(`Registering job for device with serial: ${registerJobDto.deviceSerial} for organization ${registerJobDto.organizationId}`);
 
-    const job = await this.jobRepository.findOneOrFail({ mac: mac, $not: { status: JobStatus.DONE } });
-    return job.id;
-  }
+    let device = await this.devicesService.findOneBySerial(registerJobDto.deviceSerial);
 
-  async getJobConfigByMac(mac: string): Promise<DeviceConfigDto> {
-    this.logger.debug(`Searching for job with mac ${mac}`);
-    const job = await this.jobRepository.findOne({ mac: mac, $not: { status: JobStatus.DONE } });
-    const device = await this.devicesService.findOneWithSecret(job.device.id);
-
-    if (!job) {
-      throw new NotFoundException(`Job with mac ${mac} not found`);
+    if (device) {
+      throw new BadRequestMTIException(MTIErrorCodes.DEVICE_ALREADY_REGISTERED, `Device with serial ${registerJobDto.deviceSerial} already exists`);
+      ;
     }
 
-    return {
-      jobId: job.id,
-      deviceId: job.device?.id,
-      deviceName: job.device?.name,
-      deviceType: job.device?.type,
-      deviceMac: job.mac
-    }
+    this.logger.debug(`Creating new device with serial ${registerJobDto.deviceSerial}`);
+    device = await this.devicesService.create({
+      name: registerJobDto.deviceName,
+      type: registerJobDto.deviceType,
+      serialNumber: registerJobDto.deviceSerial,
+      customerId: registerJobDto.organizationId,
+      createdBy: 'autosetup',
+    })
+
+    this.logger.debug(`Device with serial ${registerJobDto.deviceSerial} created with ID ${device.id}`);
+
+    const job = this.jobRepository.create({
+      device: device,
+      customer: device.customer,
+      status: JobStatus.INSTALLING,
+    });
+
+    await this.em.persistAndFlush(job);
+    this.logger.debug(`Job created with ID ${job.id}`);
+    return device.deviceSecret;
   }
+
 
   async create(createJobDto: CreateJobDto): Promise<JobEntity> {
     const device = await this.devicesService.findOne(createJobDto.deviceId);
@@ -144,14 +151,14 @@ export class JobsService {
 
   async clientPxeNotification(clientInfo: ClientInfoDto): Promise<string> {
     this.logger.log(`Client ${clientInfo.clientIp} notified us about connection...`)
-    let job = await this.jobRepository.findOne({ mac: clientInfo.clientMac, $not: { status: JobStatus.DONE } });
+    let job = await this.jobRepository.findOne({ deviceSerialNumber: clientInfo.clientSerialNumber, $not: { status: JobStatus.DONE } });
 
     if (job) {
       this.logger.debug(`Found job for client ${clientInfo.clientIp} with ID ${job.id}, updating status to "pxe-selection"`);
       await this.updateStatus(job.id, JobStatus.PXE_SELECTION);
     } else {
       this.logger.debug(`No job found for client ${clientInfo.clientIp}, creating new job...`);
-      job = this.jobRepository.create({ status: JobStatus.PXE_SELECTION, mac: clientInfo.clientMac });
+      job = this.jobRepository.create({ status: JobStatus.PXE_SELECTION, deviceSerialNumber: clientInfo.clientSerialNumber });
     }
 
     job.connections.add(new JobConnectionsEntity(clientInfo));
@@ -166,5 +173,9 @@ configfile grub/config/main.cfg
   async clientNotification(jobId: string, status: JobStatus): Promise<void> {
     this.logger.debug(`Client notified us about current status ${status} for job  ${jobId}...`)
     await this.updateStatus(jobId, status);
+  }
+
+  async taskNotification(jobId: string, taskInfo: any): Promise<void> {
+    this.logger.debug(`Client notified us about task status ${taskInfo.status} for job  ${jobId}...`)
   }
 }

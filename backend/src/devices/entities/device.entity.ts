@@ -26,9 +26,6 @@ export class DeviceEntity extends CoreBaseEntity {
   @Property({ nullable: true })
   createdBy: string;
 
-  @Property()
-  macAddress: string;
-
   @Property({ nullable: true })
   bitlockerKey: string;
 
@@ -40,6 +37,9 @@ export class DeviceEntity extends CoreBaseEntity {
 
   @Property({ hidden: true })
   deviceSecret: string = generateSecureRandomString(32);
+
+  @Property()
+  serialNumber: string;
 
   @Property()
   language: string = 'de-DE';

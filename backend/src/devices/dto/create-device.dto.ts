@@ -14,6 +14,10 @@ export class CreateDeviceDto {
 
   @ApiProperty()
   @IsString()
+  serialNumber: string;
+
+  @ApiProperty()
+  @IsString()
   @IsNotEmpty()
   customerId: string;
 
@@ -21,11 +25,6 @@ export class CreateDeviceDto {
   @IsString()
   @IsNotEmpty()
   createdBy: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  macAddress: string;
 
   @ApiProperty()
   @IsString()

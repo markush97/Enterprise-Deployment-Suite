@@ -13,21 +13,24 @@ import { StaticFileModule } from './staticFile/static-file.module';
 import { PXEModule } from './pxe/pxe.module';
 import { CoreLoggingModule } from './core/logging/logging.module';
 import { CorePersistenceModule } from './core/persistence/core-persistence.module';
+import { ITGlueConfigService } from './integrations/itglue/itglue.config.service';
+import { ITGlueModule } from './integrations/itglue/itglue.module';
 
 @Module({
-    imports: [
-      CoreLoggingModule,
-      CustomersModule,
-      DevicesModule,
-      ImagesModule,
-      JobsModule,
-      VpnModule,
-      NetworkModule,
-      CoreConfigModule,
-      StaticFileModule,
-      PXEModule,
-      NetworkModule,
-      CorePersistenceModule,
-      ],
-  })
+  imports: [
+    CoreLoggingModule,
+    CustomersModule,
+    DevicesModule,
+    ImagesModule,
+    JobsModule,
+    VpnModule,
+    NetworkModule,
+    CoreConfigModule,
+    StaticFileModule,
+    PXEModule,
+    NetworkModule,
+    CorePersistenceModule,
+    ITGlueModule
+  ],
+})
 export class AppModule { }
