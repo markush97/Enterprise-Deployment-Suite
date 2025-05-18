@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { DevicesService } from './devices.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { DeviceEntity } from './entities/device.entity';
+import { DeviceInformationDto } from './dto/update-device-info.dto';
 
 @ApiTags('devices')
 @Controller('devices')
@@ -35,7 +36,7 @@ export class DevicesController {
   @ApiResponse({ status: 200, description: 'Device information updated successfully' })
   async updateDeviceInfo(
     @Headers('X-Device-Token') deviceToken: string,
-    @Body() updateDeviceDto: Partial<CreateDeviceDto>,
+    @Body() updateDeviceDto: DeviceInformationDto,
   ): Promise<void> {
     return this.devicesService.updateDeviceInfo(deviceToken, updateDeviceDto);
   }
