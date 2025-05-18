@@ -74,7 +74,7 @@ async function bootstrap() {
   Logger.log(`Starting application in ${config.processEnv} mode`);
   await app.listen(config.httpsPort);
   Logger.log(
-      `🚀 Application is running on: http://localhost:${config.httpsPort}/${config.globalPrefix}`,
+    `🚀 Application is running on: http://localhost:${config.httpsPort}/${config.globalPrefix}`,
   );
 }
 bootstrap();

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, ParseEnumPipe } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
@@ -6,6 +6,8 @@ import { JobEntity, JobStatus } from './entities/job.entity';
 import { DeviceType } from 'src/devices/entities/device.entity';
 import { RegisterJobDto } from './dto/register-job.dto';
 import { TaskInfoDto } from './dto/task-info.dto';
+import { IsEnum } from 'class-validator';
+import { JobStatusQueryDto } from './dto/job-status.query.dto';
 
 @ApiTags('jobs')
 @Controller('jobs')
@@ -56,9 +58,9 @@ export class JobsController {
   @ApiOperation({ summary: 'Notify the server about the current setup-status' })
   async clientNotification(
     @Param('jobid') jobId: string,
-    @Query('jobStatus') jobStatus: JobStatus,
+    @Query() jobStatus: JobStatusQueryDto,
   ) {
-    return this.jobsService.clientNotification(jobId, jobStatus);
+    return this.jobsService.clientNotification(jobId, jobStatus.jobStatus);
   }
 
   @Post(':id/device/autocreate')
