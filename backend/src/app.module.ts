@@ -15,10 +15,12 @@ import { CoreLoggingModule } from './core/logging/logging.module';
 import { CorePersistenceModule } from './core/persistence/core-persistence.module';
 import { ITGlueConfigService } from './integrations/itglue/itglue.config.service';
 import { ITGlueModule } from './integrations/itglue/itglue.module';
+import { EMailModule } from './core/email/email.module';
 
 @Module({
   imports: [
     CoreLoggingModule,
+    EMailModule,
     CustomersModule,
     DevicesModule,
     ImagesModule,

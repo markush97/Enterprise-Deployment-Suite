@@ -12,6 +12,7 @@ import { DeviceType } from 'src/devices/entities/device.entity';
 import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-request.mti-exception';
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
 import { RegisterJobDto } from './dto/register-job.dto';
+import { EMailService } from 'src/core/email/email.service';
 
 @Injectable()
 export class JobsService {
@@ -23,6 +24,7 @@ export class JobsService {
     private readonly devicesService: DevicesService,
     private readonly customersService: CustomersService,
     private readonly imagesService: ImagesService,
+    private readonly mailService: EMailService,
     private readonly em: EntityManager
   ) { }
 
@@ -137,7 +139,13 @@ export class JobsService {
     job.status = status;
 
     if (status === JobStatus.DONE) {
+      this.logger.debug(`Job with ID ${id} is done, sending email...`);
       job.completedAt = new Date();
+      this.mailService.sendEmail(`Imaging "${job.device.name}" completed`, `The imaging process has been completed successfully.
+Visit https://cwi.eu.itglue.com/${job.customer.itGlueId}/configurations/${job.device.itGlueId} to check ITGlue.
+
+        `).then(() => { })
+
     }
 
     await this.em.flush();
