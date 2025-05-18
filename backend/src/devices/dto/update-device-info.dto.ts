@@ -36,6 +36,11 @@ export class DeviceInformationDto {
   @ApiProperty()
   @IsString()
   @IsOptional()
+  operatingSystemNotes?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
   serialNumber?: string;
 
   @ApiProperty()
