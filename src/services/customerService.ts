@@ -1,78 +1,69 @@
-import { Customer } from '../types/customer';
+import { Customer, CustomerUpdate, NewCustomer } from '../types/customer';
 import { v4 as uuidv4 } from 'uuid';
+import { api } from './api.service';
 
-// Mock data
-let mockCustomers: Customer[] = [
-  {
-    id: '1',
-    name: 'Example Corp GmbH',
-    shortCode: 'EXC',
-    pulsewayId: 'PW123456',
-    createdAt: '2024-03-15T10:00:00Z',
-    settings: {
-      defaultClientImage: 'Windows 11 Enterprise 22H2',
-      defaultServerImage: 'Windows Server 2022',
-    }
-  },
-  {
-    id: '2',
-    name: 'Tech Solutions AG',
-    shortCode: 'TSA',
-    pulsewayId: 'PW789012',
-    createdAt: '2024-03-14T09:00:00Z',
-    settings: {
-      defaultClientImage: 'Windows 11 Enterprise 22H2',
-      defaultServerImage: 'Windows Server 2022',
-    }
-  }
-];
+const CUSTOMERS_ENDPOINT = '/customers';
 
 export const customerService = {
   getCustomers: async (): Promise<Customer[]> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return [...mockCustomers];
+    try {
+      const response = await api.get(CUSTOMERS_ENDPOINT);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch customers:', error);
+      throw new Error('Failed to fetch customers');
+    }
   },
 
-  addCustomer: async (customer: Omit<Customer, 'id' | 'createdAt'>): Promise<Customer> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Validate shortCode uniqueness
-    if (mockCustomers.some(c => c.shortCode === customer.shortCode)) {
-      throw new Error('Short code must be unique');
+  getCustomerById: async (id: string): Promise<Customer> => {
+    try {
+      const response = await api.get(`${CUSTOMERS_ENDPOINT}/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Failed to fetch customer ${id}:`, error);
+      throw new Error('Failed to fetch customer details');
     }
-
-    const newCustomer: Customer = {
-      ...customer,
-      id: uuidv4(),
-      createdAt: new Date().toISOString(),
-    };
-
-    mockCustomers.push(newCustomer);
-    return newCustomer;
   },
 
-  updateCustomer: async (id: string, updates: Partial<Customer>): Promise<Customer> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const index = mockCustomers.findIndex(c => c.id === id);
-    if (index === -1) throw new Error('Customer not found');
+  addCustomer: async (customer: NewCustomer): Promise<Customer> => {
+    try {
+      // We'll check for unique shortCode on the server, but we can also check locally
+      const newCustomer: Customer = {
+        ...customer,
+        id: uuidv4(), // Let the backend generate the ID, but provide one if needed
+        createdAt: new Date().toISOString(),
+      };
 
-    // Validate shortCode uniqueness if it's being updated
-    if (updates.shortCode && 
-        mockCustomers.some(c => c.shortCode === updates.shortCode && c.id !== id)) {
-      throw new Error('Short code must be unique');
+      const response = await api.post(CUSTOMERS_ENDPOINT, newCustomer);
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to add customer:', error);
+      if (error.response?.data?.message === 'Short code already exists') {
+        throw new Error('Short code must be unique');
+      }
+      throw new Error('Failed to add customer');
     }
+  },
 
-    mockCustomers[index] = {
-      ...mockCustomers[index],
-      ...updates,
-    };
-
-    return mockCustomers[index];
+  updateCustomer: async (id: string, updates: CustomerUpdate): Promise<Customer> => {
+    try {
+      const response = await api.put(`${CUSTOMERS_ENDPOINT}/${id}`, updates);
+      return response.data;
+    } catch (error: any) {
+      console.error(`Failed to update customer ${id}:`, error);
+      if (error.response?.data?.message === 'Short code already exists') {
+        throw new Error('Short code must be unique');
+      }
+      throw new Error('Failed to update customer');
+    }
   },
 
   deleteCustomer: async (id: string): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    mockCustomers = mockCustomers.filter(c => c.id !== id);
+    try {
+      await api.delete(`${CUSTOMERS_ENDPOINT}/${id}`);
+    } catch (error) {
+      console.error(`Failed to delete customer ${id}:`, error);
+      throw new Error('Failed to delete customer');
+    }
   }
 };
