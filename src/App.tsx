@@ -25,13 +25,13 @@ function App() {
     <Router>
       <div className={isDarkMode ? 'dark' : ''}>
         <Routes>
-          <Route 
-            path="/login" 
+          <Route
+            path="/login"
             element={
               <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50 dark:bg-gray-900">
                 <LoginForm />
               </div>
-            } 
+            }
           />
           <Route
             path="/dashboard/*"
@@ -41,7 +41,6 @@ function App() {
               </PrivateRoute>
             }
           />
-          {/* Redirect root to dashboard/wiki for development */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </div>

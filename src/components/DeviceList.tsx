@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Device } from '../types/device';
 import { deviceService } from '../services/deviceService';
 import { customerService } from '../services/customerService';
 import { DeviceModal } from './DeviceModal';
-import { DevicePage } from './DevicePage';
+import { CustomerListSkeleton } from './CustomerSkeleton';
 import { Plus, Server, Monitor, Edit, Trash2, AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { CustomerListSkeleton } from './CustomerSkeleton';
 
 export function DeviceList() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
-  const [showDetails, setShowDetails] = useState(false);
 
   // Fetch devices
   const {
@@ -100,24 +100,6 @@ export function DeviceList() {
     }
   };
 
-  if (showDetails && selectedDevice) {
-    return (
-      <DevicePage
-        device={selectedDevice}
-        onBack={() => {
-          setShowDetails(false);
-          setSelectedDevice(null);
-          refetch(); // Refresh the list when coming back
-        }}
-        onDeviceDeleted={() => {
-          setShowDetails(false);
-          setSelectedDevice(null);
-          queryClient.invalidateQueries({ queryKey: ['devices'] });
-        }}
-      />
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
@@ -165,7 +147,7 @@ export function DeviceList() {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">MAC Address</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Customer</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">OS Version</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Image</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
@@ -199,10 +181,7 @@ export function DeviceList() {
                   <tr
                     key={device.id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition duration-150 ease-in-out"
-                    onClick={() => {
-                      setSelectedDevice(device);
-                      setShowDetails(true);
-                    }}
+                    onClick={() => navigate(`/dashboard/devices/${device.id}`)}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -217,7 +196,7 @@ export function DeviceList() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{device.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap font-mono text-sm text-gray-900 dark:text-gray-100">{device.macAddress}</td>
+                    <td className="px-6 py-4 whitespace-nowrap font-mono text-sm text-gray-900 dark:text-gray-100">{device.customer?.shortCode}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{device.osVersion}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{device.imageName}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
