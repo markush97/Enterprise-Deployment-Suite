@@ -22,9 +22,9 @@ export interface Customer {
   id: string;
   name: string;
   shortCode: string;
-  pulsewayId: string;
+  pulsewayId: number;
   zohoId: string;
-  itGlueId: string;
+  itGlueId: number;
   adDomain?: string;
   createdAt: string;
   settings: CustomerSettings;

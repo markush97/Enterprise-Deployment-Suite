@@ -1,6 +1,7 @@
 import React from 'react';
 import { Device } from '../types/device';
-import { ChevronLeft, Server, Monitor, HardDrive, Key, Network, Image } from 'lucide-react';
+import { ChevronLeft, Server, Monitor, HardDrive, Key, Network, Image, Receipt, ReceiptText } from 'lucide-react';
+import { customerService } from '../services/customerService';
 
 interface DevicePageProps {
   device: Device;
@@ -32,7 +33,7 @@ export function DevicePage({ device, onBack }: DevicePageProps) {
                   {device.name}
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {device.type === 'server' ? 'Server' : 'Client'} Device
+                  {device.type === 'server' ? 'Server' : 'Client'} Device ({device.customer?.shortCode})
                 </p>
               </div>
             </div>
@@ -57,13 +58,15 @@ export function DevicePage({ device, onBack }: DevicePageProps) {
               </div>
             </div>
 
-            <div className="flex items-start space-x-3">
-              <Key className="h-5 w-5 text-gray-500 dark:text-gray-400 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">BitLocker Key</p>
-                <p className="text-sm font-mono text-gray-900 dark:text-white">{device.bitlockerKey}</p>
-              </div>
-            </div>
+            {device.customer && (
+              <a href={`https://cwi.eu.itglue.com/${device.customer.itGlueId}/configurations/${device.itGlueId}`}><div className="flex items-start space-x-3">
+                <ReceiptText className="h-5 w-5 text-gray-500 dark:text-gray-400 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">ITGlue</p>
+                  <p className="text-sm font-mono text-gray-900 dark:text-white">Link</p>
+                </div>
+              </div></a>
+            )}
 
             <div className="flex items-start space-x-3">
               <HardDrive className="h-5 w-5 text-gray-500 dark:text-gray-400 mt-0.5" />

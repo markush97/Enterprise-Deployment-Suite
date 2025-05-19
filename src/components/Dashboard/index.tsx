@@ -1,27 +1,72 @@
-import React, { useEffect, useState } from 'react';
-import { useDeviceStore } from '../../stores/deviceStore';
-import { useCustomerStore } from '../../stores/customerStore';
+import { useState } from 'react';
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { Customer } from '../../types/customer';
-import { CustomerPage } from '../CustomerPage';
 import { ImageList } from '../ImageList';
 import { AdminPage } from '../AdminPage';
 import { SystemPage } from '../SystemPage';
 import { SettingsPage } from '../SettingsPage';
 import { WikiPage } from '../WikiPage';
 import { DeviceList } from '../DeviceList';
+import { DevicePage } from '../DevicePage';
 import { CustomerList } from '../CustomerList';
 import { JobsPage } from '../JobsPage';
-import { Plus, LogOut, Users, Monitor, HardDrive, Settings, Cpu, Book, Play } from 'lucide-react';
+import { LogOut, Users, Monitor, Settings, Cpu, Play } from 'lucide-react';
 import { ThemeToggle } from '../ThemeToggle';
 
 type ActiveTab = 'devices' | 'customers' | 'images' | 'admin' | 'settings' | 'system' | 'wiki' | 'jobs';
 
+import { useParams } from 'react-router-dom';
+import { Device } from '../../types/device'; // Adjust import path as needed
+import { useEffect } from 'react';
+
+function DevicePageWrapper() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [device, setDevice] = useState<Device | null>(null);
+
+  useEffect(() => {
+    // Replace this with your actual device fetching logic
+    async function fetchDevice() {
+      // Example: fetch from API or state
+      // const response = await fetch(`/api/devices/${id}`);
+      // const data = await response.json();
+      // setDevice(data);
+      // For now, just set a dummy device if id exists
+      if (id) {
+        setDevice({ id, name: `Device ${id}` } as Device);
+      }
+    }
+    fetchDevice();
+  }, [id]);
+
+  if (!device) return <div>Loading...</div>;
+
+  return (
+    <DevicePage
+      device={device}
+      onBack={() => navigate('/dashboard/devices')}
+    />
+  );
+}
+
 export function Dashboard() {
   const { user, logout } = useAuthStore();
-  // Start with wiki tab active
-  const [activeTab, setActiveTab] = useState<ActiveTab>('jobs');
+  const navigate = useNavigate();
+  const location = useLocation();
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+
+  // Get active tab from current path
+  const getActiveTab = () => {
+    const path = location.pathname.split('/')[2] || 'jobs';
+    return path.split('/')[0] as ActiveTab; // Get the main route without device ID
+  };
+
+  const setActiveTab = (tab: ActiveTab) => {
+    navigate(`/dashboard/${tab}`);
+  };
+
+  const activeTab = getActiveTab();
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -54,7 +99,7 @@ export function Dashboard() {
             </div>
           </div>
 
-          {!selectedCustomer && (
+          {!location.pathname.includes('/devices/') && (
             <div className="mt-4 border-b border-gray-200 dark:border-gray-700">
               <nav className="-mb-px flex space-x-8">
                 <button
@@ -97,7 +142,6 @@ export function Dashboard() {
                         } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
                     >
                       <Users className="h-5 w-5 mr-2" />
-                      Administration
                     </button>
                     <button
                       onClick={() => setActiveTab('settings')}
@@ -128,25 +172,18 @@ export function Dashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {selectedCustomer ? (
-          <CustomerPage customer={selectedCustomer} onBack={() => setSelectedCustomer(null)} />
-        ) : activeTab === 'devices' ? (
-          <DeviceList />
-        ) : activeTab === 'customers' ? (
-          <CustomerList />
-        ) : activeTab === 'images' ? (
-          <ImageList />
-        ) : activeTab === 'admin' ? (
-          <AdminPage />
-        ) : activeTab === 'settings' ? (
-          <SettingsPage />
-        ) : activeTab === 'wiki' ? (
-          <WikiPage />
-        ) : activeTab === 'jobs' ? (
-          <JobsPage />
-        ) : (
-          <SystemPage />
-        )}
+        <Routes>
+          <Route path="jobs" element={<JobsPage />} />
+          <Route path="devices" element={<DeviceList />} />
+          <Route path="devices/:id" element={<DevicePageWrapper />} />
+          <Route path="customers" element={<CustomerList />} />
+          <Route path="images" element={<ImageList />} />
+          <Route path="admin" element={<AdminPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="system" element={<SystemPage />} />
+          <Route path="wiki" element={<WikiPage />} />
+          <Route path="" element={<Navigate to="jobs" replace />} />
+        </Routes>
       </main>
     </div>
   );

@@ -127,7 +127,7 @@ export function CustomerPage({ customer, onBack, onCustomerUpdated, onCustomerDe
                 Default Client Image
               </dt>
               <dd className="mt-1 text-lg text-gray-900 dark:text-white">
-                {customer.settings.defaultClientImage || "No default image set"}
+                {customer.settings?.defaultClientImage || "No default image set"}
               </dd>
             </div>
           </dl>
@@ -175,9 +175,8 @@ export function CustomerPage({ customer, onBack, onCustomerUpdated, onCustomerDe
                   type="button"
                   onClick={handleDeleteCustomer}
                   disabled={isDeleting}
-                  className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm ${
-                    isDeleting ? 'opacity-75 cursor-not-allowed' : ''
-                  }`}
+                  className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm ${isDeleting ? 'opacity-75 cursor-not-allowed' : ''
+                    }`}
                 >
                   {isDeleting ? (
                     <>
