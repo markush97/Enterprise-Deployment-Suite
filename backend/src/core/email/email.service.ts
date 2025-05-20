@@ -49,7 +49,11 @@ export class EMailService {
             html: html,
         });
 
-        info.then((res) => this.logger.debug(`Email "${subject}" send successfully to ${receiver}`)).catch(this.logger.error);
+        info.then((res) => {
+            this.logger.debug(`Email "${subject}" send successfully to ${res.receiver}`)
+            this.logger.debug(res);
+        }).catch(this.logger.error);
+
     }
 
     private async verifyConnection(mailer: Transporter): Promise<boolean> {

@@ -41,7 +41,7 @@ export class JobsController {
     If the registration is successfull it will return a unique deviceToken that the device can use to update its own information later on. Each serial-Number can only be registered ONCE!`
   })
   @ApiResponse({ status: 201, description: 'Job registered successfully. Returns a device Token ONCE' })
-  async register(@Body() RegisterJobDto: RegisterJobDto): Promise<string> {
+  async register(@Body() RegisterJobDto: RegisterJobDto): Promise<{jobId: string, deviceToken: string}> {
     return this.jobsService.registerJob(RegisterJobDto);
   }
 

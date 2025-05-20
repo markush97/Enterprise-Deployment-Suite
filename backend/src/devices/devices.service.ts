@@ -99,10 +99,13 @@ export class DevicesService {
       throw new BadRequestMTIException(MTIErrorCodes.DEVICE_TYPE_INVALID, `Device type is invalid`);
     }
 
-    if (updateDeviceDto.operatingSystem && ITGlueOperatingSystem[updateDeviceDto.operatingSystem] === undefined) {
-      this.logger.error('Invalid OperatingSystem');
-      throw new BadRequestMTIException(MTIErrorCodes.DEVICE_OS_INVALID, `Device type is invalid`);
+    const operatingSystem = updateDeviceDto.operatingSystem.replaceAll(" ", "")
+    if (operatingSystem && ITGlueOperatingSystem[operatingSystem] === undefined) {
+      this.logger.error('Invalid OperatingSystem ' + operatingSystem);
+      throw new BadRequestMTIException(MTIErrorCodes.DEVICE_OS_INVALID, `Operating System is invalid`);
     }
+
+    updateDeviceDto.operatingSystem = operatingSystem
 
     const device = await this.findOneByToken(deviceToken);
 
@@ -120,6 +123,8 @@ export class DevicesService {
     device.serialNumber = serialNumber;
 
     device.assign(pick(updateDeviceDto, DeviceEntity));
+    device.bitlockerId = updateDeviceDto.bitlockerId;
+    device.bitlockerKey = updateDeviceDto.bitlockerKey;
 
     await this.em.flush();
     this.logger.debug('Device information updated successfully');

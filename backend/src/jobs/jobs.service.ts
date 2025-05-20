@@ -85,7 +85,7 @@ export class JobsService {
     return job;
   }
 
-  async registerJob(registerJobDto: RegisterJobDto): Promise<string> {
+  async registerJob(registerJobDto: RegisterJobDto): Promise<{ jobId: string, deviceToken: string }> {
     this.logger.debug(`Registering job for device with serial: ${registerJobDto.deviceSerial} for organization ${registerJobDto.organizationId}`);
 
     let device = await this.devicesService.findOneBySerial(registerJobDto.deviceSerial);
@@ -114,7 +114,7 @@ export class JobsService {
 
     await this.em.persistAndFlush(job);
     this.logger.debug(`Job created with ID ${job.id}`);
-    return device.deviceSecret;
+    return { deviceToken: device.deviceSecret, jobId: job.id };
   }
 
 

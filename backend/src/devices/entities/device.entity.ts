@@ -30,6 +30,9 @@ export class DeviceEntity extends CoreBaseEntity {
   bitlockerKey: string;
 
   @Property({ nullable: true })
+  bitlockerId: string;
+
+  @Property({ nullable: true })
   osVersion: string;
 
   @Property({ nullable: true })
