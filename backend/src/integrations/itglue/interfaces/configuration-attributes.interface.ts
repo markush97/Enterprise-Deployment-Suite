@@ -13,4 +13,5 @@ export interface ITGlueConfigurationAttributes {
     "configuration-type-id": ITGlueConfigurationType;
     "operating-system-id"?: ITGlueOperatingSystem;
     "operating-system-notes"?: string;
+    "organization-id"?: number;
 };

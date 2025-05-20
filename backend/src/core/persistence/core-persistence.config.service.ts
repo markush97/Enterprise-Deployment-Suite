@@ -34,7 +34,7 @@ import { CoreConfigService } from '../config/core.config.service';
 export class PersistenceConfigService implements MikroOrmOptionsFactory {
     private readonly logger = new Logger('Mikroorm-Database');
 
-    constructor(private readonly config: CoreConfigService) {}
+    constructor(private readonly config: CoreConfigService) { }
 
     /**
      * Loads and parses the configuration for the mikroOrmConnection from the Nest-Config service
@@ -48,7 +48,7 @@ export class PersistenceConfigService implements MikroOrmOptionsFactory {
             charset: 'utf8mb4',
             collate: 'utf8mb4_unicode_ci',
             highlighter: new SqlHighlighter(),
-            debug: this.config.get<boolean>('DB_DEBUG', DEFAULT_DB_SETTINGS.debug),
+            //debug: this.config.get<boolean>('DB_DEBUG', DEFAULT_DB_SETTINGS.debug),
             loadStrategy: LoadStrategy.JOINED,
             metadataProvider: TsMorphMetadataProvider,
             logger: console.log,

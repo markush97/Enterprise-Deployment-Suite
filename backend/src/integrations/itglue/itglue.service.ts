@@ -16,6 +16,9 @@ import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes
 import { ITGlueConfigurationType } from './interfaces/configuration-type.enum';
 import { ITGlueRequest } from './dto/itglue-request.dto';
 import { ITGlueOperatingSystem } from './interfaces/itglue.operatingsystems.enum';
+import { ITGluePasswordCategories } from './interfaces/itglue.password-categories.enum';
+import { ITGluePassword } from './interfaces/itglue.password.interface';
+import { request } from 'http';
 
 @Injectable()
 export class ITGlueService {
@@ -76,15 +79,15 @@ export class ITGlueService {
     async getModelByName(name: string, manufacturerId: number): Promise<ITGlueModel | undefined> {
         this.logger.debug(`Fetching model with name ${name} from ITGlue`);
         // Fetching up to 5000 models from ITGlue to save the trouble of paginating
-        const { data } = await firstValueFrom(this.glue.get<ITGlueResponseList<ITGlueModel>>(`/manufacturers/${manufacturerId}/relationships/models`, { params: { page: { size: 5000 } } }).pipe(catchError((error) => {
+        const { data } = await firstValueFrom(this.glue.get<ITGlueResponseList<ITGlueModel>>(`/manufacturers/${manufacturerId}/relationships/models`, { params: { page: { size: 3000 } } }).pipe(catchError((error) => {
             throw new InternalServerErrorException(`Error fetching models from ITGlue: ${error.message}`);
         })));
 
-        let model: ITGlueModel;
+        let modelResult: ITGlueModel;
         if (data && data.data) {
-            model = data.data.find((model) => model.attributes.name === name);
+            modelResult = data.data.find((model) => model.attributes.name === name);
         }
-        return model
+        return modelResult
     }
 
     async getModelByNameOrCreate(name: string, manufacturerId: number): Promise<ITGlueModel> {
@@ -92,11 +95,13 @@ export class ITGlueService {
         if (model) {
             return model;
         }
-        return this.createModel(name);
+        return this.createModel(name, manufacturerId);
     }
 
-    async createModel(name: string): Promise<ITGlueModel> {
-        const { data } = await firstValueFrom(this.glue.post<ITGlueResponse<ITGlueModel>>('models', { data: { type: 'models', attributes: { name } } }).pipe(catchError((error) => {
+    async createModel(name: string, manufacturerId: number): Promise<ITGlueModel> {
+        this.logger.debug(`Creating model with name ${name} for manufcaturerer ${manufacturerId} in ITGlue`);
+        const { data } = await firstValueFrom(this.glue.post<ITGlueResponse<ITGlueModel>>(`/manufacturers/${manufacturerId}/relationships/models`, { data: { type: 'models', attributes: { name } } }).pipe(catchError((error) => {
+            this.logger.error(error.message);
             throw new InternalServerErrorException(`Error creating models in ITGlue: ${error.message}`);
         })));
         return data.data;
@@ -125,11 +130,19 @@ export class ITGlueService {
 
         if (!itGlueDevice) {
             this.logger.debug('Device not found in ITGlue, creating new device');
-            return await this.createDevice(deviceInfo, itGlueCustomerId, deviceId);
+            const newDevice = await this.createDevice(deviceInfo, itGlueCustomerId, deviceId);
+            if (deviceInfo.bitlockerId && deviceInfo.bitlockerKey) {
+                await this.createBitlockerPassword(newDevice, deviceInfo.bitlockerId, deviceInfo.bitlockerKey);
+            }
+            return newDevice;
+        } else {
+            this.logger.debug('Device found in ITGlue, updating device');
+            const updatedDevice = await this.updateDevice(itGlueDevice, deviceInfo, deviceId);
+            if (deviceInfo.bitlockerId && deviceInfo.bitlockerKey) {
+                await this.upsertBitlockerPassword(itGlueDevice, deviceInfo.bitlockerId, deviceInfo.bitlockerKey);
+            }
+            return updatedDevice;
         }
-        this.logger.debug('Device found in ITGlue, updating device');
-        return await this.updateDevice(itGlueDevice, deviceInfo, deviceId);
-
     }
 
     async updateDevice(itGlueDevice: ITGlueConfiguration, deviceInfo: Partial<DeviceInformationDto>, deviceId: string): Promise<ITGlueConfiguration> {
@@ -169,6 +182,81 @@ export class ITGlueService {
             }
         }
         return { data: { type: ITGlueType.CONFIGURATION, attributes } }
+    }
+
+    private async getBitlockerPassword(itGlueDevice: ITGlueConfiguration): Promise<ITGluePassword | null> {
+        this.logger.debug(`Fetching Bitlocker password for device with ID ${itGlueDevice.attributes.name} in ITGlue`);
+
+        const { data } = await firstValueFrom(this.glue.get<ITGlueResponseList<ITGluePassword>>(`/organizations/${itGlueDevice.attributes["organization-id"]}/relationships/passwords`, { params: { filter: { name: `${itGlueDevice.attributes.name} - Bitlocker` } } }).pipe(catchError((error) => {
+            this.logger.error(error.message);
+            throw new InternalMTIException(MTIErrorCodes.ERROR_COMMUNICATING_WITH_ITGLUE, `Error getting bitlocker in ITGlue`);
+        })));
+
+        if (!data || !data.data || data.data.length < 1) {
+            return null;
+        }
+
+        return data.data[0];
+    }
+
+    private async upsertBitlockerPassword(itGlueDevice: ITGlueConfiguration, bitlockerId: string, bitlockerKey: string): Promise<void> {
+        this.logger.debug(`Setting Bitlocker password for device with ID ${itGlueDevice.attributes.name} in ITGlue`);
+
+        const requestData = {
+            data: {
+                type: ITGlueType.PASSWORDS,
+                attributes: {
+                    name: `${itGlueDevice.attributes.name} - Bitlocker`,
+                    username: bitlockerId,
+                    password: bitlockerKey,
+                    "password-category-id": ITGluePasswordCategories.BITLOCKER,
+                    "resource-type": ITGlueType.CONFIGURATION,
+                    "resource-id": itGlueDevice.id,
+
+                },
+            },
+        };
+
+        const existingPassword = await this.getBitlockerPassword(itGlueDevice);
+        if (existingPassword) {
+            this.logger.debug(`Updating Bitlocker password for device with ID ${itGlueDevice.attributes.name} in ITGlue`);
+
+            await firstValueFrom(this.glue.patch<ITGlueResponse<ITGlueConfiguration>>(`/passwords/${existingPassword.id}`, requestData).pipe(catchError((error) => {
+                this.logger.error(error.message);
+                throw new InternalMTIException(MTIErrorCodes.ERROR_COMMUNICATING_WITH_ITGLUE, `Error updating bitlocker in ITGlue`);
+            })));
+
+            return;
+
+        }
+
+        await this.createBitlockerPassword(itGlueDevice, bitlockerId, bitlockerKey);
+    }
+
+    private readonly createBitlockerPassword = async (itGlueDevice: ITGlueConfiguration, bitlockerId: string, bitlockerKey: string): Promise<void> => {
+        this.logger.debug(`Creating Bitlocker password for device with ID ${itGlueDevice.attributes.name} in ITGlue`);
+        const requestData = {
+            data: {
+                type: ITGlueType.PASSWORDS,
+                attributes: {
+                    name: `${itGlueDevice.attributes.name} - Bitlocker`,
+                    username: bitlockerId,
+                    password: bitlockerKey,
+                    "password-category-id": ITGluePasswordCategories.BITLOCKER,
+                    "resource-type": 'Configuration',
+                    "resource-id": itGlueDevice.id,
+
+                },
+            },
+        };
+
+        await firstValueFrom(this.glue.post<ITGlueResponse<ITGlueConfiguration>>(`/organizations/${itGlueDevice.attributes["organization-id"]}/relationships/passwords`, requestData).pipe(catchError((error) => {
+            this.logger.error(error.message);
+            this.logger.debug(error.response.data);
+            console.log(requestData);
+            throw new InternalMTIException(MTIErrorCodes.ERROR_COMMUNICATING_WITH_ITGLUE, `Error creating bitlocker in ITGlue`);
+        })));
+
     }
 
     private readonly mapDeviceInfo = (newDeviceInfos: Partial<DeviceInformationDto>, deviceId: string, currentDeviceInfos?: ITGlueConfiguration): ITGlueConfigurationAttributes => ({
