@@ -99,7 +99,7 @@ export class DevicesService {
       throw new BadRequestMTIException(MTIErrorCodes.DEVICE_TYPE_INVALID, `Device type is invalid`);
     }
 
-    const operatingSystem = updateDeviceDto.operatingSystem.replaceAll(" ", "")
+    const operatingSystem = updateDeviceDto.operatingSystem?.replaceAll(" ", "")
     if (operatingSystem && ITGlueOperatingSystem[operatingSystem] === undefined) {
       this.logger.error('Invalid OperatingSystem ' + operatingSystem);
       throw new BadRequestMTIException(MTIErrorCodes.DEVICE_OS_INVALID, `Operating System is invalid`);
