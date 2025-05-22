@@ -125,6 +125,7 @@ export class DevicesService {
     device.assign(pick(updateDeviceDto, DeviceEntity));
     device.bitlockerId = updateDeviceDto.bitlockerId;
     device.bitlockerKey = updateDeviceDto.bitlockerKey;
+    device.name = updateDeviceDto.name
 
     await this.em.flush();
     this.logger.debug('Device information updated successfully');
