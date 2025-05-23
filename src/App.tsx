@@ -4,13 +4,16 @@ import { LoginForm } from './components/LoginForm';
 import { Dashboard } from './components/Dashboard';
 import { useAuthStore } from './stores/authStore';
 import { useThemeStore } from './stores/themeStore';
+import { MsalProvider } from '@azure/msal-react';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
   return isAuthenticated ? children : <Navigate to="/login" />;
 }
 
-function App() {
+import type { IPublicClientApplication } from '@azure/msal-browser';
+
+function App({ msalInstance }: { msalInstance: IPublicClientApplication }) {
   const { isDarkMode } = useThemeStore();
 
   useEffect(() => {
@@ -22,29 +25,29 @@ function App() {
   }, [isDarkMode]);
 
   return (
-    <Router>
-      <div className={isDarkMode ? 'dark' : ''}>
-        <Routes>
-          <Route
-            path="/login"
-            element={
-              <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50 dark:bg-gray-900">
+    <MsalProvider instance={msalInstance}>
+      <Router>
+        <div className={isDarkMode ? 'dark' : ''}>
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route
+              path="/dashboard/*"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/login"
+              element={<div className="min-h-screen flex items-center justify-center px-4 bg-gray-50 dark:bg-gray-900">
                 <LoginForm />
-              </div>
-            }
-          />
-          <Route
-            path="/dashboard/*"
-            element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            }
-          />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </div>
-    </Router>
+              </div>}
+            />
+          </Routes>
+        </div>
+      </Router>
+    </MsalProvider>
   );
 }
 

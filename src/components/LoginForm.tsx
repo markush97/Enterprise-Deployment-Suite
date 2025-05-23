@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, LogIn, ExternalLink } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
+import { useMsal } from '@azure/msal-react';
+import { AlertCircle, ExternalLink, LogIn } from 'lucide-react';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [err, setError] = useState('');
   const navigate = useNavigate();
   const { login, loginWithEntraId } = useAuthStore();
+  const { instance } = useMsal();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,17 +22,21 @@ export function LoginForm() {
     }
   };
 
-  const handleEntraIdLogin = async () => {
+  const handleEntraLogin = async () => {
     try {
-      await loginWithEntraId();
+      const response = await instance.loginPopup({ scopes: ['api://c8f5d88b-c5d2-427e-9259-4daf0be50cc8/access_as_user'] })
+      const account = response.account;
+      await loginWithEntraId({ displayName: account.name, email: account.username, userId: account.nativeAccountId, accessToken: response.accessToken })
       navigate('/dashboard');
     } catch (err) {
-      setError('EntraID login is not implemented yet');
+      console.error(err)
+      setError('Login failure');
     }
   };
 
+
   return (
-    <div className="min-h-screen flex flex-col">
+    < div className="min-h-screen flex flex-col" >
       <div className="flex-grow flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-md space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg">
           <div className="text-center">
@@ -48,10 +54,10 @@ export function LoginForm() {
           </div>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-            {error && (
+            {err && (
               <div className="flex items-center gap-2 text-red-600 bg-red-50 dark:bg-red-900/50 p-3 rounded">
                 <AlertCircle className="w-5 h-5" />
-                <span>{error}</span>
+                <span>{err}</span>
               </div>
             )}
 
@@ -96,7 +102,7 @@ export function LoginForm() {
 
               <button
                 type="button"
-                onClick={handleEntraIdLogin}
+                onClick={handleEntraLogin}
                 className="group relative w-full flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 <ExternalLink className="w-5 h-5 mr-2" />
@@ -120,6 +126,6 @@ export function LoginForm() {
           </a>
         </p>
       </footer>
-    </div>
+    </div >
   );
 }
