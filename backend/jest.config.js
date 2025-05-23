@@ -13,6 +13,7 @@ module.exports = {
   collectCoverage: true,
   collectCoverageFrom: [
     '**/*.{ts,tsx}',
+    '!**/*.e2e-spec.ts',
     '!**/node_modules/**',
     '!**/dist/**',
     '!**/main.ts',
