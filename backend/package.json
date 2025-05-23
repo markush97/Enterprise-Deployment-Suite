@@ -45,6 +45,7 @@
     "jwks-rsa": "^3.2.0",
     "lodash": "^4.17.21",
     "nestjs-pino": "^4.4.0",
+    "nestjs-real-ip": "^3.0.1",
     "nodemailer": "^7.0.3",
     "passport-jwt": "^4.0.1",
     "ping": "^0.4.4",
