@@ -17,4 +17,10 @@ export class AccountEntity extends CoreBaseEntity {
 
     @Property({ nullable: true })
     lastLogin?: Date;
+
+    @Property()
+    email: string;
+
+    @Property()
+    name: string;
 }
