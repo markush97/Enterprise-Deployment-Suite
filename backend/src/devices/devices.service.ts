@@ -1,21 +1,24 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
-import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityManager, EntityRepository } from '@mikro-orm/core';
-import { DeviceEntity } from './entities/device.entity';
-import { CreateDeviceDto } from './dto/create-device.dto';
-import { CustomersService } from '../customers/customers.service';
-import { DeviceInformationDto } from './dto/update-device-info.dto';
-import { MTIHttpException } from 'src/core/errorhandling/exceptions/mit-exception';
-import { ForbiddenMTIException } from 'src/core/errorhandling/exceptions/forbidden.mti-exception';
-import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
-import { ITGlueService } from 'src/integrations/itglue/itglue.service';
-import { ITGlueType } from 'src/integrations/itglue/interfaces/itglue-type.enum';
-import { ITGlueConfigurationType } from 'src/integrations/itglue/interfaces/configuration-type.enum';
-import { NotFoundMTIException } from 'src/core/errorhandling/exceptions/not-found.mti-exception';
 import { pick } from 'lodash';
 import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-request.mti-exception';
-import { DevicesController } from './devices.controller';
+import { ForbiddenMTIException } from 'src/core/errorhandling/exceptions/forbidden.mti-exception';
+import { MTIHttpException } from 'src/core/errorhandling/exceptions/mit-exception';
+import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
+import { NotFoundMTIException } from 'src/core/errorhandling/exceptions/not-found.mti-exception';
+import { ITGlueConfigurationType } from 'src/integrations/itglue/interfaces/configuration-type.enum';
+import { ITGlueType } from 'src/integrations/itglue/interfaces/itglue-type.enum';
 import { ITGlueOperatingSystem } from 'src/integrations/itglue/interfaces/itglue.operatingsystems.enum';
+import { ITGlueService } from 'src/integrations/itglue/itglue.service';
+
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+
+import { EntityManager, EntityRepository } from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
+
+import { CustomersService } from '../customers/customers.service';
+import { DevicesController } from './devices.controller';
+import { CreateDeviceDto } from './dto/create-device.dto';
+import { DeviceInformationDto } from './dto/update-device-info.dto';
+import { DeviceEntity } from './entities/device.entity';
 
 @Injectable()
 export class DevicesService {
@@ -26,8 +29,8 @@ export class DevicesService {
     private readonly deviceRepository: EntityRepository<DeviceEntity>,
     private readonly customersService: CustomersService,
     private readonly em: EntityManager,
-    private readonly itGlue: ITGlueService
-  ) { }
+    private readonly itGlue: ITGlueService,
+  ) {}
 
   async findAll(): Promise<DeviceEntity[]> {
     return this.deviceRepository.findAll({ populate: ['customer'] });
@@ -52,14 +55,23 @@ export class DevicesService {
   }
 
   async findOneByToken(deviceToken: string): Promise<DeviceEntity | null> {
-    const device = await this.deviceRepository.findOne({ deviceSecret: deviceToken }, { populate: ['customer'] });
+    const device = await this.deviceRepository.findOne(
+      { deviceSecret: deviceToken },
+      { populate: ['customer'] },
+    );
     return device;
   }
 
   async findOneByTokenOrFail(deviceToken: string): Promise<DeviceEntity> {
-    const device = await this.deviceRepository.findOne({ deviceSecret: deviceToken }, { populate: ['customer'] });
+    const device = await this.deviceRepository.findOne(
+      { deviceSecret: deviceToken },
+      { populate: ['customer'] },
+    );
     if (!device) {
-      throw new NotFoundMTIException(MTIErrorCodes.DEVICE_TOKEN_INVALID, `Token is invalid or device not found`);
+      throw new NotFoundMTIException(
+        MTIErrorCodes.DEVICE_TOKEN_INVALID,
+        `Token is invalid or device not found`,
+      );
     }
 
     return device;
@@ -91,36 +103,48 @@ export class DevicesService {
     await this.em.removeAndFlush(device);
   }
 
-  async updateDeviceInfo(device: DeviceEntity, updateDeviceDto: DeviceInformationDto): Promise<void> {
+  async updateDeviceInfo(
+    device: DeviceEntity,
+    updateDeviceDto: DeviceInformationDto,
+  ): Promise<void> {
     this.logger.debug('updateDeviceInfo');
 
-    if (updateDeviceDto.deviceType && ITGlueConfigurationType[updateDeviceDto.deviceType] === undefined) {
+    if (
+      updateDeviceDto.deviceType &&
+      ITGlueConfigurationType[updateDeviceDto.deviceType] === undefined
+    ) {
       this.logger.error('Invalid device type');
       throw new BadRequestMTIException(MTIErrorCodes.DEVICE_TYPE_INVALID, `Device type is invalid`);
     }
 
-    const operatingSystem = updateDeviceDto.operatingSystem?.replaceAll(" ", "")
+    const operatingSystem = updateDeviceDto.operatingSystem?.replaceAll(' ', '');
     if (operatingSystem && ITGlueOperatingSystem[operatingSystem] === undefined) {
       this.logger.error('Invalid OperatingSystem ' + operatingSystem);
-      throw new BadRequestMTIException(MTIErrorCodes.DEVICE_OS_INVALID, `Operating System is invalid`);
+      throw new BadRequestMTIException(
+        MTIErrorCodes.DEVICE_OS_INVALID,
+        `Operating System is invalid`,
+      );
     }
 
-    updateDeviceDto.operatingSystem = operatingSystem
+    updateDeviceDto.operatingSystem = operatingSystem;
 
     const serialNumber = updateDeviceDto.serialNumber || device.serialNumber;
     updateDeviceDto.serialNumber = serialNumber;
 
-    const itGlueDevice = await this.itGlue.upsertDevice(updateDeviceDto, device.customer.itGlueId, device.id)
+    const itGlueDevice = await this.itGlue.upsertDevice(
+      updateDeviceDto,
+      device.customer.itGlueId,
+      device.id,
+    );
     device.itGlueId = itGlueDevice.id;
     device.serialNumber = serialNumber;
 
     device.assign(pick(updateDeviceDto, DeviceEntity));
     device.bitlockerId = updateDeviceDto.bitlockerId;
     device.bitlockerKey = updateDeviceDto.bitlockerKey;
-    device.name = updateDeviceDto.name
+    device.name = updateDeviceDto.name;
 
     await this.em.flush();
     this.logger.debug('Device information updated successfully');
-
   }
 }

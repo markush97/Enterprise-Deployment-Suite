@@ -1,20 +1,24 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { Logger, ValidationError, ValidationPipe } from '@nestjs/common';
-import { BadRequestMTIException } from './core/errorhandling/exceptions/bad-request.mti-exception'
-import { MTIErrorCodes } from './core/errorhandling/exceptions/mti.error-codes.enum';
-import { CoreConfigService } from './core/config/core.config.service';
 import { Logger as PinoLogger } from 'nestjs-pino';
-import { CoreLogger } from './core/logging/logging.service';
+
+import { Logger, ValidationError, ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
 import { MikroORM } from '@mikro-orm/core';
 
+import { AppModule } from './app.module';
+import { CoreConfigService } from './core/config/core.config.service';
+import { BadRequestMTIException } from './core/errorhandling/exceptions/bad-request.mti-exception';
+import { MTIErrorCodes } from './core/errorhandling/exceptions/mti.error-codes.enum';
+import { CoreLogger } from './core/logging/logging.service';
 
 const DEFAULT_VERSION = '1';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule/*, { bufferLogs: true }*/);
+  const app = await NestFactory.create<NestExpressApplication>(
+    AppModule /*, { bufferLogs: true }*/,
+  );
 
   const config = app.get<CoreConfigService>(CoreConfigService);
 
@@ -23,10 +27,7 @@ async function bootstrap() {
     new ValidationPipe({
       exceptionFactory: (validationErrors: ValidationError[] = []) => {
         Logger.error(JSON.stringify(validationErrors));
-        return new BadRequestMTIException(
-          MTIErrorCodes.GENERIC_VALIDATION_ERROR,
-          validationErrors,
-        );
+        return new BadRequestMTIException(MTIErrorCodes.GENERIC_VALIDATION_ERROR, validationErrors);
       },
       forbidNonWhitelisted: true,
       whitelist: true,
@@ -55,7 +56,7 @@ async function bootstrap() {
   // Disable x-powered-by header
   app.disable('x-powered-by');
 
-  app.setGlobalPrefix(config.globalPrefix)
+  app.setGlobalPrefix(config.globalPrefix);
 
   // Setup database
   const orm = app.get(MikroORM);

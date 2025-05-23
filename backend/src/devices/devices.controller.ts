@@ -1,15 +1,17 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Header, Headers } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Device } from 'src/auth/decorators/device.decorator';
+
+import { Body, Controller, Delete, Get, Header, Headers, Param, Post, Put } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+
 import { DevicesService } from './devices.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
-import { DeviceEntity } from './entities/device.entity';
 import { DeviceInformationDto } from './dto/update-device-info.dto';
-import { Device } from 'src/auth/decorators/device.decorator';
+import { DeviceEntity } from './entities/device.entity';
 
 @ApiTags('devices')
 @Controller('devices')
 export class DevicesController {
-  constructor(private readonly devicesService: DevicesService) { }
+  constructor(private readonly devicesService: DevicesService) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all devices' })
@@ -37,7 +39,7 @@ export class DevicesController {
   @ApiResponse({ status: 200, description: 'Device information updated successfully' })
   async updateDeviceInfo(
     @Body() updateDeviceDto: DeviceInformationDto,
-    @Device() device: DeviceEntity
+    @Device() device: DeviceEntity,
   ): Promise<void> {
     return this.devicesService.updateDeviceInfo(device, updateDeviceDto);
   }
@@ -51,7 +53,6 @@ export class DevicesController {
   ): Promise<DeviceEntity> {
     return this.devicesService.update(id, updateDeviceDto);
   }
-
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a device' })

@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
+
+import { MikroOrmModule } from '@mikro-orm/nestjs';
+
+import { DHCPModule } from './dhcp/dhcp.module';
+import { NetworkInterfaceEntity } from './entities/network-interface.entity';
+import { NetworkConfigService } from './network.config.service';
 import { NetworkController } from './network.controller';
 import { NetworkService } from './network.service';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { NetworkInterfaceEntity } from './entities/network-interface.entity';
-import { DHCPModule } from './dhcp/dhcp.module';
-import { NetworkConfigService } from './network.config.service';
 
 @Module({
   imports: [MikroOrmModule.forFeature([NetworkInterfaceEntity]), DHCPModule],

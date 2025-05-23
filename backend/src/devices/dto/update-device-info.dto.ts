@@ -1,7 +1,9 @@
-import { IsString, IsNotEmpty, IsEnum, IsOptional, Allow } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
-import { DeviceType } from '../entities/device.entity';
+import { Allow, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ITGlueConfigurationType } from 'src/integrations/itglue/interfaces/configuration-type.enum';
+
+import { ApiProperty } from '@nestjs/swagger';
+
+import { DeviceType } from '../entities/device.entity';
 
 export class DeviceInformationDto {
   @ApiProperty()
@@ -75,5 +77,4 @@ export class DeviceInformationDto {
   @ApiProperty()
   @Allow()
   collectionTime?: string;
-
 }

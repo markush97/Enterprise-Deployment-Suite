@@ -1,11 +1,13 @@
-import { Global, Module } from '@nestjs/common';
 import { LoggerModule } from 'nestjs-pino';
+
+import { Global, Module } from '@nestjs/common';
+
 import { CoreLogger } from './logging.service';
 
 @Global()
 @Module({
-    imports: [
-       /* LoggerModule.forRoot({
+  imports: [
+    /* LoggerModule.forRoot({
         pinoHttp: {
             transport: {
                 target: 'pino-pretty',
@@ -17,8 +19,8 @@ import { CoreLogger } from './logging.service';
             },
         },
     })*/
-    ],
-    controllers: [],
-    providers: [CoreLogger]
+  ],
+  controllers: [],
+  providers: [CoreLogger],
 })
-export class CoreLoggingModule { };
+export class CoreLoggingModule {}

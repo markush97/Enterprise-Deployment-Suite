@@ -1,6 +1,6 @@
 export enum ITGlueType {
-    CONFIGURATION = "configurations",
-    MODEL = "models",
-    MANUFACTURER = "manufacturers",
-    PASSWORDS = "passwords",
+  CONFIGURATION = 'configurations',
+  MODEL = 'models',
+  MANUFACTURER = 'manufacturers',
+  PASSWORDS = 'passwords',
 }

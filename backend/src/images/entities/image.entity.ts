@@ -1,5 +1,6 @@
-import { Entity, Property } from '@mikro-orm/core';
 import { CoreBaseEntity } from 'src/core/persistence/base.entity';
+
+import { Entity, Property } from '@mikro-orm/core';
 
 @Entity()
 export class ImageEntity extends CoreBaseEntity {

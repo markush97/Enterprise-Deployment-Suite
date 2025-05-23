@@ -1,34 +1,35 @@
-import { Injectable } from '@nestjs/common';
 import { spawn } from 'child_process';
 import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 
+import { Injectable } from '@nestjs/common';
+
 @Injectable()
 export class WinImagingService {
-    private readonly winPERoot = join(process.cwd(), 'tftp-root', 'capture', 'winpe');
-    private readonly toolsDir = join(this.winPERoot, 'tools');
-  
-    async setupWinPE() {
-      await this.createDirectoryStructure();
-      await this.generateWinPEConfig();
-      await this.setupCaptureScript();
+  private readonly winPERoot = join(process.cwd(), 'tftp-root', 'capture', 'winpe');
+  private readonly toolsDir = join(this.winPERoot, 'tools');
+
+  async setupWinPE() {
+    await this.createDirectoryStructure();
+    await this.generateWinPEConfig();
+    await this.setupCaptureScript();
+  }
+
+  private async createDirectoryStructure() {
+    const dirs = [
+      this.winPERoot,
+      this.toolsDir,
+      join(this.winPERoot, 'mount'),
+      join(this.winPERoot, 'scripts'),
+    ];
+
+    for (const dir of dirs) {
+      await mkdir(dir, { recursive: true });
     }
-  
-    private async createDirectoryStructure() {
-      const dirs = [
-        this.winPERoot,
-        this.toolsDir,
-        join(this.winPERoot, 'mount'),
-        join(this.winPERoot, 'scripts')
-      ];
-  
-      for (const dir of dirs) {
-        await mkdir(dir, { recursive: true });
-      }
-    }
-  
-    private async generateWinPEConfig() {
-      const configContent = `
+  }
+
+  private async generateWinPEConfig() {
+    const configContent = `
   [WinPE]
   Architecture=amd64
   Language=en-US
@@ -36,12 +37,12 @@ export class WinImagingService {
   ExtraDrivers=network,storage
   CustomFiles=${this.toolsDir}
   `;
-      await writeFile(join(this.winPERoot, 'winpe.ini'), configContent);
-    }
-  
-    private async setupCaptureScript() {
-      const sourceVolume = 'xy';
-      const scriptContent = `
+    await writeFile(join(this.winPERoot, 'winpe.ini'), configContent);
+  }
+
+  private async setupCaptureScript() {
+    const sourceVolume = 'xy';
+    const scriptContent = `
   # WinPE Capture Script
   $ErrorActionPreference = "Stop"
   
@@ -77,47 +78,40 @@ export class WinImagingService {
   
   Write-Host "Capture abgeschlossen!"
   `;
-      
-      await writeFile(
-        join(this.winPERoot, 'scripts', 'capture.ps1'), 
-        scriptContent
-      );
-    }
-  
-    async mountWinPE(wimPath: string, mountPath: string): Promise<void> {
-      return new Promise((resolve, reject) => {
-        const mount = spawn('dism', [
-          '/Mount-Wim',
-          '/WimFile:' + wimPath,
-          '/index:1',
-          '/MountDir:' + mountPath
-        ]);
-  
-        mount.on('close', (code) => {
-          if (code === 0) resolve();
-          else reject(new Error(`Failed to mount WinPE image (Exit code: ${code})`));
-        });
+
+    await writeFile(join(this.winPERoot, 'scripts', 'capture.ps1'), scriptContent);
+  }
+
+  async mountWinPE(wimPath: string, mountPath: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const mount = spawn('dism', [
+        '/Mount-Wim',
+        '/WimFile:' + wimPath,
+        '/index:1',
+        '/MountDir:' + mountPath,
+      ]);
+
+      mount.on('close', code => {
+        if (code === 0) resolve();
+        else reject(new Error(`Failed to mount WinPE image (Exit code: ${code})`));
       });
+    });
+  }
+
+  async unmountWinPE(mountPath: string, commit: boolean = true): Promise<void> {
+    const args = ['/Unmount-Wim', '/MountDir:' + mountPath];
+
+    if (commit) {
+      args.push('/Commit');
     }
-  
-    async unmountWinPE(mountPath: string, commit: boolean = true): Promise<void> {
-      const args = [
-        '/Unmount-Wim',
-        '/MountDir:' + mountPath
-      ];
-      
-      if (commit) {
-        args.push('/Commit');
-      }
-  
-      return new Promise((resolve, reject) => {
-        const unmount = spawn('dism', args);
-        
-        unmount.on('close', (code) => {
-          if (code === 0) resolve();
-          else reject(new Error(`Failed to unmount WinPE image (Exit code: ${code})`));
-        });
+
+    return new Promise((resolve, reject) => {
+      const unmount = spawn('dism', args);
+
+      unmount.on('close', code => {
+        if (code === 0) resolve();
+        else reject(new Error(`Failed to unmount WinPE image (Exit code: ${code})`));
       });
-    }
-    
+    });
+  }
 }

@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { join } from 'path';
-import { WinPeConfigService } from './winPe.config.service';
-import { mkdir, readFile, writeFile } from 'fs/promises';
 import { spawn } from 'child_process';
+import { mkdir, readFile, writeFile } from 'fs/promises';
+import { join } from 'path';
+
+import { Injectable } from '@nestjs/common';
+
+import { WinPeConfigService } from './winPe.config.service';
 
 @Injectable()
 export class WinCapturingService {
@@ -11,11 +13,11 @@ export class WinCapturingService {
   async initializeCapture(macAddress: string): Promise<string> {
     const sessionId = `capture_${macAddress}_${Date.now()}`;
     const capturePath = join(this.config.captureDirectory, sessionId);
-    
+
     await mkdir(capturePath, { recursive: true });
     await this.generateCaptureConfig(macAddress, sessionId);
     await this.setupWinPE();
-    
+
     return sessionId;
   }
 
@@ -29,7 +31,7 @@ label capture
   kernel /capture/wimcapture/kernel
   append initrd=/capture/wimcapture/initrd.img root=/dev/ram0 rdinit=/sbin/init capture_id=${sessionId} mac=${macAddress}
   ipappend 2`;
-    
+
     const configPath = join('/tmp', `${sessionId}.cfg`);
     await writeFile(configPath, configContent);
   }
@@ -54,20 +56,20 @@ label capture
         imagePath,
         '--index=1',
         '--check',
-        '--no-acl'
+        '--no-acl',
       ]);
 
       let error = '';
 
-      capture.stdout.on('data', (data) => {
+      capture.stdout.on('data', data => {
         console.log(`Capture progress: ${data}`);
       });
 
-      capture.stderr.on('data', (data) => {
+      capture.stderr.on('data', data => {
         error += data;
       });
 
-      capture.on('close', (code) => {
+      capture.on('close', code => {
         if (code === 0) {
           resolve();
         } else {
@@ -91,5 +93,4 @@ label capture
       return { status: 'preparing' };
     }
   }
-    
 }

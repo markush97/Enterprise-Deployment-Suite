@@ -1,11 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ImagesService } from './images.service';
-import { getRepositoryToken } from '@mikro-orm/nestjs';
-import { ImageEntity } from './entities/image.entity';
+
 import { EntityManager } from '@mikro-orm/core';
+import { getRepositoryToken } from '@mikro-orm/nestjs';
+
+import { ImageEntity } from './entities/image.entity';
+import { ImagesService } from './images.service';
 
 jest.mock('../core/utils/crypto.helper', () => ({
-  generateSecureRandomUUID: () => 'test-uuid'
+  generateSecureRandomUUID: () => 'test-uuid',
 }));
 
 describe('ImagesService', () => {
@@ -15,7 +17,10 @@ describe('ImagesService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ImagesService,
-        { provide: getRepositoryToken(ImageEntity), useValue: { findAll: jest.fn(), findOne: jest.fn() } },
+        {
+          provide: getRepositoryToken(ImageEntity),
+          useValue: { findAll: jest.fn(), findOne: jest.fn() },
+        },
         { provide: EntityManager, useValue: { persistAndFlush: jest.fn() } },
       ],
     }).compile();

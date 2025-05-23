@@ -1,12 +1,11 @@
-import { Module } from "@nestjs/common";
+import { Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { StaticFileConfigService } from "./static-file.config.service";
+
+import { StaticFileConfigService } from './static-file.config.service';
 
 @Module({
-    imports: [
-      ServeStaticModule.forRootAsync({useClass: StaticFileConfigService}),
-    ],
-    controllers: [],
-    providers: [StaticFileConfigService],
-  })
-  export class StaticFileModule {}
+  imports: [ServeStaticModule.forRootAsync({ useClass: StaticFileConfigService })],
+  controllers: [],
+  providers: [StaticFileConfigService],
+})
+export class StaticFileModule {}

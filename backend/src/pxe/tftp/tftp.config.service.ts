@@ -1,19 +1,17 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { CoreConfigService } from 'src/core/config/core.config.service';
 
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
-@Injectable() 
+@Injectable()
 export class TFTPConfigService {
-    constructor(private readonly config: CoreConfigService) {
-    }
-    
-    public get port(): number {
-        return this.config.get<number>('TFTP_PORT', 69);
-    }
+  constructor(private readonly config: CoreConfigService) {}
 
-    public get fileRoot(): string {
-        return this.config.get<string>('TFTP_ROOT', '/srv/tftp');
-    }
+  public get port(): number {
+    return this.config.get<number>('TFTP_PORT', 69);
+  }
 
+  public get fileRoot(): string {
+    return this.config.get<string>('TFTP_ROOT', '/srv/tftp');
+  }
 }

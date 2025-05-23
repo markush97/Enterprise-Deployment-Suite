@@ -1,14 +1,16 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { JobEntity } from 'src/jobs/entities/job.entity';
+
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { CustomerEntity } from './entities/customer.entity';
-import { JobEntity } from 'src/jobs/entities/job.entity';
 
 @ApiTags('customers')
 @Controller('customers')
 export class CustomersController {
-  constructor(private readonly customersService: CustomersService) { }
+  constructor(private readonly customersService: CustomersService) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all customers' })
@@ -30,7 +32,6 @@ export class CustomersController {
   async create(@Body() createCustomerDto: CreateCustomerDto): Promise<CustomerEntity> {
     return this.customersService.create(createCustomerDto);
   }
-
 
   @Put(':id')
   @ApiOperation({ summary: 'Update a customer' })

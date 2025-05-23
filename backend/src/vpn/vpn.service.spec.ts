@@ -1,8 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { VpnService } from './vpn.service';
-import { getRepositoryToken } from '@mikro-orm/nestjs';
-import { EntityManager } from '@mikro-orm/core';
 import { CustomersService } from 'src/customers/customers.service';
+
+import { Test, TestingModule } from '@nestjs/testing';
+
+import { EntityManager } from '@mikro-orm/core';
+import { getRepositoryToken } from '@mikro-orm/nestjs';
+
+import { VpnService } from './vpn.service';
 
 describe('VpnService', () => {
   let service: VpnService;
@@ -11,7 +14,10 @@ describe('VpnService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         VpnService,
-        { provide: getRepositoryToken('VpnProfile'), useValue: { findAll: jest.fn(), findOne: jest.fn() } },
+        {
+          provide: getRepositoryToken('VpnProfile'),
+          useValue: { findAll: jest.fn(), findOne: jest.fn() },
+        },
         { provide: EntityManager, useValue: { persistAndFlush: jest.fn() } },
         { provide: CustomersService, useValue: { getCustomerById: jest.fn() } },
       ],

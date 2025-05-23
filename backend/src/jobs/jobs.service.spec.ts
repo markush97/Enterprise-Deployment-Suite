@@ -1,12 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { JobsService } from './jobs.service';
-import { getRepositoryToken } from '@mikro-orm/nestjs';
-import { JobEntity } from './entities/job.entity';
-import { DevicesService } from '../devices/devices.service';
-import { CustomersService } from '../customers/customers.service';
-import { ImagesService } from '../images/images.service';
-import { EMailService } from '../core/email/email.service';
+
 import { EntityManager } from '@mikro-orm/core';
+import { getRepositoryToken } from '@mikro-orm/nestjs';
+
+import { EMailService } from '../core/email/email.service';
+import { CustomersService } from '../customers/customers.service';
+import { DevicesService } from '../devices/devices.service';
+import { ImagesService } from '../images/images.service';
+import { JobEntity } from './entities/job.entity';
+import { JobsService } from './jobs.service';
 
 describe('JobsService', () => {
   let service: JobsService;
@@ -15,7 +17,10 @@ describe('JobsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         JobsService,
-        { provide: getRepositoryToken(JobEntity), useValue: { findAll: jest.fn(), findOne: jest.fn() } },
+        {
+          provide: getRepositoryToken(JobEntity),
+          useValue: { findAll: jest.fn(), findOne: jest.fn() },
+        },
         { provide: DevicesService, useValue: {} },
         { provide: CustomersService, useValue: {} },
         { provide: ImagesService, useValue: {} },

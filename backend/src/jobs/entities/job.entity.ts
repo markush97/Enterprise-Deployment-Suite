@@ -1,8 +1,19 @@
-import { Entity, Property, ManyToOne, Enum, StringType, OneToMany, Collection, Cascade } from '@mikro-orm/core';
+import { CoreBaseEntity } from 'src/core/persistence/base.entity';
+
+import {
+  Cascade,
+  Collection,
+  Entity,
+  Enum,
+  ManyToOne,
+  OneToMany,
+  Property,
+  StringType,
+} from '@mikro-orm/core';
+
 import { CustomerEntity } from '../../customers/entities/customer.entity';
 import { DeviceEntity } from '../../devices/entities/device.entity';
 import { ImageEntity } from '../../images/entities/image.entity';
-import { CoreBaseEntity } from 'src/core/persistence/base.entity';
 import { JobConnectionsEntity } from './job-connections.entity';
 
 export enum JobStatus {
@@ -13,7 +24,6 @@ export enum JobStatus {
   VERIFYING = 'verifying',
   READY = 'ready',
   DONE = 'done',
-
 }
 
 @Entity()
@@ -33,7 +43,10 @@ export class JobEntity extends CoreBaseEntity {
   @Enum(() => JobStatus)
   status: JobStatus = JobStatus.PREPARING;
 
-  @OneToMany(() => JobConnectionsEntity, (connection) => connection.job, { cascade: [Cascade.ALL], orphanRemoval: true })
+  @OneToMany(() => JobConnectionsEntity, connection => connection.job, {
+    cascade: [Cascade.ALL],
+    orphanRemoval: true,
+  })
   connections: Collection<JobConnectionsEntity> = new Collection<JobConnectionsEntity>(this);
 
   @Property({ nullable: true })

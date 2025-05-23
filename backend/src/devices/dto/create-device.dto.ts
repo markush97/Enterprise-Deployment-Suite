@@ -1,5 +1,7 @@
-import { IsString, IsNotEmpty, IsEnum, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+
 import { ApiProperty } from '@nestjs/swagger';
+
 import { DeviceType } from '../entities/device.entity';
 
 export class CreateDeviceDto {

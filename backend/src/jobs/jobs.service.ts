@@ -1,22 +1,25 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityManager, EntityRepository } from '@mikro-orm/core';
-import { JobEntity, JobStatus } from './entities/job.entity';
-import { CreateJobDto } from './dto/create-job.dto';
-import { DevicesService } from '../devices/devices.service';
-import { CustomersService } from '../customers/customers.service';
-import { ImagesService } from '../images/images.service';
-import { ClientInfoDto } from './dto/client-info.dto';
-import { JobConnectionsEntity } from './entities/job-connections.entity';
-import { DeviceType } from 'src/devices/entities/device.entity';
+import { EMailService } from 'src/core/email/email.service';
 import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-request.mti-exception';
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
+import { DeviceType } from 'src/devices/entities/device.entity';
+
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+
+import { EntityManager, EntityRepository } from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
+
+import { CustomersService } from '../customers/customers.service';
+import { DevicesService } from '../devices/devices.service';
+import { ImagesService } from '../images/images.service';
+import { ClientInfoDto } from './dto/client-info.dto';
+import { CreateJobDto } from './dto/create-job.dto';
 import { RegisterJobDto } from './dto/register-job.dto';
-import { EMailService } from 'src/core/email/email.service';
+import { JobConnectionsEntity } from './entities/job-connections.entity';
+import { JobEntity, JobStatus } from './entities/job.entity';
 
 @Injectable()
 export class JobsService {
-  private readonly logger = new Logger('JobsService')
+  private readonly logger = new Logger('JobsService');
 
   constructor(
     @InjectRepository(JobEntity)
@@ -25,8 +28,8 @@ export class JobsService {
     private readonly customersService: CustomersService,
     private readonly imagesService: ImagesService,
     private readonly mailService: EMailService,
-    private readonly em: EntityManager
-  ) { }
+    private readonly em: EntityManager,
+  ) {}
 
   async findAll(): Promise<JobEntity[]> {
     this.logger.debug('Fetching all jobs');
@@ -56,16 +59,25 @@ export class JobsService {
     return job;
   }
 
-  async createDeviceForJobAutomatically(jobId: string, deviceType: DeviceType = DeviceType.PC): Promise<JobEntity> {
+  async createDeviceForJobAutomatically(
+    jobId: string,
+    deviceType: DeviceType = DeviceType.PC,
+  ): Promise<JobEntity> {
     this.logger.debug(`Creating device for job with ID ${jobId} and device type ${deviceType}`);
     const job = await this.findOne(jobId);
 
     if (job.device) {
-      throw new BadRequestMTIException(MTIErrorCodes.AUTODEVICECREATION_DEVICE_EXISTS, 'Autoassign is only possible if the job has no device assigned');
+      throw new BadRequestMTIException(
+        MTIErrorCodes.AUTODEVICECREATION_DEVICE_EXISTS,
+        'Autoassign is only possible if the job has no device assigned',
+      );
     }
 
     if (!job.customer) {
-      throw new BadRequestMTIException(MTIErrorCodes.AUTODEVICECREATION_NEEDS_CUSTOMER, 'Autoassign is only possible if the job has a customer assigned');
+      throw new BadRequestMTIException(
+        MTIErrorCodes.AUTODEVICECREATION_NEEDS_CUSTOMER,
+        'Autoassign is only possible if the job has a customer assigned',
+      );
     }
 
     const newDevice = await this.devicesService.create({
@@ -74,7 +86,7 @@ export class JobsService {
       serialNumber: job.deviceSerialNumber,
       customerId: job.customer.id,
       createdBy: 'system',
-    })
+    });
 
     job.device = newDevice;
 
@@ -85,14 +97,20 @@ export class JobsService {
     return job;
   }
 
-  async registerJob(registerJobDto: RegisterJobDto): Promise<{ jobId: string, deviceToken: string }> {
-    this.logger.debug(`Registering job for device with serial: ${registerJobDto.deviceSerial} for organization ${registerJobDto.organizationId}`);
+  async registerJob(
+    registerJobDto: RegisterJobDto,
+  ): Promise<{ jobId: string; deviceToken: string }> {
+    this.logger.debug(
+      `Registering job for device with serial: ${registerJobDto.deviceSerial} for organization ${registerJobDto.organizationId}`,
+    );
 
     let device = await this.devicesService.findOneBySerial(registerJobDto.deviceSerial);
 
     if (device) {
-      throw new BadRequestMTIException(MTIErrorCodes.DEVICE_ALREADY_REGISTERED, `Device with serial ${registerJobDto.deviceSerial} already exists`);
-      ;
+      throw new BadRequestMTIException(
+        MTIErrorCodes.DEVICE_ALREADY_REGISTERED,
+        `Device with serial ${registerJobDto.deviceSerial} already exists`,
+      );
     }
 
     this.logger.debug(`Creating new device with serial ${registerJobDto.deviceSerial}`);
@@ -102,9 +120,11 @@ export class JobsService {
       serialNumber: registerJobDto.deviceSerial,
       customerId: registerJobDto.organizationId,
       createdBy: 'autosetup',
-    })
+    });
 
-    this.logger.debug(`Device with serial ${registerJobDto.deviceSerial} created with ID ${device.id}`);
+    this.logger.debug(
+      `Device with serial ${registerJobDto.deviceSerial} created with ID ${device.id}`,
+    );
 
     const job = this.jobRepository.create({
       device: device,
@@ -116,7 +136,6 @@ export class JobsService {
     this.logger.debug(`Job created with ID ${job.id}`);
     return { deviceToken: device.deviceSecret, jobId: job.id };
   }
-
 
   async create(createJobDto: CreateJobDto): Promise<JobEntity> {
     const device = await this.devicesService.findOne(createJobDto.deviceId);
@@ -141,11 +160,15 @@ export class JobsService {
     if (status === JobStatus.DONE) {
       this.logger.debug(`Job with ID ${id} is done, sending email...`);
       job.completedAt = new Date();
-      this.mailService.sendEmail(`Imaging "${job.device.name}" completed`, `The imaging process has been completed successfully.
+      this.mailService
+        .sendEmail(
+          `Imaging "${job.device.name}" completed`,
+          `The imaging process has been completed successfully.
 Visit https://cwi.eu.itglue.com/${job.customer.itGlueId}/configurations/${job.device.itGlueId} to check ITGlue.
 
-        `).then(() => { })
-
+        `,
+        )
+        .then(() => {});
     }
 
     await this.em.flush();
@@ -158,15 +181,23 @@ Visit https://cwi.eu.itglue.com/${job.customer.itGlueId}/configurations/${job.de
   }
 
   async clientPxeNotification(clientInfo: ClientInfoDto): Promise<string> {
-    this.logger.log(`Client ${clientInfo.clientIp} notified us about connection...`)
-    let job = await this.jobRepository.findOne({ deviceSerialNumber: clientInfo.clientSerialNumber, $not: { status: JobStatus.DONE } });
+    this.logger.log(`Client ${clientInfo.clientIp} notified us about connection...`);
+    let job = await this.jobRepository.findOne({
+      deviceSerialNumber: clientInfo.clientSerialNumber,
+      $not: { status: JobStatus.DONE },
+    });
 
     if (job) {
-      this.logger.debug(`Found job for client ${clientInfo.clientIp} with ID ${job.id}, updating status to "pxe-selection"`);
+      this.logger.debug(
+        `Found job for client ${clientInfo.clientIp} with ID ${job.id}, updating status to "pxe-selection"`,
+      );
       await this.updateStatus(job.id, JobStatus.PXE_SELECTION);
     } else {
       this.logger.debug(`No job found for client ${clientInfo.clientIp}, creating new job...`);
-      job = this.jobRepository.create({ status: JobStatus.PXE_SELECTION, deviceSerialNumber: clientInfo.clientSerialNumber });
+      job = this.jobRepository.create({
+        status: JobStatus.PXE_SELECTION,
+        deviceSerialNumber: clientInfo.clientSerialNumber,
+      });
     }
 
     job.connections.add(new JobConnectionsEntity(clientInfo));
@@ -175,15 +206,17 @@ Visit https://cwi.eu.itglue.com/${job.customer.itGlueId}/configurations/${job.de
     return `
 echo "Server connection successfull!"
 configfile grub/config/main.cfg
-    `
+    `;
   }
 
   async clientNotification(jobId: string, status: JobStatus): Promise<void> {
-    this.logger.debug(`Client notified us about current status ${status} for job  ${jobId}...`)
+    this.logger.debug(`Client notified us about current status ${status} for job  ${jobId}...`);
     await this.updateStatus(jobId, status);
   }
 
   async taskNotification(jobId: string, taskInfo: any): Promise<void> {
-    this.logger.debug(`Client notified us about task status ${taskInfo.status} for job  ${jobId}...`)
+    this.logger.debug(
+      `Client notified us about task status ${taskInfo.status} for job  ${jobId}...`,
+    );
   }
 }

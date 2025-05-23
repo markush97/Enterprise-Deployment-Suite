@@ -1,5 +1,6 @@
-import { Entity, Property, Enum } from '@mikro-orm/core';
 import { CoreBaseEntity } from 'src/core/persistence/base.entity';
+
+import { Entity, Enum, Property } from '@mikro-orm/core';
 
 export enum UserRole {
   ADMINISTRATOR = 'administrator',

@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { ImagesController } from './images.controller';
 import { ImagesService } from './images.service';
 
 jest.mock('../core/utils/crypto.helper', () => ({
-  generateSecureRandomUUID: () => 'test-uuid'
+  generateSecureRandomUUID: () => 'test-uuid',
 }));
 
 describe('ImagesController', () => {

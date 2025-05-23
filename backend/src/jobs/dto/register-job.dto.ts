@@ -1,17 +1,16 @@
-import { IsOptional, IsString } from "class-validator";
-import { DeviceType } from "src/devices/entities/device.entity";
+import { IsOptional, IsString } from 'class-validator';
+import { DeviceType } from 'src/devices/entities/device.entity';
 
 export class RegisterJobDto {
+  @IsString()
+  organizationId: string;
 
-    @IsString()
-    organizationId: string;
+  @IsString()
+  deviceSerial: string;
 
-    @IsString()
-    deviceSerial: string;
+  @IsString()
+  deviceName: string;
 
-    @IsString()
-    deviceName: string;
-
-    @IsString()
-    deviceType: DeviceType;
+  @IsString()
+  deviceType: DeviceType;
 }

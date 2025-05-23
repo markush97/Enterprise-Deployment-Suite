@@ -1,25 +1,25 @@
 import { Module } from '@nestjs/common';
+import { PassportModule } from '@nestjs/passport';
+
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 
+import { AuthModule } from './auth/auth.module';
+import { CoreConfigModule } from './core/config/core.config.module';
+import { EMailModule } from './core/email/email.module';
+import { CoreLoggingModule } from './core/logging/logging.module';
+import { CorePersistenceModule } from './core/persistence/core-persistence.module';
+import { SystemModule } from './core/system/system.module';
 import { CustomersModule } from './customers/customers.module';
 import { DevicesModule } from './devices/devices.module';
 import { ImagesModule } from './images/images.module';
-import { JobsModule } from './jobs/jobs.module';
-import { VpnModule } from './vpn/vpn.module';
-import { NetworkModule } from './network/network.module';
-
-import { CoreConfigModule } from './core/config/core.config.module';
-import { StaticFileModule } from './staticFile/static-file.module';
-import { PXEModule } from './pxe/pxe.module';
-import { CoreLoggingModule } from './core/logging/logging.module';
-import { CorePersistenceModule } from './core/persistence/core-persistence.module';
 import { ITGlueConfigService } from './integrations/itglue/itglue.config.service';
 import { ITGlueModule } from './integrations/itglue/itglue.module';
-import { EMailModule } from './core/email/email.module';
-import { SystemModule } from './core/system/system.module';
-import { AuthModule } from './auth/auth.module';
-import { PassportModule } from '@nestjs/passport';
+import { JobsModule } from './jobs/jobs.module';
+import { NetworkModule } from './network/network.module';
+import { PXEModule } from './pxe/pxe.module';
+import { StaticFileModule } from './staticFile/static-file.module';
 import { UserModule } from './users/user.module';
+import { VpnModule } from './vpn/vpn.module';
 
 @Module({
   imports: [
@@ -42,8 +42,7 @@ import { UserModule } from './users/user.module';
     AuthModule,
     PassportModule.register({
       defaultStrategy: 'EntraId',
-
-    })
+    }),
   ],
 })
-export class AppModule { }
+export class AppModule {}

@@ -1,8 +1,10 @@
-import { Entity, Property, Collection, OneToMany, Embedded, Embeddable } from '@mikro-orm/core';
-import { DeviceEntity } from '../../devices/entities/device.entity';
-import { VpnProfile } from '../../vpn/entities/vpn-profile.entity';
 import { CoreBaseEntity } from 'src/core/persistence/base.entity';
 import { generateSecureRandomString } from 'src/core/utils/crypto.helper';
+
+import { Collection, Embeddable, Embedded, Entity, OneToMany, Property } from '@mikro-orm/core';
+
+import { DeviceEntity } from '../../devices/entities/device.entity';
+import { VpnProfile } from '../../vpn/entities/vpn-profile.entity';
 
 @Embeddable()
 export class DeviceEnrollmentCredentials {
@@ -84,6 +86,3 @@ export class CustomerEntity extends CoreBaseEntity {
   @Embedded(() => DeviceEnrollmentCredentials, { nullable: true })
   deviceEnrollmentCredentials?: DeviceEnrollmentCredentials;
 }
-
-
-

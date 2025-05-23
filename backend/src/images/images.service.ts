@@ -1,17 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@mikro-orm/nestjs';
-import { ImageEntity } from './entities/image.entity';
-import { CreateImageDto } from './dto/create-image.dto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+
+import { Injectable, NotFoundException } from '@nestjs/common';
+
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
+
+import { CreateImageDto } from './dto/create-image.dto';
+import { ImageEntity } from './entities/image.entity';
 
 @Injectable()
 export class ImagesService {
   constructor(
     @InjectRepository(ImageEntity)
     private readonly imageRepository: EntityRepository<ImageEntity>,
-    private readonly em: EntityManager
+    private readonly em: EntityManager,
   ) {}
 
   async findAll(): Promise<ImageEntity[]> {
