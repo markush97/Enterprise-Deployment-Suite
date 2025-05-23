@@ -13,6 +13,7 @@ export enum MTIErrorCodes {
     DEVICE_OS_INVALID = 2008,
     EMAIL_NO_RECEIVER = 2009,
     INVALID_JOB_STATUS = 2010,
+    JWTInvalid = 2011,
 
 
 }

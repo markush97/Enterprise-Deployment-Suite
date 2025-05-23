@@ -8,10 +8,17 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { AccountEntity } from './entities/account.entity';
 import { EntraIdController } from './strategies/entraID/entraId.controller';
 import { EntraIdAuthGuard } from './strategies/entraID/entraId.guard';
+import { AuthController } from './auth.controller';
+import { JwtStrategy } from './strategies/jwt/jwt.strategy';
+import { JwtAuthGuard } from './strategies/jwt/jwt-auth.guard';
+import { AuthJwtService } from './strategies/jwt/jwt.service';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-    imports: [MikroOrmModule.forFeature([AccountEntity])],
-    controllers: [EntraIdController],
-    providers: [AuthService, AuthConfigService, EntraIdConfigService, EntraIdStrategy, EntraIdAuthGuard],
+    imports: [MikroOrmModule.forFeature([AccountEntity]), JwtModule.registerAsync({
+        useClass: AuthConfigService,
+    }),],
+    controllers: [EntraIdController, AuthController],
+    providers: [AuthService, AuthConfigService, EntraIdConfigService, EntraIdStrategy, EntraIdAuthGuard, JwtStrategy, JwtAuthGuard, AuthJwtService],
 })
 export class AuthModule { };
