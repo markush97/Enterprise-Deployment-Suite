@@ -5,6 +5,8 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { LoginResultDto } from './dto/login.result.dto';
 import { AuthJwtService } from './strategies/jwt/jwt.service';
 import { EntraIdTokenPayload } from './strategies/entraID/interface/emtra-token.interface';
+import { RefreshTokenService } from './strategies/refreshtoken/refreshtoken.service';
+import { REFRESH_TOKEN_COOKIE_NAME, RefreshTokenEntity } from './strategies/refreshtoken/refresh-token.entity';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +16,8 @@ export class AuthService {
     @InjectRepository(AccountEntity)
     private readonly accountRepository: EntityRepository<AccountEntity>,
     private readonly em: EntityManager,
-    private readonly jwtService: AuthJwtService
+    private readonly jwtService: AuthJwtService,
+    private readonly refreshTokenService: RefreshTokenService
   ) { }
 
   async loginEntraUser(userInfo: EntraIdTokenPayload): Promise<LoginResultDto> {
@@ -29,6 +32,17 @@ export class AuthService {
     await this.em.persistAndFlush(account);
 
     return this.jwtService.signUser(account)
+  }
+
+  async login(accountId: string): Promise<LoginResultDto> {
+    this.logger.debug(`Logging in account with id ${accountId}`);
+
+    const account = await this.accountRepository.findOneOrFail(accountId);
+
+    account.lastLogin = new Date();
+    await this.em.persistAndFlush(account);
+
+    return this.jwtService.signUser(account);
   }
 
   async findByEntraIdUserId(entraIdUserId: string): Promise<AccountEntity | null> {
@@ -47,9 +61,13 @@ export class AuthService {
     return this.accountRepository.findAll();
   }
 
+  public async refreshAccessToken(refreshToken: string): Promise<LoginResultDto> {
+    const account = await this.refreshTokenService.getAccountByToken(refreshToken);
+    return this.login(account.id);
+  }
+
   async getOwnAccount(accountId: string): Promise<AccountEntity> {
     this.logger.debug(`Getting own Account Information for user ${accountId}`)
     return this.accountRepository.findOne({ id: accountId })
   }
-
 }

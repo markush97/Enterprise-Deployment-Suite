@@ -14,6 +14,7 @@ export enum MTIErrorCodes {
     EMAIL_NO_RECEIVER = 2009,
     INVALID_JOB_STATUS = 2010,
     JWTInvalid = 2011,
+    REFRESHTOKEN_INVALID = 2012
 
 
 }

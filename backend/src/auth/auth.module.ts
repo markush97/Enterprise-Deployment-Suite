@@ -13,11 +13,12 @@ import { JwtStrategy } from './strategies/jwt/jwt.strategy';
 import { JwtAuthGuard } from './strategies/jwt/jwt-auth.guard';
 import { AuthJwtService } from './strategies/jwt/jwt.service';
 import { JwtModule } from '@nestjs/jwt';
+import { RefreshTokenModule } from './strategies/refreshtoken/refreshtoken.module';
 
 @Module({
     imports: [MikroOrmModule.forFeature([AccountEntity]), JwtModule.registerAsync({
         useClass: AuthConfigService,
-    }),],
+    }), RefreshTokenModule],
     controllers: [EntraIdController, AuthController],
     providers: [AuthService, AuthConfigService, EntraIdConfigService, EntraIdStrategy, EntraIdAuthGuard, JwtStrategy, JwtAuthGuard, AuthJwtService],
 })
