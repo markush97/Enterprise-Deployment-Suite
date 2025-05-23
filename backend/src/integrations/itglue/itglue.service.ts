@@ -283,11 +283,11 @@ export class ITGlueService {
       currentDeviceInfos,
     );
 
-    if (!!newDeviceInfos.manufacturer) {
+    if (newDeviceInfos.manufacturer) {
       const manufacturer = await this.getManufacturerByNameOrCreate(newDeviceInfos.manufacturer);
       attributes['manufacturer-id'] = manufacturer.id;
 
-      if (!!newDeviceInfos.model) {
+      if (newDeviceInfos.model) {
         const model = await this.getModelByNameOrCreate(newDeviceInfos.model, manufacturer.id);
         attributes['model-id'] = model.id;
       }
