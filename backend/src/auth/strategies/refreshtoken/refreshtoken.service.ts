@@ -12,7 +12,7 @@ import { CookieOptions } from 'express';
 const TOKEN_LENGTH = 32;
 const TOKEN_LIFESPAN = 10000000;
 
-const isValid = (token: RefreshTokenEntity) => new Date(token.createdAt).getTime() + TOKEN_LIFESPAN > Date.now()
+const isValid = (token: RefreshTokenEntity) => new Date(token?.createdAt).getTime() + TOKEN_LIFESPAN > Date.now()
 
 @Injectable()
 export class RefreshTokenService {
@@ -36,7 +36,7 @@ export class RefreshTokenService {
         this.logger.debug('Retrieving RefreshToken by token');
         const storedToken = await this.refreshTokenRepository.findOne({ token: refreshToken });
 
-        if (storedToken === undefined || !isValid(storedToken)) {
+        if (!storedToken || !isValid(storedToken)) {
             throw new UnauthorizedMTIException(
                 MTIErrorCodes.REFRESHTOKEN_INVALID,
                 'Refreshtoken invalid or expired',
