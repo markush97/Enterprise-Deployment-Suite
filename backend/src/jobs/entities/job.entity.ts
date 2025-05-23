@@ -1,5 +1,5 @@
 import { Entity, Property, ManyToOne, Enum, StringType, OneToMany, Collection, Cascade } from '@mikro-orm/core';
-import { Customer } from '../../customers/entities/customer.entity';
+import { CustomerEntity } from '../../customers/entities/customer.entity';
 import { DeviceEntity } from '../../devices/entities/device.entity';
 import { ImageEntity } from '../../images/entities/image.entity';
 import { CoreBaseEntity } from 'src/core/persistence/base.entity';
@@ -24,8 +24,8 @@ export class JobEntity extends CoreBaseEntity {
   @Property({ type: StringType, nullable: true })
   deviceSerialNumber: string;
 
-  @ManyToOne(() => Customer, { nullable: true })
-  customer?: Customer;
+  @ManyToOne(() => CustomerEntity, { nullable: true })
+  customer?: CustomerEntity;
 
   @ManyToOne(() => ImageEntity, { nullable: true })
   image: ImageEntity;

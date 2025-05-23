@@ -1,5 +1,5 @@
 import { Entity, Property, ManyToOne, Enum } from '@mikro-orm/core';
-import { Customer } from '../../customers/entities/customer.entity';
+import { CustomerEntity } from '../../customers/entities/customer.entity';
 import { CoreBaseEntity } from 'src/core/persistence/base.entity';
 import { generateSecureRandomString } from 'src/core/utils/crypto.helper';
 
@@ -20,8 +20,8 @@ export class DeviceEntity extends CoreBaseEntity {
   @Enum(() => DeviceType)
   type: DeviceType;
 
-  @ManyToOne(() => Customer)
-  customer: Customer;
+  @ManyToOne(() => CustomerEntity)
+  customer: CustomerEntity;
 
   @Property({ nullable: true })
   createdBy: string;
