@@ -5,7 +5,6 @@ import { SystemService } from './system.service';
 
 describe('SystemController', () => {
   let controller: SystemController;
-  let systemService: SystemService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -21,7 +20,6 @@ describe('SystemController', () => {
     }).compile();
 
     controller = module.get<SystemController>(SystemController);
-    systemService = module.get<SystemService>(SystemService);
   });
 
   it('should be defined', () => {

@@ -1,11 +1,8 @@
 import { pick } from 'lodash';
 import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-request.mti-exception';
-import { ForbiddenMTIException } from 'src/core/errorhandling/exceptions/forbidden.mti-exception';
-import { MTIHttpException } from 'src/core/errorhandling/exceptions/mit-exception';
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
 import { NotFoundMTIException } from 'src/core/errorhandling/exceptions/not-found.mti-exception';
 import { ITGlueConfigurationType } from 'src/integrations/itglue/interfaces/configuration-type.enum';
-import { ITGlueType } from 'src/integrations/itglue/interfaces/itglue-type.enum';
 import { ITGlueOperatingSystem } from 'src/integrations/itglue/interfaces/itglue.operatingsystems.enum';
 import { ITGlueService } from 'src/integrations/itglue/itglue.service';
 
@@ -15,7 +12,6 @@ import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 
 import { CustomersService } from '../customers/customers.service';
-import { DevicesController } from './devices.controller';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { DeviceInformationDto } from './dto/update-device-info.dto';
 import { DeviceEntity } from './entities/device.entity';

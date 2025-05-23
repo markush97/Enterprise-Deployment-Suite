@@ -7,10 +7,6 @@ import { LoginResultDto } from './dto/login.result.dto';
 import { AccountEntity, UserRole } from './entities/account.entity';
 import { EntraIdTokenPayload } from './strategies/entraID/interface/emtra-token.interface';
 import { AuthJwtService } from './strategies/jwt/jwt.service';
-import {
-  REFRESH_TOKEN_COOKIE_NAME,
-  RefreshTokenEntity,
-} from './strategies/refreshtoken/refresh-token.entity';
 import { RefreshTokenService } from './strategies/refreshtoken/refreshtoken.service';
 
 @Injectable()

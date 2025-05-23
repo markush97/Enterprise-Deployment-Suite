@@ -1,5 +1,3 @@
-import { LoggerModule } from 'nestjs-pino';
-
 import { Global, Module } from '@nestjs/common';
 
 import { CoreLogger } from './logging.service';

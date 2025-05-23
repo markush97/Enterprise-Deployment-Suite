@@ -5,7 +5,7 @@ import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-re
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
 import { NotFoundMTIException } from 'src/core/errorhandling/exceptions/not-found.mti-exception';
 
-import { Injectable, NotFoundException, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 
 import { EntityManager } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
@@ -43,7 +43,7 @@ export class VpnService implements OnModuleDestroy {
     return profile;
   }
 
-  async disconnectTunnel(connection: VPNConnection): Promise<void> {}
+  async disconnectTunnel(): Promise<void> {}
 
   async connectTunnel(id: string): Promise<VPNConnection> {
     const profile = await this.findOne(id);

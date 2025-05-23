@@ -1,14 +1,7 @@
-import {
-  DHCPDISCOVER,
-  Server as DHCPServer,
-  LeaseState,
-  ServerConfig,
-  addOption,
-  createServer,
-} from 'dhcp';
+import { Server as DHCPServer, ServerConfig, addOption, createServer } from 'dhcp';
 import { promisify } from 'util';
 
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 
 import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';

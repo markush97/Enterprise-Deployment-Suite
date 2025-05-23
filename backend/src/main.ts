@@ -1,5 +1,3 @@
-import { Logger as PinoLogger } from 'nestjs-pino';
-
 import { Logger, ValidationError, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';

@@ -29,7 +29,7 @@ export class EntraIdStrategy extends PassportStrategy(Strategy, 'EntraId') {
     });
   }
 
-  validate(payload: any) {
+  validate(payload: unknown): unknown {
     return payload;
   }
 }

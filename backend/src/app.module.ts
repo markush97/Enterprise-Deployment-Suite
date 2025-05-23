@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 
-import { MikroOrmModule } from '@mikro-orm/nestjs';
-
 import { AuthModule } from './auth/auth.module';
 import { CoreConfigModule } from './core/config/core.config.module';
 import { EMailModule } from './core/email/email.module';
@@ -12,7 +10,6 @@ import { SystemModule } from './core/system/system.module';
 import { CustomersModule } from './customers/customers.module';
 import { DevicesModule } from './devices/devices.module';
 import { ImagesModule } from './images/images.module';
-import { ITGlueConfigService } from './integrations/itglue/itglue.config.service';
 import { ITGlueModule } from './integrations/itglue/itglue.module';
 import { JobsModule } from './jobs/jobs.module';
 import { NetworkModule } from './network/network.module';
@@ -40,9 +37,7 @@ import { VpnModule } from './vpn/vpn.module';
     CorePersistenceModule,
     ITGlueModule,
     AuthModule,
-    PassportModule.register({
-      defaultStrategy: 'EntraId',
-    }),
+    PassportModule.register({}),
   ],
 })
 export class AppModule {}

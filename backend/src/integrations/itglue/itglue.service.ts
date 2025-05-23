@@ -1,4 +1,3 @@
-import { request } from 'http';
 import { catchError, firstValueFrom } from 'rxjs';
 import { InternalMTIException } from 'src/core/errorhandling/exceptions/internal.mti-exception';
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
@@ -7,21 +6,17 @@ import { DeviceInformationDto } from 'src/devices/dto/update-device-info.dto';
 import { HttpService } from '@nestjs/axios';
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 
-import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
-
 import { ITGlueRequest } from './dto/itglue-request.dto';
 import { ITGlueResponse, ITGlueResponseList } from './dto/itglue-searchresponse.dto';
 import { ITGlueConfigurationAttributes } from './interfaces/configuration-attributes.interface';
 import { ITGlueConfigurationType } from './interfaces/configuration-type.enum';
 import { ITGlueConfiguration } from './interfaces/configuration.interface';
 import { ITGlueType } from './interfaces/itglue-type.enum';
-import { ITGlueBase } from './interfaces/itglue.base.interface';
 import { ITGlueManufacturer } from './interfaces/itglue.manufacturer.interface';
 import { ITGlueModel } from './interfaces/itglue.model.interface';
 import { ITGlueOperatingSystem } from './interfaces/itglue.operatingsystems.enum';
 import { ITGluePasswordCategories } from './interfaces/itglue.password-categories.enum';
 import { ITGluePassword } from './interfaces/itglue.password.interface';
-import { ITGlueModule } from './itglue.module';
 
 @Injectable()
 export class ITGlueService {
@@ -159,7 +154,7 @@ export class ITGlueService {
     return data.data;
   }
 
-  async getDeviceBySerial(serial: string): Promise<any> {
+  async getDeviceBySerial(serial: string): Promise<ITGlueConfiguration | null> {
     this.logger.debug(`Fetching device with serial number ${serial} from ITGlue`);
     const { data } = await firstValueFrom(
       this.glue
@@ -440,7 +435,9 @@ export class ITGlueService {
     deviceId: string,
     newNotes = '',
   ): string => {
-    currentNotes === null ? (currentNotes = '') : currentNotes;
+    if (currentNotes === null) {
+      currentNotes = '';
+    }
     const notes = currentNotes.split('#### DO NOT EDIT BELOW THIS LINE ####')[0];
     return `${notes.trimEnd()}
 ${newNotes}
@@ -451,7 +448,9 @@ Last updated: ${new Date().toLocaleString('de-AT')}`;
   };
 
   private readonly mapOperatingSystemNotes = (currentNotes: string = '', newNotes = ''): string => {
-    currentNotes === null ? (currentNotes = '') : currentNotes;
+    if (currentNotes === null) {
+      currentNotes = '';
+    }
 
     const notes = currentNotes.split('#### DO NOT EDIT BELOW THIS LINE ####')[0];
     return `${notes.trimEnd()}

@@ -5,8 +5,8 @@ declare module 'tftp2' {
 
   export class TFTPServer extends Socket {
     listen(port: number): Promise<void>;
-    handleMessage(message: any, rinfo: any): this;
-    handleReadRequest(client: any): void;
-    handleWriteRequest(client: any): void;
+    handleMessage(message: unknown, rinfo: unknown): this;
+    handleReadRequest(client: unknown): void;
+    handleWriteRequest(client: unknown): void;
   }
 }

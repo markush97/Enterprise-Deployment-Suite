@@ -1,5 +1,3 @@
-import { WgConfig } from 'wireguard-tools';
-
 import { VpnProfile } from './entities/vpn-profile.entity';
 
 export interface VPNConnection {
@@ -7,5 +5,5 @@ export interface VPNConnection {
   id?: string;
   creationTime: Date;
   up: boolean;
-  down: Function;
+  down: () => Promise<void>;
 }

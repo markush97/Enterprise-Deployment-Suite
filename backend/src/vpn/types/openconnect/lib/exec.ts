@@ -5,11 +5,11 @@ const execute = util.promisify(childProcess.exec);
 
 interface Options {
   /** Function to run when data is returned from exec */
-  onData?: (data: string) => any;
+  onData?: (data: string) => unknown;
   /** Function to run when error occurs */
-  onError?: (err: string) => any;
+  onError?: (err: string) => unknown;
   /** Function to run when exec ends */
-  onClose?: (code: number) => any;
+  onClose?: (code: number) => unknown;
 }
 
 /**

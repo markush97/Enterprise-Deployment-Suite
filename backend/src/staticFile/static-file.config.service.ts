@@ -1,7 +1,6 @@
 import { CoreConfigService } from 'src/core/config/core.config.service';
 
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { ServeStaticModuleOptions, ServeStaticModuleOptionsFactory } from '@nestjs/serve-static';
 
 @Injectable()
