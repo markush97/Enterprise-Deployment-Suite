@@ -9,10 +9,10 @@ importers:
   .:
     dependencies:
       '@azure/msal-browser':
-        specifier: ^3.10.0
+        specifier: ^3.26.1
         version: 3.26.1
       '@azure/msal-react':
-        specifier: ^2.0.12
+        specifier: ^2.1.1
         version: 2.1.1(@azure/msal-browser@3.26.1)(react@18.3.1)
       '@mikro-orm/seeder':
         specifier: ^6.3.13
@@ -69,7 +69,7 @@ importers:
         specifier: ^9.0.1
         version: 9.0.1
       zustand:
-        specifier: ^4.5.2
+        specifier: ^4.5.5
         version: 4.5.5(@types/react@18.3.12)(react@18.3.1)
     devDependencies:
       '@eslint/js':
