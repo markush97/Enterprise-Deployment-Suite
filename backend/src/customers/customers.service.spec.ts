@@ -1,8 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CustomersService } from './customers.service';
 import { getRepositoryToken } from '@mikro-orm/nestjs';
-import { describe, beforeEach, it } from 'node:test';
-import { CustomerEntity } from './entities/customer.entity'
+import { CustomerEntity } from './entities/customer.entity';
 import { EntityManager } from '@mikro-orm/core';
 
 jest.mock('../core/utils/crypto.helper', () => ({
