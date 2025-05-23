@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/sqlite';
-import { Customer } from './entities/customer.entity';
+import { CustomerEntity } from './entities/customer.entity';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { EntityManager } from '@mikro-orm/core';
 import { DeviceType } from 'src/devices/entities/device.entity';
@@ -9,16 +9,16 @@ import { DeviceType } from 'src/devices/entities/device.entity';
 @Injectable()
 export class CustomersService {
   constructor(
-    @InjectRepository(Customer)
-    private readonly customerRepository: EntityRepository<Customer>,
+    @InjectRepository(CustomerEntity)
+    private readonly customerRepository: EntityRepository<CustomerEntity>,
     private readonly em: EntityManager
   ) { }
 
-  async findAll(): Promise<Customer[]> {
+  async findAll(): Promise<CustomerEntity[]> {
     return this.customerRepository.findAll();
   }
 
-  async findOne(id: string): Promise<Customer> {
+  async findOne(id: string): Promise<CustomerEntity> {
     const customer = await this.customerRepository.findOne(id);
     if (!customer) {
       throw new NotFoundException(`Customer with ID ${id} not found`);
@@ -26,13 +26,13 @@ export class CustomersService {
     return customer;
   }
 
-  async create(createCustomerDto: CreateCustomerDto): Promise<Customer> {
+  async create(createCustomerDto: CreateCustomerDto): Promise<CustomerEntity> {
     const customer = this.customerRepository.create(createCustomerDto);
     await this.em.persistAndFlush(customer);
     return customer;
   }
 
-  async update(id: string, updateCustomerDto: Partial<CreateCustomerDto>): Promise<Customer> {
+  async update(id: string, updateCustomerDto: Partial<CreateCustomerDto>): Promise<CustomerEntity> {
     const customer = await this.findOne(id);
     this.customerRepository.assign(customer, updateCustomerDto);
     await this.em.flush();

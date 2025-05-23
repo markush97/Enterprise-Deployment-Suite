@@ -1,5 +1,5 @@
 import { Entity, Property, ManyToOne, Enum, Embeddable, Embedded } from '@mikro-orm/core';
-import { Customer } from '../../customers/entities/customer.entity';
+import { CustomerEntity } from '../../customers/entities/customer.entity';
 import { CoreBaseEntity } from 'src/core/persistence/base.entity';
 
 export enum VpnType {
@@ -50,8 +50,8 @@ export class VpnProfile extends CoreBaseEntity {
   @Enum(() => VpnType)
   type: VpnType;
 
-  @ManyToOne(() => Customer)
-  customer: Customer;
+  @ManyToOne(() => CustomerEntity)
+  customer: CustomerEntity;
 
   @Property()
   hostname: string;
@@ -68,9 +68,9 @@ export class VpnProfile extends CoreBaseEntity {
   @Property()
   isDefault: boolean = false;
 
-  @Embedded(() => wireGuardConfig, {nullable: true})
+  @Embedded(() => wireGuardConfig, { nullable: true })
   wireGuardConfig?: wireGuardConfig;
 
-  @Embedded(() => OpenConnectConfig, {nullable: true})
+  @Embedded(() => OpenConnectConfig, { nullable: true })
   openConnectConfig?: OpenConnectConfig;
 }
