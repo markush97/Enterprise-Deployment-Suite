@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { SystemService } from './system.service';
+import { AppAuthGuard } from 'src/auth/strategies/jwt/app-auth.guard';
 
 @Controller('system')
 export class SystemController {

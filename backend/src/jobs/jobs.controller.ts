@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, ParseEnumPipe } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, ParseEnumPipe, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
@@ -8,6 +8,9 @@ import { RegisterJobDto } from './dto/register-job.dto';
 import { TaskInfoDto } from './dto/task-info.dto';
 import { IsEnum } from 'class-validator';
 import { JobStatusQueryDto } from './dto/job-status.query.dto';
+import { AppAuthGuard } from 'src/auth/strategies/jwt/app-auth.guard';
+import { Public } from 'src/auth/decorators/public.decorator';
+import { UseDeviceTokenGuard } from 'src/auth/decorators/device-token.decorator';
 
 @ApiTags('jobs')
 @Controller('jobs')
@@ -36,16 +39,18 @@ export class JobsController {
   }
 
   @Post('register')
+  @Public()
   @ApiOperation({
     summary: 'Register a new job', description: `This endpoint is used to allow a device register itself to the server to be able to provide informations.
     If the registration is successfull it will return a unique deviceToken that the device can use to update its own information later on. Each serial-Number can only be registered ONCE!`
   })
   @ApiResponse({ status: 201, description: 'Job registered successfully. Returns a device Token ONCE' })
-  async register(@Body() RegisterJobDto: RegisterJobDto): Promise<{jobId: string, deviceToken: string}> {
+  async register(@Body() RegisterJobDto: RegisterJobDto): Promise<{ jobId: string, deviceToken: string }> {
     return this.jobsService.registerJob(RegisterJobDto);
   }
 
   @Post('notify/:jobid/task')
+  @UseDeviceTokenGuard()
   @ApiOperation({ summary: 'Notify the server about the current task-status' })
   async taskNotification(
     @Param('jobid') jobId: string,
@@ -55,6 +60,7 @@ export class JobsController {
   }
 
   @Post('notify/:jobid')
+  @UseDeviceTokenGuard()
   @ApiOperation({ summary: 'Notify the server about the current setup-status' })
   async clientNotification(
     @Param('jobid') jobId: string,
