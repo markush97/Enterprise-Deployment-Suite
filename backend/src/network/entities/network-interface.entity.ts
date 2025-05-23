@@ -1,6 +1,6 @@
 import { CoreBaseEntity } from 'src/core/persistence/base.entity';
 
-import { Cascade, Embedded, Entity, OneToMany, OneToOne, Property } from '@mikro-orm/core';
+import { Cascade, Embedded, Entity, OneToOne, Property } from '@mikro-orm/core';
 
 import { DHCPServerConfigEntity } from '../dhcp/entities/dhcp-config.entity';
 import { NetworkAddress } from '../networkInterface.interface';

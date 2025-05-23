@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { DHCPService } from './dhcp/dhcp.service';
@@ -49,7 +49,7 @@ export class NetworkController {
   @Post('interfaces/dhcp/reload')
   @ApiOperation({ summary: 'Reload all DHCP Servers' })
   @ApiResponse({ status: 201, description: 'DHCP Server succesfully restarted' })
-  async reloadAllDhcp(@Param('name') interfaceName: string, @Body() dhcpConfig: ConfigureDHCPDto) {
+  async reloadAllDhcp() {
     return this.dhcpService.reloadAllServers();
   }
 }

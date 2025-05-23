@@ -67,7 +67,7 @@ export class ImagesService {
     if (image.imagePath) {
       try {
         await fs.unlink(path.join(process.cwd(), image.imagePath));
-      } catch (error) {
+      } catch {
         // Ignore file not found errors
       }
     }

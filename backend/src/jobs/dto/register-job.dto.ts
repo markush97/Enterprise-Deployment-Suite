@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsString } from 'class-validator';
 import { DeviceType } from 'src/devices/entities/device.entity';
 
 export class RegisterJobDto {

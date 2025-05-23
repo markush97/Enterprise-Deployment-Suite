@@ -14,7 +14,7 @@ export const connect = async (
       {
         onData: d => console.log(d),
         // onError: (d) => console.log(d),
-        onClose: d => {
+        onClose: () => {
           console.log('Tunnel setup');
         },
       },
@@ -33,7 +33,7 @@ export const checkOpenconnectIsInstalled = async () => {
   try {
     const version = await exec('openconnect --version');
     return version;
-  } catch (e) {
+  } catch {
     throw new Error('Openconnect is not installed on the system. Please install openconnect');
   }
 };

@@ -1,5 +1,3 @@
-import { AccountEntity } from 'src/auth/entities/account.entity';
-
 import { Module } from '@nestjs/common';
 
 import { MikroOrmModule } from '@mikro-orm/nestjs';

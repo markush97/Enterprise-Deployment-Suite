@@ -1,28 +1,15 @@
-import { IsEnum } from 'class-validator';
 import { UseDeviceTokenGuard } from 'src/auth/decorators/device-token.decorator';
 import { Public } from 'src/auth/decorators/public.decorator';
-import { AppAuthGuard } from 'src/auth/strategies/jwt/app-auth.guard';
 import { DeviceType } from 'src/devices/entities/device.entity';
 
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseEnumPipe,
-  Post,
-  Put,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { CreateJobDto } from './dto/create-job.dto';
 import { JobStatusQueryDto } from './dto/job-status.query.dto';
 import { RegisterJobDto } from './dto/register-job.dto';
 import { TaskInfoDto } from './dto/task-info.dto';
-import { JobEntity, JobStatus } from './entities/job.entity';
+import { JobEntity } from './entities/job.entity';
 import { JobsService } from './jobs.service';
 
 @ApiTags('jobs')

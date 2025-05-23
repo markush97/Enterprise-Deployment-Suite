@@ -13,7 +13,6 @@ import { DHCPServerConfigEntity } from './dhcp/entities/dhcp-config.entity';
 import { NetworkInterfaceEntity } from './entities/network-interface.entity';
 import { NetworkConfigService } from './network.config.service';
 import { NetworkInterface } from './networkInterface.interface';
-import { getBroadcast } from './utils/network.helper';
 
 @Injectable()
 export class NetworkService implements OnModuleInit {

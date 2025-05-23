@@ -1,15 +1,4 @@
-import {
-  IsArray,
-  IsBoolean,
-  IsFQDN,
-  IsIP,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsPort,
-  IsString,
-  IsUrl,
-} from 'class-validator';
+import { IsBoolean, IsFQDN, IsIP, IsNumber, IsOptional, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 

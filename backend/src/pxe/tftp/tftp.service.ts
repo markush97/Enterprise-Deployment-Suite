@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { TFTPServer, createServer } from 'tftp2';
 
@@ -19,7 +19,7 @@ export class TFTPService implements OnModuleInit, OnModuleDestroy {
     this.tftpServer = createServer();
 
     this.tftpServer.on('get', async (req, send) => {
-      const { filename, mode, address, port } = req;
+      const { filename, address } = req;
       this.logger.debug(`Client ${address} fetching ${filename}`);
       await send(readFileSync(resolve(this.tftpConfig.fileRoot, filename)));
     });

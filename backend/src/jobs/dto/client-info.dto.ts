@@ -1,4 +1,4 @@
-import { IsEnum, IsIP, IsIn, IsMACAddress, IsOptional } from 'class-validator';
+import { IsIP, IsIn, IsOptional } from 'class-validator';
 
 export class ClientInfoDto {
   @IsOptional()

@@ -1,6 +1,6 @@
 import { Device } from 'src/auth/decorators/device.decorator';
 
-import { Body, Controller, Delete, Get, Header, Headers, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { DevicesService } from './devices.service';

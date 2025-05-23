@@ -1,6 +1,4 @@
-import { JobEntity } from 'src/jobs/entities/job.entity';
-
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { CustomersService } from './customers.service';

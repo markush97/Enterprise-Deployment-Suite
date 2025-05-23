@@ -2,9 +2,6 @@ import * as os from 'os';
 
 import { Injectable } from '@nestjs/common';
 
-import { EntityRepository } from '@mikro-orm/core';
-import { InjectRepository } from '@mikro-orm/nestjs';
-
 @Injectable()
 export class SystemService {
   async getSystemInfo() {

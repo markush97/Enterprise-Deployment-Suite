@@ -1,18 +1,4 @@
-import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
-
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Logger,
-  Param,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
-import { ApiOkResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Controller, Delete, Get, Logger, Param, Post } from '@nestjs/common';
 
 import { AccountInfo } from '../utils/decorators/auth-user.decorator';
 import { Cookie } from '../utils/decorators/cookie.decorator';
@@ -20,8 +6,6 @@ import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
 import { LoginResultDto } from './dto/login.result.dto';
 import { AccountEntity } from './entities/account.entity';
-import { EntraIdAuthGuard } from './strategies/entraID/entraId.guard';
-import { AppAuthGuard } from './strategies/jwt/app-auth.guard';
 import { AuthTokenPayload } from './strategies/jwt/auth-token.interface';
 import {
   REFRESH_TOKEN_COOKIE_NAME,

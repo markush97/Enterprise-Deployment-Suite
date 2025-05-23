@@ -13,5 +13,5 @@ export class ITGlueSearchMetaDto {
   'current-page': number;
   'total-pages': number;
   'total-count': number;
-  filters: {};
+  filters: Record<string, unknown>;
 }

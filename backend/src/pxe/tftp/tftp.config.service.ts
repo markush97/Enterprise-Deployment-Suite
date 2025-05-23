@@ -1,7 +1,6 @@
 import { CoreConfigService } from 'src/core/config/core.config.service';
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class TFTPConfigService {

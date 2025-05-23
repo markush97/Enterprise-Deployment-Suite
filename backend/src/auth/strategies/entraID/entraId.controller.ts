@@ -1,13 +1,11 @@
-import { log } from 'console';
 import { Response } from 'express';
 import { RealIP } from 'nestjs-real-ip';
 import { AuthService } from 'src/auth/auth.service';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { LoginResultDto } from 'src/auth/dto/login.result.dto';
 import { AccountInfo } from 'src/utils/decorators/auth-user.decorator';
-import { Cookie } from 'src/utils/decorators/cookie.decorator';
 
-import { Controller, Get, HttpStatus, Post, Redirect, Res, UseGuards } from '@nestjs/common';
+import { Controller, Post, Res, UseGuards } from '@nestjs/common';
 
 import { UserAgent } from '../../../utils/decorators/user-agent.decorator';
 import { REFRESH_TOKEN_COOKIE_NAME } from '../refreshtoken/refresh-token.entity';

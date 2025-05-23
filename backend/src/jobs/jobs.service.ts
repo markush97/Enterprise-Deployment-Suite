@@ -214,7 +214,7 @@ configfile grub/config/main.cfg
     await this.updateStatus(jobId, status);
   }
 
-  async taskNotification(jobId: string, taskInfo: any): Promise<void> {
+  async taskNotification(jobId: string, taskInfo: unknown): Promise<void> {
     this.logger.debug(
       `Client notified us about task status ${taskInfo.status} for job  ${jobId}...`,
     );
