@@ -30,7 +30,7 @@ export class EMailConfigService {
   }
 
   private get port(): number {
-    // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+     
     return this.config.get('EMAIL_PORT', 25);
   }
 
