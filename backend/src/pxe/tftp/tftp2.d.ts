@@ -1,13 +1,12 @@
 declare module 'tftp2' {
   import { Socket } from 'dgram';
 
-  export const createServer = (): TFTPServer => any
-  export class TFTPServer extends Socket {
+  export function createServer(): TFTPServer;
 
-      listen(port: number): Promise;
-      handleMessage(message, rinfo): this;
-      handleReadRequest(client): void;
-      handleWriteRequest(client): void;
-    
+  export class TFTPServer extends Socket {
+    listen(port: number): Promise<void>;
+    handleMessage(message: any, rinfo: any): this;
+    handleReadRequest(client: any): void;
+    handleWriteRequest(client: any): void;
   }
 }

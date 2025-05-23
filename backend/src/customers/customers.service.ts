@@ -1,18 +1,21 @@
+import { DeviceType } from 'src/devices/entities/device.entity';
+
 import { Injectable, NotFoundException } from '@nestjs/common';
+
+import { EntityManager } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/sqlite';
-import { CustomerEntity } from './entities/customer.entity';
+
 import { CreateCustomerDto } from './dto/create-customer.dto';
-import { EntityManager } from '@mikro-orm/core';
-import { DeviceType } from 'src/devices/entities/device.entity';
+import { CustomerEntity } from './entities/customer.entity';
 
 @Injectable()
 export class CustomersService {
   constructor(
     @InjectRepository(CustomerEntity)
     private readonly customerRepository: EntityRepository<CustomerEntity>,
-    private readonly em: EntityManager
-  ) { }
+    private readonly em: EntityManager,
+  ) {}
 
   async findAll(): Promise<CustomerEntity[]> {
     return this.customerRepository.findAll();
@@ -72,11 +75,9 @@ export class CustomersService {
         break;
       default:
         throw new Error(`Unknown device type: ${deviceType}`);
-
     }
 
     await this.em.persistAndFlush(customer);
     return nextDeviceNumber;
-
   }
 }

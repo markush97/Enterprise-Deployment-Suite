@@ -1,5 +1,15 @@
-import { IsString, IsNotEmpty, IsEnum, IsNumber, IsBoolean, IsOptional, IsObject } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+
 import { ApiProperty } from '@nestjs/swagger';
+
 import { VpnType } from '../entities/vpn-profile.entity';
 
 export class CreateVpnProfileDto {

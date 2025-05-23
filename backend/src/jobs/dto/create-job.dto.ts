@@ -1,5 +1,7 @@
-import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+
 import { ApiProperty } from '@nestjs/swagger';
+
 import { JobStatus } from '../entities/job.entity';
 
 export class CreateJobDto {

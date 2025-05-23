@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { WinImagingService } from './imaging.service';
+
 import { WinCapturingService } from './capturing.service';
+import { WinImagingService } from './imaging.service';
 import { WinPeConfigService } from './winPe.config.service';
 
 @Module({
-    controllers: [],
-    providers: [WinImagingService, WinCapturingService,WinPeConfigService],
+  controllers: [],
+  providers: [WinImagingService, WinCapturingService, WinPeConfigService],
 })
-export class WinPeModule {};
+export class WinPeModule {}

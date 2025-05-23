@@ -1,7 +1,9 @@
-import { Entity, Property, ManyToOne, Enum } from '@mikro-orm/core';
-import { CustomerEntity } from '../../customers/entities/customer.entity';
 import { CoreBaseEntity } from 'src/core/persistence/base.entity';
 import { generateSecureRandomString } from 'src/core/utils/crypto.helper';
+
+import { Entity, Enum, ManyToOne, Property } from '@mikro-orm/core';
+
+import { CustomerEntity } from '../../customers/entities/customer.entity';
 
 export enum DeviceType {
   PC = 'PC',
@@ -51,7 +53,7 @@ export class DeviceEntity extends CoreBaseEntity {
   locale: string = 'de-AT';
 
   @Property({ nullable: true })
-  inputLocaleWin: string = '0c07:00000407'
+  inputLocaleWin: string = '0c07:00000407';
 
   @Property({ nullable: true })
   itGlueId: number;

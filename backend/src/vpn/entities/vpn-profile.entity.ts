@@ -1,6 +1,8 @@
-import { Entity, Property, ManyToOne, Enum, Embeddable, Embedded } from '@mikro-orm/core';
-import { CustomerEntity } from '../../customers/entities/customer.entity';
 import { CoreBaseEntity } from 'src/core/persistence/base.entity';
+
+import { Embeddable, Embedded, Entity, Enum, ManyToOne, Property } from '@mikro-orm/core';
+
+import { CustomerEntity } from '../../customers/entities/customer.entity';
 
 export enum VpnType {
   CISCO_ANYCONNECT = 'anyconnect',
@@ -8,9 +10,8 @@ export enum VpnType {
   FORTINET = 'fortinet',
   WIREGUARD = 'wireguard',
   LOCAL = 'local',
-  GP = 'gp'
+  GP = 'gp',
 }
-
 
 @Embeddable()
 export class wireGuardConfig {

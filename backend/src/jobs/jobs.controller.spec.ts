@@ -1,7 +1,9 @@
+import { DevicesService } from 'src/devices/devices.service';
+
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { JobsController } from './jobs.controller';
 import { JobsService } from './jobs.service';
-import { DevicesService } from 'src/devices/devices.service';
 
 describe('JobsController', () => {
   let controller: JobsController;
@@ -24,13 +26,13 @@ describe('JobsController', () => {
             assignJobToCustomer: jest.fn().mockResolvedValue({}),
             remove: jest.fn().mockResolvedValue(undefined),
           },
-
-        }, {
+        },
+        {
           provide: DevicesService,
           useValue: {
-            findOneByToken: jest.fn().mockResolvedValue({ id: '1' })
-          }
-        }
+            findOneByToken: jest.fn().mockResolvedValue({ id: '1' }),
+          },
+        },
       ],
     }).compile();
 

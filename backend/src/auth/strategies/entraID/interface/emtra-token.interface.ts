@@ -1,5 +1,5 @@
 export interface EntraIdTokenPayload {
-    "name": string,
-    "upn": string,
-    "oid": string
+  name: string;
+  upn: string;
+  oid: string;
 }

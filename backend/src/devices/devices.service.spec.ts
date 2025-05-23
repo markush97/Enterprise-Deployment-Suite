@@ -1,13 +1,16 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { DevicesService } from './devices.service';
-import { getRepositoryToken } from '@mikro-orm/nestjs';
-import { DeviceEntity } from './entities/device.entity';
-import { EntityManager } from '@mikro-orm/core';
 import { CustomersService } from 'src/customers/customers.service';
 import { ITGlueService } from 'src/integrations/itglue/itglue.service';
 
+import { Test, TestingModule } from '@nestjs/testing';
+
+import { EntityManager } from '@mikro-orm/core';
+import { getRepositoryToken } from '@mikro-orm/nestjs';
+
+import { DevicesService } from './devices.service';
+import { DeviceEntity } from './entities/device.entity';
+
 jest.mock('../core/utils/crypto.helper', () => ({
-  generateSecureRandomUUID: () => 'test-uuid'
+  generateSecureRandomUUID: () => 'test-uuid',
 }));
 
 describe('DevicesService', () => {
@@ -17,11 +20,13 @@ describe('DevicesService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DevicesService,
-        { provide: getRepositoryToken(DeviceEntity), useValue: { findAll: jest.fn(), findOne: jest.fn() } },
+        {
+          provide: getRepositoryToken(DeviceEntity),
+          useValue: { findAll: jest.fn(), findOne: jest.fn() },
+        },
         { provide: EntityManager, useValue: { persistAndFlush: jest.fn() } },
         { provide: CustomersService, useValue: { findAll: jest.fn(), findOne: jest.fn() } },
         { provide: ITGlueService, useValue: {} },
-
       ],
     }).compile();
 

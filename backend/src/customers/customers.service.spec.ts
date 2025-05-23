@@ -1,11 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CustomersService } from './customers.service';
-import { getRepositoryToken } from '@mikro-orm/nestjs';
-import { CustomerEntity } from './entities/customer.entity';
+
 import { EntityManager } from '@mikro-orm/core';
+import { getRepositoryToken } from '@mikro-orm/nestjs';
+
+import { CustomersService } from './customers.service';
+import { CustomerEntity } from './entities/customer.entity';
 
 jest.mock('../core/utils/crypto.helper', () => ({
-  generateSecureRandomUUID: () => 'test-uuid'
+  generateSecureRandomUUID: () => 'test-uuid',
 }));
 
 describe('CustomersService', () => {
@@ -15,7 +17,10 @@ describe('CustomersService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CustomersService,
-        { provide: getRepositoryToken(CustomerEntity), useValue: { findAll: jest.fn(), findOne: jest.fn() } },
+        {
+          provide: getRepositoryToken(CustomerEntity),
+          useValue: { findAll: jest.fn(), findOne: jest.fn() },
+        },
         { provide: EntityManager, useValue: { persistAndFlush: jest.fn() } },
       ],
     }).compile();
@@ -35,4 +40,3 @@ describe('CustomersService', () => {
     expect(customerRepository.findAll).toHaveBeenCalled();
   });
 });
-

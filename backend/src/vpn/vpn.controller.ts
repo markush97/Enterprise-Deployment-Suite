@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { VpnService } from './vpn.service';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+
 import { CreateVpnProfileDto } from './dto/create-vpn-profile.dto';
 import { VpnProfile } from './entities/vpn-profile.entity';
+import { VpnService } from './vpn.service';
 
 @ApiTags('vpn')
 @Controller('vpn')

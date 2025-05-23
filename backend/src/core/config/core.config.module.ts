@@ -1,5 +1,6 @@
-import { Module, Global } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+
 import { CoreConfigService } from './core.config.service';
 
 /**
@@ -8,15 +9,15 @@ import { CoreConfigService } from './core.config.service';
  */
 @Global()
 @Module({
-    imports: [
-        ConfigModule.forRoot({
-            cache: true,
-            expandVariables: true,
-            isGlobal: true
-        }),
-    ],
-    controllers: [],
-    providers: [CoreConfigService],
-    exports: [CoreConfigService],
+  imports: [
+    ConfigModule.forRoot({
+      cache: true,
+      expandVariables: true,
+      isGlobal: true,
+    }),
+  ],
+  controllers: [],
+  providers: [CoreConfigService],
+  exports: [CoreConfigService],
 })
-export class CoreConfigModule { }
+export class CoreConfigModule {}

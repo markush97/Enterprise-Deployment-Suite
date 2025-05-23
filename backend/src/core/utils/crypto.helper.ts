@@ -7,8 +7,8 @@ import { randomBytes, randomUUID } from 'crypto';
  * @returns a cryptographically secure url-safe string
  */
 export const generateSecureRandomString = (length: number): string => {
-    const buff = randomBytes(length);
-    return buff.toString('base64').replace(/\//g, '_').replace(/\+/g, '-');
+  const buff = randomBytes(length);
+  return buff.toString('base64').replace(/\//g, '_').replace(/\+/g, '-');
 };
 
 /**
