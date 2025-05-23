@@ -4,6 +4,7 @@ import { DevicesService } from './devices.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { DeviceEntity } from './entities/device.entity';
 import { DeviceInformationDto } from './dto/update-device-info.dto';
+import { Device } from 'src/auth/decorators/device.decorator';
 
 @ApiTags('devices')
 @Controller('devices')
@@ -35,10 +36,10 @@ export class DevicesController {
   @ApiOperation({ summary: 'Submit an device-information update using the device deviceToken' })
   @ApiResponse({ status: 200, description: 'Device information updated successfully' })
   async updateDeviceInfo(
-    @Headers('X-Device-Token') deviceToken: string,
     @Body() updateDeviceDto: DeviceInformationDto,
+    @Device() device: DeviceEntity
   ): Promise<void> {
-    return this.devicesService.updateDeviceInfo(deviceToken, updateDeviceDto);
+    return this.devicesService.updateDeviceInfo(device, updateDeviceDto);
   }
 
   @Put(':id')

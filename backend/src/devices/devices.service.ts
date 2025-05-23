@@ -91,7 +91,7 @@ export class DevicesService {
     await this.em.removeAndFlush(device);
   }
 
-  async updateDeviceInfo(deviceToken: string, updateDeviceDto: DeviceInformationDto): Promise<void> {
+  async updateDeviceInfo(device: DeviceEntity, updateDeviceDto: DeviceInformationDto): Promise<void> {
     this.logger.debug('updateDeviceInfo');
 
     if (updateDeviceDto.deviceType && ITGlueConfigurationType[updateDeviceDto.deviceType] === undefined) {
@@ -106,14 +106,6 @@ export class DevicesService {
     }
 
     updateDeviceDto.operatingSystem = operatingSystem
-
-    const device = await this.findOneByToken(deviceToken);
-
-    if (!device) {
-      this.logger.error('Device not found');
-      throw new ForbiddenMTIException(MTIErrorCodes.DEVICE_TOKEN_INVALID, `Token is invalid or device not found`);
-
-    }
 
     const serialNumber = updateDeviceDto.serialNumber || device.serialNumber;
     updateDeviceDto.serialNumber = serialNumber;
