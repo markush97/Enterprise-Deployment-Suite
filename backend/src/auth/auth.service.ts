@@ -5,8 +5,6 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { LoginResultDto } from './dto/login.result.dto';
 import { AuthJwtService } from './strategies/jwt/jwt.service';
 import { EntraIdTokenPayload } from './strategies/entraID/interface/emtra-token.interface';
-import { EntraIdAuthGuard } from './strategies/entraID/entraId.guard';
-
 
 @Injectable()
 export class AuthService {
@@ -25,8 +23,10 @@ export class AuthService {
     if (!account) {
       this.logger.debug(`Account ${userInfo.upn} does not exist yet, creating it...`)
       account = this.accountRepository.create({ entraIdUserId: userInfo.oid, email: userInfo.upn, name: userInfo.name, role: UserRole.ADMINISTRATOR })
-      await this.em.persistAndFlush(account);
     }
+
+    account.lastLogin = new Date();
+    await this.em.persistAndFlush(account);
 
     return this.jwtService.signUser(account)
   }
@@ -40,6 +40,15 @@ export class AuthService {
   async findOneById(accountId: string): Promise<AccountEntity | null> {
     this.logger.debug(`Fetching user by their id ${accountId}`);
 
+    return this.accountRepository.findOne({ id: accountId })
+  }
+
+  async getAccounts(): Promise<AccountEntity[]> {
+    return this.accountRepository.findAll();
+  }
+
+  async getOwnAccount(accountId: string): Promise<AccountEntity> {
+    this.logger.debug(`Getting own Account Information for user ${accountId}`)
     return this.accountRepository.findOne({ id: accountId })
   }
 
