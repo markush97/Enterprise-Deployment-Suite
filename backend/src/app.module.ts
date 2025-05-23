@@ -17,9 +17,13 @@ import { ITGlueConfigService } from './integrations/itglue/itglue.config.service
 import { ITGlueModule } from './integrations/itglue/itglue.module';
 import { EMailModule } from './core/email/email.module';
 import { SystemModule } from './core/system/system.module';
+import { AuthModule } from './auth/auth.module';
+import { PassportModule } from '@nestjs/passport';
+import { UserModule } from './users/user.module';
 
 @Module({
   imports: [
+    UserModule,
     CoreLoggingModule,
     SystemModule,
     EMailModule,
@@ -34,7 +38,12 @@ import { SystemModule } from './core/system/system.module';
     PXEModule,
     NetworkModule,
     CorePersistenceModule,
-    ITGlueModule
+    ITGlueModule,
+    AuthModule,
+    PassportModule.register({
+      defaultStrategy: 'EntraId',
+
+    })
   ],
 })
 export class AppModule { }
