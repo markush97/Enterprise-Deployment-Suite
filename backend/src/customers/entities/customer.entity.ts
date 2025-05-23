@@ -17,7 +17,7 @@ export class DeviceEnrollmentCredentials {
 }
 
 @Entity()
-export class Customer extends CoreBaseEntity {
+export class CustomerEntity extends CoreBaseEntity {
   @Property()
   name: string;
 
