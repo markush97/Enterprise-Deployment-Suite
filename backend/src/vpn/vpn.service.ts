@@ -53,7 +53,7 @@ export class VpnService implements OnModuleDestroy {
       id: randomUUID(),
       creationTime: new Date(),
       up: false,
-      down: () => {},
+      down: async () => {},
     };
   }
 
@@ -153,6 +153,6 @@ export class VpnService implements OnModuleDestroy {
 
   async onModuleDestroy() {
     // Close all Tunnels on Application Shutdown
-    await Promise.all(this.vpnConnections.map(async config => await this.disconnectTunnel(config)));
+    await Promise.all(this.vpnConnections.map(async () => await this.disconnectTunnel()));
   }
 }

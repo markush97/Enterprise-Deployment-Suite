@@ -22,7 +22,7 @@ export abstract class VPNTypeService {
       up: false,
       creationTime: new Date(),
       profile,
-      down: () => {},
+      down: async () => {},
     };
   }
 
@@ -36,7 +36,7 @@ export abstract class VPNTypeService {
     connection.creationTime = undefined;
     connection.up = false;
     connection.id = undefined;
-    connection.down = () => {};
+    connection.down = async () => {};
 
     return connection;
   }
