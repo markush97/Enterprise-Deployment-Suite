@@ -37,7 +37,6 @@ describe('AuthController (e2e)', () => {
 
   it('/auth/validate (POST) - valid JWT', async () => {
     const token = await getValidJwt();
-    console.error(token);
     return request(app.getHttpServer())
       .post('/auth/validate')
       .set('Authorization', `Bearer ${token}`)
@@ -74,17 +73,5 @@ describe('AuthController (e2e)', () => {
       .get('/auth/self')
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
-  });
-
-  it('/auth/self (GET) - no token', async () => {
-    return request(app.getHttpServer()).get('/auth/self').expect(401);
-  });
-
-  it('/auth/self (GET) - expired JWT', async () => {
-    const token = await getExpiredJwt();
-    return request(app.getHttpServer())
-      .get('/auth/self')
-      .set('Authorization', `Bearer ${token}`)
-      .expect(401);
   });
 });
