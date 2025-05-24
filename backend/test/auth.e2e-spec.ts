@@ -10,6 +10,7 @@ import {
   getInvalidJwt,
   getMalformedJwt,
   getValidJwt,
+  testEndpointAuth,
 } from './testutils/auth.testutil';
 import { setupTestConfig } from './testutils/setup.testutil';
 
@@ -74,4 +75,6 @@ describe('AuthController (e2e)', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
   });
+
+  testEndpointAuth('/auth/self', 'GET', () => app);
 });
