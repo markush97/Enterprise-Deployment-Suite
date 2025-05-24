@@ -74,6 +74,6 @@ export class AuthService {
 
   async getOwnAccount(accountId: string): Promise<AccountEntity> {
     this.logger.debug(`Getting own Account Information for user ${accountId}`);
-    return this.accountRepository.findOneOrFail({ id: accountId });
+    return this.accountRepository.findOneOrFail(accountId);
   }
 }
