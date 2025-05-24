@@ -73,3 +73,5 @@ resources/networkboot/media/**
 !resources/networkboot/media/**/*.ipxe
 
 coverage
+
+debug

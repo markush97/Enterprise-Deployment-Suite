@@ -8,10 +8,12 @@ module.exports = {
     '^.+\\.(ts|tsx)$': 'ts-jest',
   },
   testMatch: ['**/?(*.)+(spec|test).[tj]s?(x)'],
-  collectCoverage: true,
+  collectCoverage: false,
   collectCoverageFrom: [
     '**/*.{ts,tsx}',
     '!**/*.e2e-spec.ts',
+    '!**/*.util-spec.ts',
+    '!**/*.spec.ts',
     '!**/node_modules/**',
     '!**/dist/**',
     '!**/main.ts',
