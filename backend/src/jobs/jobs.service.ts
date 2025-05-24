@@ -14,6 +14,7 @@ import { ImagesService } from '../images/images.service';
 import { ClientInfoDto } from './dto/client-info.dto';
 import { CreateJobDto } from './dto/create-job.dto';
 import { RegisterJobDto } from './dto/register-job.dto';
+import { TaskInfoDto } from './dto/task-info.dto';
 import { JobConnectionsEntity } from './entities/job-connections.entity';
 import { JobEntity, JobStatus } from './entities/job.entity';
 
@@ -214,7 +215,7 @@ configfile grub/config/main.cfg
     await this.updateStatus(jobId, status);
   }
 
-  async taskNotification(jobId: string, taskInfo: unknown): Promise<void> {
+  async taskNotification(jobId: string, taskInfo: TaskInfoDto): Promise<void> {
     this.logger.debug(
       `Client notified us about task status ${taskInfo.status} for job  ${jobId}...`,
     );
