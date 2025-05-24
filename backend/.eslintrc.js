@@ -38,7 +38,7 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['*.spec.ts', '*.e2e-spec.ts'],
+      files: ['**/*.spec.ts', '**/*.e2e-spec.ts'],
       rules: {
         '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-empty-function': 'off',

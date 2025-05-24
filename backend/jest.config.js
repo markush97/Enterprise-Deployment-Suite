@@ -7,9 +7,7 @@ module.exports = {
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest',
   },
-  testMatch: [
-    '**/?(*.)+(spec|test).[tj]s?(x)'
-  ],
+  testMatch: ['**/?(*.)+(spec|test).[tj]s?(x)'],
   collectCoverage: true,
   collectCoverageFrom: [
     '**/*.{ts,tsx}',
@@ -22,6 +20,6 @@ module.exports = {
   ],
   coverageDirectory: '../coverage',
   moduleNameMapper: {
-    '^src/(.*)$': '<rootDir>/$1'
+    '^src/(.*)$': '<rootDir>/$1',
   },
 };

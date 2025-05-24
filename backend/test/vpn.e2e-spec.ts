@@ -3,9 +3,9 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { AppModule } from '../app.module';
+import { AppModule } from '../src/app.module';
 
-describe('CustomersController (e2e)', () => {
+describe('VpnController (e2e)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
@@ -21,13 +21,18 @@ describe('CustomersController (e2e)', () => {
     await app.close();
   });
 
-  it('/customers (GET) should return 200', async () => {
-    const res = await request(app.getHttpServer()).get('/customers');
+  it('/vpn (GET) should return 200', async () => {
+    const res = await request(app.getHttpServer()).get('/vpn');
     expect([200, 404]).toContain(res.status);
   });
 
-  it('/customers/:id (GET) should return 200 or 404', async () => {
-    const res = await request(app.getHttpServer()).get('/customers/1');
+  it('/vpn/:id (GET) should return 200 or 404', async () => {
+    const res = await request(app.getHttpServer()).get('/vpn/1');
+    expect([200, 404]).toContain(res.status);
+  });
+
+  it('/vpn/:id/test (GET) should return 200 or 404', async () => {
+    const res = await request(app.getHttpServer()).get('/vpn/1/test');
     expect([200, 404]).toContain(res.status);
   });
 });
