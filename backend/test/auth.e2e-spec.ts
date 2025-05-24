@@ -76,5 +76,9 @@ describe('AuthController (e2e)', () => {
       .expect(200);
   });
 
+  testEndpointAuth('/auth', 'GET', () => app);
   testEndpointAuth('/auth/self', 'GET', () => app);
+  testEndpointAuth('/auth/refresh', 'GET', () => app);
+  testEndpointAuth('/auth/refresh', 'DELETE', () => app);
+  testEndpointAuth('/auth/refresh/6286bf6e-b515-40ba-8877-0179f26fccd5', 'DELETE', () => app);
 });
