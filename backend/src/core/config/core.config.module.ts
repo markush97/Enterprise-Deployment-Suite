@@ -14,6 +14,7 @@ import { CoreConfigService } from './core.config.service';
       cache: true,
       expandVariables: true,
       isGlobal: true,
+      ignoreEnvFile: process.env.NODE_ENV === 'test',
     }),
   ],
   controllers: [],
