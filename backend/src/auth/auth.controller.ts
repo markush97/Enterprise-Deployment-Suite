@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Logger, Param, Post } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpStatus, Logger, Param, Post } from '@nestjs/common';
 
 import { AccountInfo } from '../utils/decorators/auth-user.decorator';
 import { Cookie } from '../utils/decorators/cookie.decorator';
@@ -51,6 +51,7 @@ export class AuthController {
   }
 
   @Post('validate')
+  @HttpCode(HttpStatus.OK)
   public async validateToken(): Promise<void> {}
 
   @Delete('refresh')
