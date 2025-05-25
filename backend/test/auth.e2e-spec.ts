@@ -1,7 +1,12 @@
+import { AccountEntity, UserRole } from 'src/auth/entities/account.entity';
+import { REFRESH_TOKEN_COOKIE_NAME } from 'src/auth/strategies/refreshtoken/refresh-token.entity';
+import { TOKEN_LIFESPAN } from 'src/auth/strategies/refreshtoken/refreshtoken.service';
 import * as request from 'supertest';
 
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+
+import { EntityManager } from '@mikro-orm/core';
 
 import { AppModule } from '../src/app.module';
 import { setupApp } from '../src/main';
@@ -12,13 +17,14 @@ import {
   getMalformedJwt,
   getValidJwt,
   testEndpointAuth,
+  validateJwt,
 } from './testutils/auth.testutil';
 import { setupTestConfig } from './testutils/setup.testutil';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
   let mockAccountRepository: Record<string, jest.Mock>;
-  let mockRefreshTokenService: Record<string, jest.Mock>;
+  let mockRefreshTokenRepository: Record<string, jest.Mock>;
 
   beforeAll(async () => {
     setupTestConfig();
@@ -31,12 +37,14 @@ describe('AuthController (e2e)', () => {
       delete: jest.fn(),
     };
 
-    mockRefreshTokenService = {
+    mockRefreshTokenRepository = {
       findOne: jest.fn(),
       findOneOrFail: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
       delete: jest.fn(),
+      nativeDelete: jest.fn(),
+      find: jest.fn(),
     };
 
     const moduleRef: TestingModule = await Test.createTestingModule({
@@ -44,12 +52,8 @@ describe('AuthController (e2e)', () => {
     })
       .overrideProvider('AccountEntityRepository')
       .useValue(mockAccountRepository)
-      .overrideProvider('RefreshTokenServiceRepository')
-      .useValue(mockRefreshTokenService)
-      .overrideProvider('EntityManager')
-      .useValue({
-        persistAndFlush: jest.fn(),
-      })
+      .overrideProvider('RefreshTokenEntityRepository')
+      .useValue(mockRefreshTokenRepository)
       .compile();
 
     app = moduleRef.createNestApplication();
@@ -61,13 +65,17 @@ describe('AuthController (e2e)', () => {
     await app.close();
   });
 
+  beforeEach(async () => {
+    jest.resetAllMocks();
+  });
+
   describe('/auth (GET)', () => {
     testEndpointAuth('/auth', 'GET', () => app);
 
     it('should return all accounts', async () => {
       const mockAccounts = [
-        { id: 1, username: 'testuser1', email: 'test@example.com' },
-        { id: 2, username: 'testuser2', email: 'test2@example.com' },
+        { id: 1, email: 'test@example.com' },
+        { id: 2, email: 'test2@example.com' },
       ];
 
       mockAccountRepository.findAll.mockResolvedValue(mockAccounts);
@@ -83,6 +91,44 @@ describe('AuthController (e2e)', () => {
         });
 
       expect(mockAccountRepository.findAll).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('/auth/refresh (GET)', () => {
+    testEndpointAuth('/auth/refresh', 'GET', () => app);
+
+    it('should return all refreshTokens', async () => {
+      const dateNow = `${new Date()}`;
+      const mockTokens = [
+        {
+          id: '6286bf6e-b515-40ba-8877-0179f26fccd5',
+          token: 'token1',
+          createdAt: dateNow,
+          updatedAt: dateNow,
+          lastUsedAt: null,
+        },
+        {
+          id: '7ced7fbd-d52b-4dbe-9505-cc81cb15b189',
+          token: 'token2',
+          createdAt: dateNow,
+          updatedAt: dateNow,
+          lastUsedAt: null,
+        },
+      ];
+
+      mockRefreshTokenRepository.find.mockResolvedValue(mockTokens);
+
+      const token = await getValidJwt();
+
+      await request(app.getHttpServer())
+        .get('/auth/refresh')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200)
+        .expect(res => {
+          expect(res.body).toEqual(mockTokens);
+        });
+
+      expect(mockRefreshTokenRepository.find).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -131,7 +177,6 @@ describe('AuthController (e2e)', () => {
 
       const mockAccount = {
         id: '123',
-        username: 'testuser',
         email: 'test@example.com',
       };
 
@@ -151,8 +196,126 @@ describe('AuthController (e2e)', () => {
     it('should return 404 without refresh-token-cookie', async () => {
       await request(app.getHttpServer()).post('/auth/refresh').expect(401);
     });
+
+    it('should login the user and return accessToken with valid refresh token', async () => {
+      const mockAccount = {
+        id: '123',
+        email: 'test@example.com',
+        updatedAt: new Date(),
+        createdAt: new Date(),
+        lastLogin: null,
+        role: UserRole.ADMINISTRATOR,
+      } as AccountEntity;
+
+      const token = 'valid-refresh-token';
+      const testRefreshToken = {
+        id: '6286bf6e-b515-40ba-8877-0179f26fccd5',
+        account: mockAccount,
+        token: token,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastUsedAt: null,
+      };
+
+      mockRefreshTokenRepository.findOne.mockResolvedValue(testRefreshToken);
+      const em = app.get(EntityManager);
+      const mockPersistAndFlush = jest.spyOn(em, 'persistAndFlush').mockResolvedValue(undefined);
+
+      await request(app.getHttpServer())
+        .post('/auth/refresh')
+        .set('Cookie', `${REFRESH_TOKEN_COOKIE_NAME}=${token}`)
+        .expect(200)
+        .expect(res => {
+          const body = res.body;
+          expect(body.id).toEqual(mockAccount.id);
+          expect(body.email).toEqual(mockAccount.email);
+          expect(body.sub).toEqual(mockAccount.id);
+          expect(validateJwt(body.accessToken)).toBeTruthy();
+        });
+
+      expect(mockPersistAndFlush).toHaveBeenCalledTimes(2);
+      expect(mockRefreshTokenRepository.findOne).toHaveBeenCalledWith(
+        { token: token },
+        { populate: ['account'] },
+      );
+      expect(mockRefreshTokenRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(mockAccountRepository.findOneOrFail).toHaveBeenCalledTimes(0);
+      expect(testRefreshToken.lastUsedAt).toBeTruthy();
+      expect(mockAccount.lastLogin).toBeTruthy();
+    });
+
+    it('should reject refresh if the refreshToken is expired', async () => {
+      const token = 'valid-refresh-token';
+      const testRefreshToken = {
+        id: '6286bf6e-b515-40ba-8877-0179f26fccd5',
+        token: token,
+        createdAt: new Date(Date.now() - TOKEN_LIFESPAN),
+        updatedAt: new Date(),
+        lastUsedAt: null,
+      };
+
+      mockRefreshTokenRepository.findOne.mockResolvedValue(testRefreshToken);
+
+      await request(app.getHttpServer())
+        .post('/auth/refresh')
+        .set('Cookie', `${REFRESH_TOKEN_COOKIE_NAME}=${token}`)
+        .expect(401);
+
+      expect(mockRefreshTokenRepository.findOne).toHaveBeenCalledWith(
+        { token: token },
+        { populate: ['account'] },
+      );
+      expect(mockRefreshTokenRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(mockAccountRepository.findOneOrFail).toHaveBeenCalledTimes(0);
+    });
+
+    it('should reject refresh if the refreshToken is invalid', async () => {
+      const token = 'valid-refresh-token';
+      mockRefreshTokenRepository.findOne.mockResolvedValue(undefined);
+
+      await request(app.getHttpServer())
+        .post('/auth/refresh')
+        .set('Cookie', `${REFRESH_TOKEN_COOKIE_NAME}=${token}`)
+        .expect(401);
+
+      expect(mockRefreshTokenRepository.findOne).toHaveBeenCalledWith(
+        { token: token },
+        { populate: ['account'] },
+      );
+      expect(mockRefreshTokenRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(mockAccountRepository.findOneOrFail).toHaveBeenCalledTimes(0);
+    });
   });
 
-  testEndpointAuth('/auth/refresh', 'DELETE', () => app);
-  testEndpointAuth('/auth/refresh/6286bf6e-b515-40ba-8877-0179f26fccd5', 'DELETE', () => app);
+  describe('/auth/refresh (DELETE)', () => {
+    testEndpointAuth('/auth/refresh', 'DELETE', () => app);
+
+    it('should delete all refresh tokens for the account', async () => {
+      await request(app.getHttpServer())
+        .delete('/auth/refresh')
+        .set('Authorization', `Bearer ${await getValidJwt()}`)
+        .expect(200);
+
+      expect(mockRefreshTokenRepository.nativeDelete).toHaveBeenCalledWith({
+        account: { id: TOKEN_PAYLOAD_VALID.sub },
+      });
+    });
+  });
+
+  describe('/auth/refresh/:id (DELETE)', () => {
+    testEndpointAuth('/auth/refresh/6286bf6e-b515-40ba-8877-0179f26fccd5', 'DELETE', () => app);
+
+    it('should delete a specific refresh token', async () => {
+      const tokenId = '6286bf6e-b515-40ba-8877-0179f26fccd5';
+      await request(app.getHttpServer())
+        .delete(`/auth/refresh/${tokenId}`)
+        .set('Authorization', `Bearer ${await getValidJwt()}`)
+        .expect(200);
+
+      expect(mockRefreshTokenRepository.nativeDelete).toHaveBeenCalledWith({
+        account: { id: TOKEN_PAYLOAD_VALID.sub },
+        id: tokenId,
+      });
+    });
+  });
 });

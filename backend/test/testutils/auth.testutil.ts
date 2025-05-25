@@ -1,4 +1,5 @@
 import * as jwt from 'jsonwebtoken';
+import { AuthTokenPayload } from 'src/auth/strategies/jwt/auth-token.interface';
 import * as request from 'supertest';
 
 import { INestApplication } from '@nestjs/common';
@@ -17,8 +18,18 @@ const jwtSigningBaseOptions: jwt.SignOptions = {
   issuer: testConfig.JWT_ISSUER,
 };
 
-export async function getValidJwt(): Promise<string> {
-  return jwt.sign(TOKEN_PAYLOAD_VALID, testConfig.JWT_SECRET, {
+export async function validateJwt(token: string): Promise<string | jwt.JwtPayload | false> {
+  try {
+    return jwt.verify(token, testConfig.JWT_SECRET, jwtSigningBaseOptions);
+  } catch {
+    return false;
+  }
+}
+
+export async function getValidJwt(
+  tokenPayload: AuthTokenPayload = TOKEN_PAYLOAD_VALID,
+): Promise<string> {
+  return jwt.sign(tokenPayload, testConfig.JWT_SECRET, {
     ...jwtSigningBaseOptions,
     expiresIn: '1h',
   });
