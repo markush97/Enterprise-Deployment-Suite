@@ -5,8 +5,8 @@ import { DHCPService } from './dhcp/dhcp.service';
 import { ConfigureDHCPDto } from './dhcp/dto/configure-dhcp.dto';
 import { NetworkService } from './network.service';
 
-@ApiTags('network')
-@Controller('network')
+@ApiTags('networks')
+@Controller('networks')
 export class NetworkController {
   constructor(
     private readonly networkService: NetworkService,
