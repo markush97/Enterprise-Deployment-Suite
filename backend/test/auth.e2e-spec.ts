@@ -269,13 +269,47 @@ describe('AuthController (e2e)', () => {
       expect(mockAccountRepository.findOneOrFail).toHaveBeenCalledTimes(0);
     });
 
-    it('should reject refresh if the refreshToken is invalid', async () => {
+    it('should reject refresh if the refreshToken is wrong', async () => {
       const token = 'valid-refresh-token';
       mockRefreshTokenRepository.findOne.mockResolvedValue(undefined);
 
       await request(app.getHttpServer())
         .post('/auth/refresh')
         .set('Cookie', `${REFRESH_TOKEN_COOKIE_NAME}=${token}`)
+        .expect(401);
+
+      expect(mockRefreshTokenRepository.findOne).toHaveBeenCalledWith(
+        { token: token },
+        { populate: ['account'] },
+      );
+      expect(mockRefreshTokenRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(mockAccountRepository.findOneOrFail).toHaveBeenCalledTimes(0);
+    });
+
+    it('should reject refresh if the refreshToken is malformed', async () => {
+      const token = 'valid-refresh-token';
+      mockRefreshTokenRepository.findOne.mockResolvedValue(undefined);
+
+      await request(app.getHttpServer())
+        .post('/auth/refresh')
+        .set('Cookie', `${token}`)
+        .expect(401);
+
+      expect(mockRefreshTokenRepository.findOne).toHaveBeenCalledWith(
+        { token: token },
+        { populate: ['account'] },
+      );
+      expect(mockRefreshTokenRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(mockAccountRepository.findOneOrFail).toHaveBeenCalledTimes(0);
+    });
+
+    it('should reject refresh if the refreshToken is empty', async () => {
+      const token = 'valid-refresh-token';
+      mockRefreshTokenRepository.findOne.mockResolvedValue(undefined);
+
+      await request(app.getHttpServer())
+        .post('/auth/refresh')
+        .set('Cookie', `${REFRESH_TOKEN_COOKIE_NAME}=`)
         .expect(401);
 
       expect(mockRefreshTokenRepository.findOne).toHaveBeenCalledWith(
