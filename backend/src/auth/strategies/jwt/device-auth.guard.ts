@@ -18,7 +18,6 @@ export class DeviceGuard implements CanActivate {
     const deviceToken = request.headers['x-device-token'];
 
     const device = await this.deviceService.findOneByToken(deviceToken);
-    console.log(deviceToken);
     if (!device) {
       this.logger.error('Device not found');
       throw new ForbiddenMTIException(MTIErrorCodes.DEVICE_TOKEN_INVALID, 'Invalid device token');
