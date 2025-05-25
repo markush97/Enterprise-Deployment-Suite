@@ -5,7 +5,17 @@ module.exports = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   testMatch: ['**/?(*.)+(e2e-spec|e2e-test).[tj]s?(x)'],
   collectCoverage: true,
-  collectCoverageFrom: ['./src/**/*.{ts,js}'],
+  collectCoverageFrom: [
+    './src/**/*.{ts,js}',
+    '!**/*.e2e-spec.ts',
+    '!**/*.util-spec.ts',
+    '!**/*.spec.ts',
+    '!**/node_modules/**',
+    '!**/dist/**',
+    '!**/main.ts',
+    '!**/app.module.ts',
+    '!**/index.ts',
+  ],
   coverageThreshold: {
     './src/**/*.controller.ts': {
       functions: 100,
