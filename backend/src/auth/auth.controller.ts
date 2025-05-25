@@ -42,6 +42,7 @@ export class AuthController {
 
   @Post('refresh')
   @Public() // This endpoint is marked public since it is protected by refreshtoken validation anyways
+  @HttpCode(HttpStatus.OK)
   public async refreshAccessToken(
     @Cookie(REFRESH_TOKEN_COOKIE_NAME) token: string,
   ): Promise<LoginResultDto> {
