@@ -13,7 +13,7 @@ import { RefreshTokenEntity } from './refresh-token.entity';
 import { CreateRefreshTokenDto } from './refresh-token.register.dto';
 
 const TOKEN_LENGTH = 32;
-const TOKEN_LIFESPAN = 10000000;
+export const TOKEN_LIFESPAN = 10000000;
 
 const isValid = (token: RefreshTokenEntity) =>
   new Date(token?.createdAt).getTime() + TOKEN_LIFESPAN > Date.now();

@@ -16,9 +16,6 @@ export class RefreshTokenEntity extends CoreBaseEntity {
   @Property({ nullable: true })
   lastUsedAt: Date;
 
-  @Property({ type: 'timestamptz' })
-  expiresAt: Date = new Date(1000 * 60 * 60 * 24 * 30); // 30 days
-
   @Property({ type: 'json' })
   userAgent: string;
 
