@@ -40,10 +40,15 @@ export class AuthService {
     return this.jwtService.signUser(account);
   }
 
-  async login(accountId: string): Promise<LoginResultDto> {
-    this.logger.debug(`Logging in account with id ${accountId}`);
+  async login(accountOrId: string | AccountEntity): Promise<LoginResultDto> {
+    this.logger.debug(`Logging in account with id ${accountOrId}`);
+    let account: AccountEntity;
 
-    const account = await this.accountRepository.findOneOrFail(accountId);
+    if (typeof accountOrId === 'string') {
+      account = await this.accountRepository.findOneOrFail(accountOrId);
+    } else {
+      account = accountOrId;
+    }
 
     account.lastLogin = new Date();
     await this.em.persistAndFlush(account);
@@ -69,7 +74,7 @@ export class AuthService {
 
   public async refreshAccessToken(refreshToken: string): Promise<LoginResultDto> {
     const account = await this.refreshTokenService.getAccountByToken(refreshToken);
-    return this.login(account.id);
+    return this.login(account);
   }
 
   async getOwnAccount(accountId: string): Promise<AccountEntity> {

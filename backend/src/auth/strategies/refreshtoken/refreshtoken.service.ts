@@ -36,9 +36,12 @@ export class RefreshTokenService {
     return token;
   }
 
-  async validateRefreshToken(refreshToken: string): Promise<AccountEntity> {
+  async getAccountByToken(refreshToken: string): Promise<AccountEntity> {
     this.logger.debug('Retrieving RefreshToken by token');
-    const storedToken = await this.refreshTokenRepository.findOne({ token: refreshToken });
+    const storedToken = await this.refreshTokenRepository.findOne(
+      { token: refreshToken },
+      { populate: ['account'] },
+    );
 
     if (!storedToken || !isValid(storedToken)) {
       throw new UnauthorizedMTIException(
@@ -52,10 +55,6 @@ export class RefreshTokenService {
     await this.em.persistAndFlush(storedToken);
 
     return storedToken.account;
-  }
-
-  async getAccountByToken(refreshToken: string): Promise<AccountEntity> {
-    return await this.validateRefreshToken(refreshToken);
   }
 
   async getRefreshTokens(accountId: string): Promise<RefreshTokenEntity[]> {
