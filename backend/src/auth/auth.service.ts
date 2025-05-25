@@ -1,3 +1,6 @@
+import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
+import { UnauthorizedMTIException } from 'src/core/errorhandling/exceptions/unauthorized.mti-exception';
+
 import { Injectable, Logger } from '@nestjs/common';
 
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
@@ -72,7 +75,14 @@ export class AuthService {
     return this.accountRepository.findAll();
   }
 
-  public async refreshAccessToken(refreshToken: string): Promise<LoginResultDto> {
+  public async refreshAccessToken(refreshToken?: string): Promise<LoginResultDto> {
+    if (!refreshToken) {
+      throw new UnauthorizedMTIException(
+        MTIErrorCodes.REFRESHTOKEN_INVALID,
+        'Refreshtoken invalid',
+      );
+    }
+
     const account = await this.refreshTokenService.getAccountByToken(refreshToken);
     return this.login(account);
   }
