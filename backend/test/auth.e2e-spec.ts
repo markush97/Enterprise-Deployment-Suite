@@ -53,7 +53,6 @@ describe('AuthController (e2e)', () => {
       .compile();
 
     app = moduleRef.createNestApplication();
-    // Set test JWT secret and any other env overrides BEFORE app setup
     await setupApp(app);
     await app.init();
   });
