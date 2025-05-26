@@ -1,7 +1,16 @@
 import { CoreBaseEntity } from 'src/core/persistence/base.entity';
 import { generateSecureRandomString } from 'src/core/utils/crypto.helper';
+import { TasksEntity } from 'src/tasks/entities/task.entity';
 
-import { Collection, Embeddable, Embedded, Entity, OneToMany, Property } from '@mikro-orm/core';
+import {
+  Collection,
+  Embeddable,
+  Embedded,
+  Entity,
+  ManyToMany,
+  OneToMany,
+  Property,
+} from '@mikro-orm/core';
 
 import { DeviceEntity } from '../../devices/entities/device.entity';
 import { VpnProfile } from '../../vpn/entities/vpn-profile.entity';
@@ -43,6 +52,9 @@ export class CustomerEntity extends CoreBaseEntity {
 
   @OneToMany(() => VpnProfile, profile => profile.customer)
   vpnProfiles = new Collection<VpnProfile>(this);
+
+  @ManyToMany(() => TasksEntity, task => task.customers, { owner: true })
+  tasks = new Collection<TasksEntity>(this);
 
   @Property()
   deviceCounterPc: number = 0;

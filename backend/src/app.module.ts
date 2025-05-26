@@ -15,6 +15,7 @@ import { JobsModule } from './jobs/jobs.module';
 import { NetworkModule } from './network/network.module';
 import { PXEModule } from './pxe/pxe.module';
 import { StaticFileModule } from './staticFile/static-file.module';
+import { TaskModule } from './tasks/task.module';
 import { UserModule } from './users/user.module';
 import { VpnModule } from './vpn/vpn.module';
 
@@ -37,6 +38,7 @@ import { VpnModule } from './vpn/vpn.module';
     CorePersistenceModule,
     ITGlueModule,
     AuthModule,
+    TaskModule,
     PassportModule.register({}),
   ],
 })
