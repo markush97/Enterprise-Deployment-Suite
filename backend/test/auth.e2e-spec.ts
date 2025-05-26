@@ -308,11 +308,7 @@ describe('AuthController (e2e)', () => {
         .set('Cookie', `${REFRESH_TOKEN_COOKIE_NAME}=${token}`)
         .expect(401);
 
-      expect(mockRefreshTokenRepository.findOne).toHaveBeenCalledWith(
-        { token: token },
-        { populate: ['account'] },
-      );
-      expect(mockRefreshTokenRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(mockRefreshTokenRepository.findOne).toHaveBeenCalledTimes(0);
       expect(mockAccountRepository.findOneOrFail).toHaveBeenCalledTimes(0);
     });
   });
