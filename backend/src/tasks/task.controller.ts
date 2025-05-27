@@ -16,6 +16,7 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 
 import { CreateTaskDto } from './dto/task-create.dto';
+import { TaskBundleEntity } from './entities/task-bundle.entity';
 import { TasksEntity } from './entities/task.entity';
 import { TaskService } from './task.service';
 
@@ -54,5 +55,22 @@ export class TaskController {
   ): Promise<void> {
     this.logger.debug(`Uploading content for task ${id} with file ${file.originalname}`);
     return this.taskService.uploadTaskContent(id, file);
+  }
+
+  @Post(':taskId/bundle/:bundleId')
+  async assignTaskToBundle(
+    @Param('bundleId') bundleId: string,
+    @Param('taskId') taskId: string,
+    @Body('order') order?: number,
+  ): Promise<TaskBundleEntity> {
+    return this.taskService.assignTaskToBundle(taskId, bundleId, order);
+  }
+
+  @Post('/bundle/:bundleId/tasks')
+  async bulkSetTasks(
+    @Param('bundleId') bundleId: string,
+    @Body('taskIds') taskIds: string[],
+  ): Promise<TaskBundleEntity> {
+    return this.taskService.bulkSetTasks(bundleId, taskIds);
   }
 }

@@ -9,7 +9,7 @@ export class TaskOrderEntity {
   task: TasksEntity;
 
   @ManyToOne({ entity: () => TaskBundleEntity, primary: true })
-  taskBundle: TaskBundleEntity;
+  bundle: TaskBundleEntity;
 
   @Property()
   order: number;
