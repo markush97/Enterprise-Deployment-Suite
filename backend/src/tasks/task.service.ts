@@ -21,6 +21,11 @@ export class TaskService {
     private readonly localFileService: LocalFileService,
   ) {}
 
+  public async getTasks(): Promise<TaskEntity[]> {
+    this.logger.debug('Getting task list');
+    return this.taskRepository.findAll({ filters: {}, populate: ['contentFile'] });
+  }
+
   public async createTask(createTaskDto: CreateTaskDto): Promise<TaskEntity> {
     this.logger.debug(`Creating a new task ${createTaskDto.name}`);
     const task = this.taskRepository.create(createTaskDto);

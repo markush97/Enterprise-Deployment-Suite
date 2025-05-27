@@ -4,11 +4,13 @@ import { LocalFileUploadInterceptor } from 'src/fileManagement/local-file/local-
 import {
   Body,
   Controller,
+  Get,
   Logger,
   MaxFileSizeValidator,
   Param,
   ParseFilePipe,
   Post,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -26,6 +28,13 @@ export class TaskController {
   private readonly logger = new Logger('TaskController');
 
   constructor(private readonly taskService: TaskService) {}
+
+  @Get()
+  async getTasks(): Promise<TasksEntity[]> {
+    this.logger.debug('Getting tasklist');
+
+    return this.taskService.getTasks();
+  }
 
   @Post()
   async createTask(@Body() createTaskDto: CreateTaskDto): Promise<TasksEntity> {
