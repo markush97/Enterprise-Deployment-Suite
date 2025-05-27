@@ -2,7 +2,6 @@ import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-re
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
 import { CoreBaseEntity } from 'src/core/persistence/base.entity';
 import { CustomerEntity } from 'src/customers/entities/customer.entity';
-import { LocalFileMetadataEntity } from 'src/fileManagement/local-file/local-file-metadata.entity';
 
 import {
   BeforeCreate,
@@ -10,12 +9,14 @@ import {
   Collection,
   Entity,
   ManyToMany,
-  OneToOne,
   Property,
 } from '@mikro-orm/core';
 
+import { TaskOrderEntity } from './task-order.entity';
+import { TasksEntity } from './task.entity';
+
 @Entity()
-export class TasksEntity extends CoreBaseEntity {
+export class TaskBundleEntity extends CoreBaseEntity {
   @Property()
   name: string;
 
@@ -25,22 +26,24 @@ export class TasksEntity extends CoreBaseEntity {
   @Property()
   global: boolean;
 
-  @Property({ type: 'longtext', nullable: true })
-  installScript: string;
-
-  @ManyToMany(() => CustomerEntity, customer => customer.tasks)
+  @ManyToMany(() => CustomerEntity, customer => customer.taskBundles)
   customers = new Collection<CustomerEntity>(this);
 
-  @OneToOne(() => LocalFileMetadataEntity, { nullable: true })
-  contentFile?: LocalFileMetadataEntity;
+  @ManyToMany({
+    entity: () => TasksEntity,
+    pivotEntity: () => TaskOrderEntity,
+    fixedOrder: true,
+    fixedOrderColumn: 'order',
+  })
+  taskList = new Collection<TasksEntity>(this);
 
   @BeforeCreate()
   @BeforeUpdate()
   checkGlobalNoCustomers() {
     if (this.global && this.customers && this.customers.count() > 0) {
       throw new BadRequestMTIException(
-        MTIErrorCodes.GLOBAL_TASK_CANNOT_HAVE_CUSTOMERS,
-        'A global task cannot have customers assigned.',
+        MTIErrorCodes.GLOBAL_TASKBUNDLE_CANNOT_HAVE_CUSTOMERS,
+        'A global task bundle cannot have customers assigned.',
       );
     }
   }

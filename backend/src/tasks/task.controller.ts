@@ -10,7 +10,6 @@ import {
   Param,
   ParseFilePipe,
   Post,
-  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';

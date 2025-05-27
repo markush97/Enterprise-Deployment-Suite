@@ -1,5 +1,6 @@
 import { CoreBaseEntity } from 'src/core/persistence/base.entity';
 import { generateSecureRandomString } from 'src/core/utils/crypto.helper';
+import { TaskBundleEntity } from 'src/tasks/entities/task-bundle.entity';
 import { TasksEntity } from 'src/tasks/entities/task.entity';
 
 import {
@@ -55,6 +56,9 @@ export class CustomerEntity extends CoreBaseEntity {
 
   @ManyToMany(() => TasksEntity, task => task.customers, { owner: true })
   tasks = new Collection<TasksEntity>(this);
+
+  @ManyToMany(() => TaskBundleEntity, taskBundle => taskBundle.customers, { owner: true })
+  taskBundles = new Collection<TaskBundleEntity>(this);
 
   @Property()
   deviceCounterPc: number = 0;
