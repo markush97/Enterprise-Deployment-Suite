@@ -20,7 +20,7 @@ module.exports = {
     '!**/app.module.ts',
     '!**/index.ts',
   ],
-  coverageDirectory: '../coverage',
+  coverageDirectory: './coverage',
   moduleNameMapper: {
     '^src/(.*)$': '<rootDir>/$1',
   },
