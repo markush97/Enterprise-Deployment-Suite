@@ -15,4 +15,5 @@ export enum MTIErrorCodes {
   INVALID_JOB_STATUS = 2010,
   JWTInvalid = 2011,
   REFRESHTOKEN_INVALID = 2012,
+  TASK_NOT_FOUND = 2013,
 }

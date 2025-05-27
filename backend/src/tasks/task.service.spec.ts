@@ -4,15 +4,15 @@ import { EntityManager } from '@mikro-orm/core';
 import { getRepositoryToken } from '@mikro-orm/nestjs';
 
 import { TasksEntity } from './entities/task.entity';
-import { TasksService } from './task.service';
+import { TaskService } from './task.service';
 
-describe('JobsService', () => {
-  let service: TasksService;
+describe('TaskService', () => {
+  let service: TaskService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        TasksService,
+        TaskService,
         {
           provide: getRepositoryToken(TasksEntity),
           useValue: { findAll: jest.fn(), findOne: jest.fn() },
@@ -21,7 +21,7 @@ describe('JobsService', () => {
       ],
     }).compile();
 
-    service = module.get<TasksService>(TasksService);
+    service = module.get<TaskService>(TaskService);
   });
 
   it('should be defined', () => {

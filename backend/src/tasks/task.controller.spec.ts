@@ -1,17 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { TasksController } from './task.controller';
-import { TasksService } from './task.service';
+import { TaskController } from './task.controller';
+import { TaskService } from './task.service';
 
 describe('TasksController', () => {
-  let controller: TasksController;
+  let controller: TaskController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [TasksController],
+      controllers: [TaskController],
       providers: [
         {
-          provide: TasksService,
+          provide: TaskService,
           useValue: {
             findAll: jest.fn().mockResolvedValue([]),
             findOne: jest.fn().mockResolvedValue({ id: '1' }),
@@ -27,7 +27,7 @@ describe('TasksController', () => {
       ],
     }).compile();
 
-    controller = module.get<TasksController>(TasksController);
+    controller = module.get<TaskController>(TaskController);
   });
 
   it('should be defined', () => {

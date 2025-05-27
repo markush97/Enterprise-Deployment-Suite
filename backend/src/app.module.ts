@@ -9,12 +9,12 @@ import { CorePersistenceModule } from './core/persistence/core-persistence.modul
 import { SystemModule } from './core/system/system.module';
 import { CustomersModule } from './customers/customers.module';
 import { DevicesModule } from './devices/devices.module';
+import { FileManagementModule } from './fileManagement/file-management.module';
 import { ImagesModule } from './images/images.module';
 import { ITGlueModule } from './integrations/itglue/itglue.module';
 import { JobsModule } from './jobs/jobs.module';
 import { NetworkModule } from './network/network.module';
 import { PXEModule } from './pxe/pxe.module';
-import { StaticFileModule } from './staticFile/static-file.module';
 import { TaskModule } from './tasks/task.module';
 import { UserModule } from './users/user.module';
 import { VpnModule } from './vpn/vpn.module';
@@ -32,7 +32,7 @@ import { VpnModule } from './vpn/vpn.module';
     VpnModule,
     NetworkModule,
     CoreConfigModule,
-    StaticFileModule,
+    FileManagementModule,
     PXEModule,
     NetworkModule,
     CorePersistenceModule,

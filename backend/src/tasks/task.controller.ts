@@ -1,10 +1,50 @@
-import { Controller } from '@nestjs/common';
+import 'multer';
+import { LocalFileUploadInterceptor } from 'src/fileManagement/local-file/local-file-upload.interceptor';
+
+import {
+  Body,
+  Controller,
+  Logger,
+  MaxFileSizeValidator,
+  Param,
+  ParseFilePipe,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import { TasksService } from './task.service';
+import { CreateTaskDto } from './dto/task-create.dto';
+import { TasksEntity } from './entities/task.entity';
+import { TaskService } from './task.service';
+
+const MAX_UPLOAD_SIZE = 1000 * 1000 * 150; // 150 MB
 
 @ApiTags('tasks')
 @Controller('tasks')
-export class TasksController {
-  constructor(private readonly taskService: TasksService) {}
+export class TaskController {
+  private readonly logger = new Logger('TaskController');
+
+  constructor(private readonly taskService: TaskService) {}
+
+  @Post()
+  async createTask(@Body() createTaskDto: CreateTaskDto): Promise<TasksEntity> {
+    this.logger.debug('Creating a new task');
+    return this.taskService.createTask(createTaskDto);
+  }
+
+  @Post(':id/content')
+  @UseInterceptors(LocalFileUploadInterceptor({ fieldName: 'file', path: 'tasksContent' }))
+  async uploadTaskContent(
+    @Param('id') id: string,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new MaxFileSizeValidator({ maxSize: MAX_UPLOAD_SIZE })],
+      }),
+    )
+    file: Express.Multer.File,
+  ): Promise<void> {
+    this.logger.debug(`Uploading content for task ${id} with file ${file.originalname}`);
+    return this.taskService.uploadTaskContent(id, file);
+  }
 }

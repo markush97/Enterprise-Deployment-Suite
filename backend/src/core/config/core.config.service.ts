@@ -1,9 +1,11 @@
 import { hostname } from 'os';
+import path from 'path';
 
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 type ProcessEnvs = 'development' | 'test' | 'production' | 'staging';
+const DEFAULT_MAX_UPLOAD_SIZE_MB = 150;
 
 /**
  * Provider for some basic, widely used configurations
@@ -51,5 +53,16 @@ export class CoreConfigService extends ConfigService {
    */
   public fqdn(): string {
     return `${this.hostname}.${this.domainName}`;
+  }
+
+  get storagePath(): string {
+    return path.resolve(this.get<string>('UPLOAD_LOCATION', '/srv/eds/uploads'));
+  }
+
+  /**
+   * Returns the max file size in bytes
+   */
+  get maxFileSize(): number {
+    return this.get<number>('UPLOAD_SIZE_LIMIT_MB', DEFAULT_MAX_UPLOAD_SIZE_MB) * 1024 * 1024;
   }
 }
