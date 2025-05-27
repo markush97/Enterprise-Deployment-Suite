@@ -24,6 +24,8 @@ export class TaskService {
     private readonly taskRepository: EntityRepository<TaskEntity>,
     @InjectRepository(TaskBundleEntity)
     private readonly taskBundleRepository: EntityRepository<TaskBundleEntity>,
+    @InjectRepository(TaskOrderEntity)
+    private readonly taskOrderRepository: EntityRepository<TaskOrderEntity>,
     private readonly em: EntityManager,
     private readonly localFileService: LocalFileService,
   ) {}
@@ -63,7 +65,7 @@ export class TaskService {
 
     order ??= bundle.taskList.count(); // Default to end of list if no order specified
 
-    const pivot = this.em.create(TaskOrderEntity, {
+    const pivot = this.taskOrderRepository.create({
       task,
       bundle,
       order,
@@ -107,9 +109,9 @@ export class TaskService {
       }
 
       // Set task-order in bundle
-      let pivot = await this.em.findOne(TaskOrderEntity, { task, bundle });
+      let pivot = await this.taskOrderRepository.findOne({ task, bundle });
       if (!pivot) {
-        pivot = this.em.create(TaskOrderEntity, { task, bundle, order: i });
+        pivot = this.taskOrderRepository.create({ task, bundle, order: i });
       } else {
         pivot.order = i;
       }
@@ -133,7 +135,6 @@ export class TaskService {
 
     const task = await this.taskRepository.findOne(id);
     if (!task) {
-      this.logger.error(`Task with id ${id} not found`);
       throw new NotFoundMTIException(MTIErrorCodes.TASK_NOT_FOUND, `Task with id ${id} not found`);
     }
     const fileMetadata = await this.localFileService.createFileMetadata({
