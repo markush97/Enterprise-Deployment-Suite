@@ -1,14 +1,18 @@
 import 'multer';
+import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-request.mti-exception';
+import { MTIHttpException } from 'src/core/errorhandling/exceptions/mit-exception';
+import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
+import { ARCHIVE_FILE_MIME_TYPES_REGEXP } from 'src/fileManagement/file-management.config.service';
 import { LocalFileUploadInterceptor } from 'src/fileManagement/local-file/local-file-upload.interceptor';
 
 import {
   Body,
   Controller,
   Get,
+  HttpStatus,
   Logger,
-  MaxFileSizeValidator,
   Param,
-  ParseFilePipe,
+  ParseFilePipeBuilder,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -19,8 +23,6 @@ import { CreateTaskDto } from './dto/task-create.dto';
 import { TaskBundleEntity } from './entities/task-bundle.entity';
 import { TasksEntity } from './entities/task.entity';
 import { TaskService } from './task.service';
-
-const MAX_UPLOAD_SIZE = 1000 * 1000 * 150; // 150 MB
 
 @ApiTags('tasks')
 @Controller('tasks')
@@ -47,13 +49,23 @@ export class TaskController {
   async uploadTaskContent(
     @Param('id') id: string,
     @UploadedFile(
-      new ParseFilePipe({
-        validators: [new MaxFileSizeValidator({ maxSize: MAX_UPLOAD_SIZE })],
-      }),
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: ARCHIVE_FILE_MIME_TYPES_REGEXP,
+        })
+        .build({
+          exceptionFactory: () =>
+            new MTIHttpException(
+              MTIErrorCodes.TASK_FILE_TYPE_INVALID,
+              `Uploaded file type is not supported. Only archive files are allowed.`,
+              HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+            ),
+        }),
     )
     file: Express.Multer.File,
   ): Promise<void> {
     this.logger.debug(`Uploading content for task ${id} with file ${file.originalname}`);
+
     return this.taskService.uploadTaskContent(id, file);
   }
 

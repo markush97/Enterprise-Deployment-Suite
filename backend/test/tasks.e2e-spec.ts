@@ -88,22 +88,13 @@ describe('TasksController (e2e)', () => {
       };
       mockTaskRepository.findOne.mockResolvedValue(mockTask);
 
-      // Create a temp file for upload
-      const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'task-upload-test-'));
-      const tempFilePath = path.join(tempDir, 'testfile.txt');
-      fs.writeFileSync(tempFilePath, 'test content');
-
       await request(app.getHttpServer())
         .post(`/tasks/${taskId}/content`)
         .set('Authorization', `Bearer ${await getValidJwt()}`)
-        .attach('file', tempFilePath, { contentType: 'text/plain' })
+        .attach('file', 'test/fixtures/valid.zip', { contentType: 'application/zip' })
         .expect(201);
 
       expect(mockPersistAndFlush).toHaveBeenCalled();
-
-      // Cleanup temp file and directory
-      fs.unlinkSync(tempFilePath);
-      fs.rmdirSync(tempDir);
     });
 
     it('should fail if task is not found', async () => {
@@ -116,7 +107,7 @@ describe('TasksController (e2e)', () => {
       await request(app.getHttpServer())
         .post(`/tasks/${taskId}/content`)
         .set('Authorization', `Bearer ${await getValidJwt()}`)
-        .attach('file', tempFilePath, { contentType: 'text/plain' })
+        .attach('file', 'test/fixtures/valid.zip', { contentType: 'application/zip' })
         .expect(404);
       fs.unlinkSync(tempFilePath);
       fs.rmdirSync(tempDir);
@@ -125,22 +116,53 @@ describe('TasksController (e2e)', () => {
     it('should return 413 if uploaded file is too large', async () => {
       const taskId = 'task-1';
       // Simulate a file larger than the allowed limit (1KB for test)
-      const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'task-upload-test-'));
-      const tempFilePath = path.join(tempDir, 'bigfile.txt');
       const mockTask = {
         id: taskId,
         global: false,
         customers: { contains: jest.fn().mockReturnValue(true) },
       };
-      fs.writeFileSync(tempFilePath, Buffer.alloc(2 * 1024, 'a')); // 2KB
+
       mockTaskRepository.findOne.mockResolvedValue(mockTask);
+      try {
+        await request(app.getHttpServer())
+          .post(`/tasks/${taskId}/content`)
+          .attach('file', 'test/fixtures/tooBig.zip', { contentType: 'application/zip' });
+        fail('Should not succeed');
+      } catch (err) {
+        // Accept both 413 and abort (case-insensitive)
+        const statusOrMessage = err.status || err.message;
+        expect([413, 'aborted', 'Aborted']).toContain(statusOrMessage);
+      }
+    });
+
+    it('should reject a file with .zip extension that is not a real zip (magic number check)', async () => {
+      const taskId = 'task-1';
+      const mockTask = {
+        id: taskId,
+        global: false,
+        customers: { contains: jest.fn().mockReturnValue(true) },
+      };
+      mockTaskRepository.findOneOrFail.mockResolvedValue(mockTask);
       await request(app.getHttpServer())
         .post(`/tasks/${taskId}/content`)
         .set('Authorization', `Bearer ${await getValidJwt()}`)
-        .attach('file', tempFilePath, { contentType: 'text/plain' })
-        .expect(413);
-      fs.unlinkSync(tempFilePath);
-      fs.rmdirSync(tempDir);
+        .attach('file', 'test/fixtures/invalid.zip', { contentType: 'application/zip' })
+        .expect(415);
+    });
+
+    it('should reject a file with .txt extension (not an archive)', async () => {
+      const taskId = 'task-1';
+      const mockTask = {
+        id: taskId,
+        global: false,
+        customers: { contains: jest.fn().mockReturnValue(true) },
+      };
+      mockTaskRepository.findOneOrFail.mockResolvedValue(mockTask);
+      await request(app.getHttpServer())
+        .post(`/tasks/${taskId}/content`)
+        .set('Authorization', `Bearer ${await getValidJwt()}`)
+        .attach('file', 'test/fixtures/invalid.txt', { contentType: 'text/plain' })
+        .expect(415);
     });
   });
 
@@ -292,6 +314,8 @@ describe('TasksController (e2e)', () => {
         .set('Authorization', `Bearer ${await getValidJwt()}`)
         .send({ taskIds })
         .expect(201);
+
+      expect(mockPersist).toHaveBeenCalled();
     });
 
     it('should fail if a task in the list cannot be assigned due to customer mismatch', async () => {

@@ -1,10 +1,15 @@
+import { join } from 'path';
 import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-request.mti-exception';
+import { MTIHttpException } from 'src/core/errorhandling/exceptions/mit-exception';
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
 import { NotFoundMTIException } from 'src/core/errorhandling/exceptions/not-found.mti-exception';
 import { CustomerEntity } from 'src/customers/entities/customer.entity';
+import { FileManagementConfigService } from 'src/fileManagement/file-management.config.service';
 import { LocalFileService } from 'src/fileManagement/local-file/local-file.service';
+import { Readable } from 'stream';
+import * as unzipper from 'unzipper';
 
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
@@ -28,6 +33,7 @@ export class TaskService {
     private readonly taskOrderRepository: EntityRepository<TaskOrderEntity>,
     private readonly em: EntityManager,
     private readonly localFileService: LocalFileService,
+    private readonly fileConfigService: FileManagementConfigService,
   ) {}
 
   public async getTasks(): Promise<TaskEntity[]> {
@@ -133,10 +139,20 @@ export class TaskService {
   public async uploadTaskContent(id: string, file: Express.Multer.File): Promise<void> {
     this.logger.debug(`Saving content for task ${id}`);
 
+    if (!('size' in file) || file.size > this.fileConfigService.maxUploadSize) {
+      throw new MTIHttpException(
+        MTIErrorCodes.TASK_FILE_SIZE_EXCEEDED,
+        `Uploaded file with size ${file.size / 1024 / 1024} Megabytes is over the limit of ${this.fileConfigService.maxUploadSize} Megabytes.`,
+        HttpStatus.PAYLOAD_TOO_LARGE,
+      );
+    }
+
     const task = await this.taskRepository.findOne(id);
     if (!task) {
       throw new NotFoundMTIException(MTIErrorCodes.TASK_NOT_FOUND, `Task with id ${id} not found`);
     }
+    await this.saveUnpackedArchive(file.buffer, task.id);
+
     const fileMetadata = await this.localFileService.createFileMetadata({
       filename: file.filename,
       path: file.path,
@@ -153,5 +169,17 @@ export class TaskService {
     return bundle.customers
       .getItems()
       .every((bundleCustomer: CustomerEntity) => task.customers.contains(bundleCustomer));
+  }
+
+  private async saveUnpackedArchive(fileBuffer: Buffer, taskId: string): Promise<void> {
+    const bufferStream = Readable.from(fileBuffer);
+    const destPath = join(this.fileConfigService.uploadPath, 'tasks', taskId, 'content');
+    return bufferStream
+      .pipe(
+        unzipper.Extract({
+          path: destPath,
+        }),
+      )
+      .promise();
   }
 }

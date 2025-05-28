@@ -1,8 +1,12 @@
+import * as multer from 'multer';
 import { CoreConfigService } from 'src/core/config/core.config.service';
 
 import { Injectable } from '@nestjs/common';
 import { MulterModuleOptions, MulterOptionsFactory } from '@nestjs/platform-express';
 import { ServeStaticModuleOptions, ServeStaticModuleOptionsFactory } from '@nestjs/serve-static';
+
+export const ARCHIVE_FILE_MIME_TYPES_REGEXP: RegExp =
+  /^(application\/(vnd\.rar|x-rar-compressed|zip|x-zip-compressed|octet-stream)|multipart\/x-zip)$/i;
 
 @Injectable()
 export class FileManagementConfigService
@@ -26,10 +30,7 @@ export class FileManagementConfigService
   createMulterOptions(): MulterModuleOptions {
     return {
       dest: this.uploadPath,
-      limits: {
-        fileSize: this.maxUploadSize,
-      },
-      storage: null, // Use default storage engine
+      storage: multer.memoryStorage(),
     };
   }
 
@@ -43,9 +44,9 @@ export class FileManagementConfigService
 
   /**
    * Max upload size in Bytes
-   * @default 10MB
+   * @default 1MB
    */
   public get maxUploadSize(): number {
-    return this.config.get<number>('FILE_UPLOAD_MAX_SIZE_MB', 10 * 1024 * 1024);
+    return this.config.get<number>('FILE_UPLOAD_MAX_SIZE_MB', 10) * 1024 * 1024;
   }
 }
