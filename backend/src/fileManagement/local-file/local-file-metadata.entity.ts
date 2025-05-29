@@ -7,14 +7,19 @@ export class LocalFileMetadataEntity extends CoreBaseEntity {
   @Property()
   filename: string;
 
-  @Property()
-  originalFilename: string;
+  @Property({ nullable: true })
+  originalFilename?: string;
 
   @Property()
   path: string;
 
   @Property()
   mimetype: string;
+
+  @Property({ persist: false })
+  get fullPath() {
+    return `${this.path} ${this.filename}`;
+  }
 
   @Property()
   isFolder: boolean = false;

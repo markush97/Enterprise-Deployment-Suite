@@ -58,30 +58,13 @@ export class TaskController {
   ): Promise<void> {
     this.logger.debug(`Downloading content for task ${id}`);
 
-    const folderPath = '/opt/Enterprise-Deployment-Suite/backend/resources/docs';
-
-    await stat(folderPath).catch(() => {
-      throw new NotFoundMTIException(
-        MTIErrorCodes.TASK_CONTENT_NOT_FOUND,
-        `Task content folder not found!`,
-      );
-    });
-
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', `attachment; filename=task-${id}-content.zip`);
 
-    const archive = archiver('zip', { zlib: { level: 9 } });
-    archive.directory(folderPath, false);
-    archive.on('error', err => {
-      this.logger.error(`Error while creating archive for task ${id}: ${err.message}`);
-      throw new InternalMTIException(
-        MTIErrorCodes.ARCHIVE_CREATION_ERROR,
-        `Error while creating archive for task content.`,
-      );
-    });
+    const stream = await this.taskService.getTaskContent(id);
 
-    archive.pipe(res);
-    await archive.finalize();
+    stream.pipe(res);
+    await stream.finalize();
   }
 
   @Post(':id/content')
@@ -104,9 +87,9 @@ export class TaskController {
     )
     file: Express.Multer.File,
   ): Promise<void> {
-    this.logger.debug(`Uploading content for task ${id} with file ${file.originalname}`);
+    this.logger.debug(`Uploading content for task ${id} with file '${file.originalname}'`);
 
-    return this.taskService.uploadTaskContent(id, file);
+    return this.taskService.saveTaskContent(id, file);
   }
 
   @Post(':taskId/bundle/:bundleId')

@@ -13,19 +13,19 @@ importers:
         version: 6.4.15
       '@mikro-orm/migrations':
         specifier: ^6.4.15
-        version: 6.4.15(@mikro-orm/core@6.4.15)(@types/node@22.15.21)(pg@8.15.6)
+        version: 6.4.15(@mikro-orm/core@6.4.15)(@types/node@22.15.21)(pg@8.15.6)(sqlite3@5.1.7)
       '@mikro-orm/mssql':
         specifier: ^6.4.15
-        version: 6.4.15(@mikro-orm/core@6.4.15)(pg@8.15.6)
+        version: 6.4.15(@mikro-orm/core@6.4.15)(pg@8.15.6)(sqlite3@5.1.7)
       '@mikro-orm/mysql':
         specifier: ^6.4.15
-        version: 6.4.15(@mikro-orm/core@6.4.15)(pg@8.15.6)
+        version: 6.4.15(@mikro-orm/core@6.4.15)(pg@8.15.6)(sqlite3@5.1.7)
       '@mikro-orm/nestjs':
         specifier: ^6.1.1
         version: 6.1.1(@mikro-orm/core@6.4.15)(@nestjs/common@11.1.2(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.2)
       '@mikro-orm/postgresql':
         specifier: ^6.4.15
-        version: 6.4.15(@mikro-orm/core@6.4.15)
+        version: 6.4.15(@mikro-orm/core@6.4.15)(sqlite3@5.1.7)
       '@mikro-orm/reflection':
         specifier: ^6.4.15
         version: 6.4.15(@mikro-orm/core@6.4.15)
@@ -83,6 +83,9 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
+      multer:
+        specifier: ^2.0.0
+        version: 2.0.0
       nestjs-pino:
         specifier: ^4.4.0
         version: 4.4.0(@nestjs/common@11.1.2(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(pino-http@10.4.0)(pino@9.7.0)(rxjs@7.8.2)
@@ -110,6 +113,9 @@ importers:
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
+      sqlite3:
+        specifier: ^5.1.7
+        version: 5.1.7
       tftp2:
         specifier: ^0.0.1
         version: 0.0.1
@@ -168,6 +174,9 @@ importers:
       '@types/supertest':
         specifier: ^6.0.3
         version: 6.0.3
+      '@types/unzipper':
+        specifier: ^0.10.11
+        version: 0.10.11
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.32.1
         version: 8.32.1(@typescript-eslint/parser@8.32.1(eslint@9.27.0)(typescript@5.8.3))(eslint@9.27.0)(typescript@5.8.3)
@@ -1240,6 +1249,9 @@ packages:
 
   '@types/supertest@6.0.3':
     resolution: {integrity: sha512-8WzXq62EXFhJ7QsH3Ocb/iKQ/Ty9ZVWnVzoTKc9tyyFRRF3a74Tk2+TLFgaFFw364Ere+npzHKEJ6ga2LzIL7w==}
+
+  '@types/unzipper@0.10.11':
+    resolution: {integrity: sha512-D25im2zjyMCcgL9ag6N46+wbtJBnXIr7SI4zHf9eJD2Dw2tEB5e+p5MYkrxKIVRscs5QV0EhtU9rgXSPx90oJg==}
 
   '@types/validator@13.15.1':
     resolution: {integrity: sha512-9gG6ogYcoI2mCMLdcO0NYI0AYrbxIjv0MDmy/5Ywo6CpWWrqYayc+mmgxRsCgtcGJm9BSbXkMsmxGah1iGHAAQ==}
@@ -5230,26 +5242,11 @@ snapshots:
       mikro-orm: 6.4.15
       reflect-metadata: 0.2.2
 
-  '@mikro-orm/knex@6.4.15(@mikro-orm/core@6.4.15)(mysql2@3.14.1)(pg@8.15.6)':
+  '@mikro-orm/knex@6.4.15(@mikro-orm/core@6.4.15)(mysql2@3.14.1)(pg@8.15.6)(sqlite3@5.1.7)':
     dependencies:
       '@mikro-orm/core': 6.4.15
       fs-extra: 11.3.0
-      knex: 3.1.0(mysql2@3.14.1)(pg@8.15.6)
-      sqlstring: 2.3.3
-    transitivePeerDependencies:
-      - mysql
-      - mysql2
-      - pg
-      - pg-native
-      - sqlite3
-      - supports-color
-      - tedious
-
-  '@mikro-orm/knex@6.4.15(@mikro-orm/core@6.4.15)(pg@8.15.6)':
-    dependencies:
-      '@mikro-orm/core': 6.4.15
-      fs-extra: 11.3.0
-      knex: 3.1.0(pg@8.15.6)
+      knex: 3.1.0(mysql2@3.14.1)(pg@8.15.6)(sqlite3@5.1.7)
       sqlstring: 2.3.3
     transitivePeerDependencies:
       - mysql
@@ -5275,11 +5272,11 @@ snapshots:
       - supports-color
       - tedious
 
-  '@mikro-orm/knex@6.4.15(@mikro-orm/core@6.4.15)(pg@8.15.6)(tedious@19.0.0)':
+  '@mikro-orm/knex@6.4.15(@mikro-orm/core@6.4.15)(pg@8.15.6)(sqlite3@5.1.7)(tedious@19.0.0)':
     dependencies:
       '@mikro-orm/core': 6.4.15
       fs-extra: 11.3.0
-      knex: 3.1.0(pg@8.15.6)(tedious@19.0.0)
+      knex: 3.1.0(pg@8.15.6)(sqlite3@5.1.7)(tedious@19.0.0)
       sqlstring: 2.3.3
     transitivePeerDependencies:
       - mysql
@@ -5290,10 +5287,10 @@ snapshots:
       - supports-color
       - tedious
 
-  '@mikro-orm/migrations@6.4.15(@mikro-orm/core@6.4.15)(@types/node@22.15.21)(pg@8.15.6)':
+  '@mikro-orm/migrations@6.4.15(@mikro-orm/core@6.4.15)(@types/node@22.15.21)(pg@8.15.6)(sqlite3@5.1.7)':
     dependencies:
       '@mikro-orm/core': 6.4.15
-      '@mikro-orm/knex': 6.4.15(@mikro-orm/core@6.4.15)(pg@8.15.6)
+      '@mikro-orm/knex': 6.4.15(@mikro-orm/core@6.4.15)(pg@8.15.6)(sqlite3@5.1.7)
       fs-extra: 11.3.0
       umzug: 3.8.2(@types/node@22.15.21)
     transitivePeerDependencies:
@@ -5309,10 +5306,10 @@ snapshots:
       - supports-color
       - tedious
 
-  '@mikro-orm/mssql@6.4.15(@mikro-orm/core@6.4.15)(pg@8.15.6)':
+  '@mikro-orm/mssql@6.4.15(@mikro-orm/core@6.4.15)(pg@8.15.6)(sqlite3@5.1.7)':
     dependencies:
       '@mikro-orm/core': 6.4.15
-      '@mikro-orm/knex': 6.4.15(@mikro-orm/core@6.4.15)(pg@8.15.6)(tedious@19.0.0)
+      '@mikro-orm/knex': 6.4.15(@mikro-orm/core@6.4.15)(pg@8.15.6)(sqlite3@5.1.7)(tedious@19.0.0)
       tedious: 19.0.0
       tsqlstring: 1.0.1
     transitivePeerDependencies:
@@ -5326,10 +5323,10 @@ snapshots:
       - sqlite3
       - supports-color
 
-  '@mikro-orm/mysql@6.4.15(@mikro-orm/core@6.4.15)(pg@8.15.6)':
+  '@mikro-orm/mysql@6.4.15(@mikro-orm/core@6.4.15)(pg@8.15.6)(sqlite3@5.1.7)':
     dependencies:
       '@mikro-orm/core': 6.4.15
-      '@mikro-orm/knex': 6.4.15(@mikro-orm/core@6.4.15)(mysql2@3.14.1)(pg@8.15.6)
+      '@mikro-orm/knex': 6.4.15(@mikro-orm/core@6.4.15)(mysql2@3.14.1)(pg@8.15.6)(sqlite3@5.1.7)
       mysql2: 3.14.1
     transitivePeerDependencies:
       - better-sqlite3
@@ -5348,10 +5345,10 @@ snapshots:
       '@nestjs/common': 11.1.2(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.1.2(@nestjs/common@11.1.2(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
 
-  '@mikro-orm/postgresql@6.4.15(@mikro-orm/core@6.4.15)':
+  '@mikro-orm/postgresql@6.4.15(@mikro-orm/core@6.4.15)(sqlite3@5.1.7)':
     dependencies:
       '@mikro-orm/core': 6.4.15
-      '@mikro-orm/knex': 6.4.15(@mikro-orm/core@6.4.15)(pg@8.15.6)
+      '@mikro-orm/knex': 6.4.15(@mikro-orm/core@6.4.15)(pg@8.15.6)(sqlite3@5.1.7)
       pg: 8.15.6
       postgres-array: 3.0.4
       postgres-date: 2.1.0
@@ -5839,6 +5836,10 @@ snapshots:
     dependencies:
       '@types/methods': 1.1.4
       '@types/superagent': 8.1.9
+
+  '@types/unzipper@0.10.11':
+    dependencies:
+      '@types/node': 22.15.21
 
   '@types/validator@13.15.1': {}
 
@@ -7883,7 +7884,7 @@ snapshots:
 
   kleur@3.0.3: {}
 
-  knex@3.1.0(mysql2@3.14.1)(pg@8.15.6):
+  knex@3.1.0(mysql2@3.14.1)(pg@8.15.6)(sqlite3@5.1.7):
     dependencies:
       colorette: 2.0.19
       commander: 10.0.1
@@ -7902,27 +7903,7 @@ snapshots:
     optionalDependencies:
       mysql2: 3.14.1
       pg: 8.15.6
-    transitivePeerDependencies:
-      - supports-color
-
-  knex@3.1.0(pg@8.15.6):
-    dependencies:
-      colorette: 2.0.19
-      commander: 10.0.1
-      debug: 4.3.4
-      escalade: 3.2.0
-      esm: 3.2.25
-      get-package-type: 0.1.0
-      getopts: 2.3.0
-      interpret: 2.2.0
-      lodash: 4.17.21
-      pg-connection-string: 2.6.2
-      rechoir: 0.8.0
-      resolve-from: 5.0.0
-      tarn: 3.0.2
-      tildify: 2.0.0
-    optionalDependencies:
-      pg: 8.15.6
+      sqlite3: 5.1.7
     transitivePeerDependencies:
       - supports-color
 
@@ -7948,7 +7929,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  knex@3.1.0(pg@8.15.6)(tedious@19.0.0):
+  knex@3.1.0(pg@8.15.6)(sqlite3@5.1.7)(tedious@19.0.0):
     dependencies:
       colorette: 2.0.19
       commander: 10.0.1
@@ -7966,6 +7947,7 @@ snapshots:
       tildify: 2.0.0
     optionalDependencies:
       pg: 8.15.6
+      sqlite3: 5.1.7
       tedious: 19.0.0
     transitivePeerDependencies:
       - supports-color

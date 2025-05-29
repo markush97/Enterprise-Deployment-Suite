@@ -30,7 +30,6 @@ export class EMailConfigService {
   }
 
   private get port(): number {
-     
     return this.config.get('EMAIL_PORT', 25);
   }
 

@@ -19,7 +19,7 @@ const extractCookie = (cookieString: string, cookieKey: string): string => {
 
   cookieArray.forEach((cookie: string) => {
     const index = cookie.indexOf(name);
-     
+
     /* istanbul ignore next */ if (index >= 0) {
       result = cookie.substring(index + name.length);
       return;

@@ -37,7 +37,12 @@ export class TasksEntity extends CoreBaseEntity {
   @BeforeCreate()
   @BeforeUpdate()
   checkGlobalNoCustomers() {
-    if (this.global && this.customers && this.customers.count() > 0) {
+    if (
+      this.global &&
+      this.customers &&
+      this.customers.isInitialized() &&
+      this.customers.count() > 0
+    ) {
       throw new BadRequestMTIException(
         MTIErrorCodes.GLOBAL_TASK_CANNOT_HAVE_CUSTOMERS,
         'A global task cannot have customers assigned.',
