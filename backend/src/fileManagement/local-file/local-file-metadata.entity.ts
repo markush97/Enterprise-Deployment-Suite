@@ -15,4 +15,7 @@ export class LocalFileMetadataEntity extends CoreBaseEntity {
 
   @Property()
   mimetype: string;
+
+  @Property()
+  isFolder: boolean = false;
 }
