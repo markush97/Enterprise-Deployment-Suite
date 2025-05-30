@@ -15,6 +15,7 @@ export class AuthJwtService {
       email: account.email,
       login: account.email,
       sub: account.id,
+      name: account.name,
     };
 
     return {

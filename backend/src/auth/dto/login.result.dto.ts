@@ -12,5 +12,6 @@ export class LoginResultDto implements AuthTokenPayload {
   id: string;
   sub: string;
   email: string;
+  name?: string;
   public readonly token: string;
 }

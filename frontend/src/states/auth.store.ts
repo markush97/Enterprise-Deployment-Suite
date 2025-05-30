@@ -22,6 +22,7 @@ export const useAuthStore = create<AuthStore>()(
                         const user = {
                             email: response.data?.email,
                             id: response.data?.id,
+                            name: response.data?.name
                         }
                         set({ authToken: backendToken, isAuthenticated: true, user });
                     }

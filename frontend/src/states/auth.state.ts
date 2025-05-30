@@ -4,6 +4,7 @@ export type AuthState = {
     user: {
         email: string;
         id: string
+        name?: string;
     } | null
 }
 
