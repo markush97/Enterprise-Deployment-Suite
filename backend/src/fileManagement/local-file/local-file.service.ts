@@ -1,4 +1,5 @@
 import * as archiver from 'archiver';
+import { createReadStream } from 'fs';
 import { rm, rmdir, stat, unlink } from 'fs/promises';
 import { isAbsolute, join, normalize, resolve } from 'path';
 import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-request.mti-exception';
@@ -56,6 +57,32 @@ export class LocalFileService {
         `Error while creating archive for download.`,
       );
     });
+
+    return archive;
+  }
+
+  public async getFilesAsArchive(fileInfos: LocalFileMetadataEntity[]): Promise<archiver.Archiver> {
+    this.logger.debug(`Getting files as archive for ${fileInfos.length} files`);
+
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    archive.on('error', err => {
+      this.logger.error(`Error while creating archive for file-content: ${err.message}`);
+      throw new InternalMTIException(
+        MTIErrorCodes.ARCHIVE_CREATION_ERROR,
+        `Error while creating archive for download.`,
+      );
+    });
+
+    for (const fileInfo of fileInfos) {
+      const filePath = resolve(this.fileConfigService.uploadPath, fileInfo.path, fileInfo.filename);
+
+      await stat(filePath).catch(error => {
+        this.logger.error(`Error reading file ${fileInfo.id}: ${error.message}`);
+        throw new InternalMTIException(MTIErrorCodes.FILE_READING_ERROR, `Error reading file!`);
+      });
+
+      archive.directory(filePath, join(fileInfo.path, fileInfo.filename));
+    }
 
     return archive;
   }

@@ -150,6 +150,21 @@ export class TaskService {
     return this.localFileService.getFileAsArchive(task.contentFile);
   }
 
+  public async getTaskBundleContent(id: string): Promise<archiver.Archiver> {
+    this.logger.debug(`Getting content for task-bundle ${id}`);
+
+    const taskBundle = await this.taskBundleRepository.findOneOrFail(id, {
+      populate: ['taskList', 'taskList.contentFile'],
+    });
+
+    return this.localFileService.getFilesAsArchive(
+      taskBundle.taskList
+        .getItems()
+        .map(task => task.contentFile)
+        .filter(file => file),
+    );
+  }
+
   public async saveTaskContent(id: string, file: Express.Multer.File): Promise<void> {
     this.logger.debug(`Saving content for task ${id}`);
 

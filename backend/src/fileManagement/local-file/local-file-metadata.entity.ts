@@ -1,3 +1,4 @@
+import { join } from 'path';
 import { CoreBaseEntity } from 'src/core/persistence/base.entity';
 
 import { Entity, Property } from '@mikro-orm/core';
@@ -18,7 +19,7 @@ export class LocalFileMetadataEntity extends CoreBaseEntity {
 
   @Property({ persist: false })
   get fullPath() {
-    return `${this.path} ${this.filename}`;
+    return join(this.path, this.filename);
   }
 
   @Property()

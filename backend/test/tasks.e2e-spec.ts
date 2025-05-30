@@ -283,6 +283,8 @@ describe('TasksController (e2e)', () => {
   });
 
   describe('/tasks/:id/content (GET)', () => {
+    testEndpointAuth('/tasks/task-1/content', 'GET', () => app);
+
     it('should download content for a task with content', async () => {
       const taskId = 'task-9';
       const contentDir = path.join(testUploadFolder, 'tasks', taskId);
@@ -478,8 +480,8 @@ describe('TasksController (e2e)', () => {
     });
   });
 
-  describe('/tasks/:taskId/bundle/:bundleId (POST)', () => {
-    testEndpointAuth('/tasks/task-1/bundle/bundle-1', 'POST', () => app);
+  describe('/tasks/:taskId/bundles/:bundleId (POST)', () => {
+    testEndpointAuth('/tasks/task-1/bundles/bundle-1', 'POST', () => app);
 
     it('should assign a task to a bundle', async () => {
       const bundleId = 'bundle-1';
@@ -507,7 +509,7 @@ describe('TasksController (e2e)', () => {
       mockTaskOrderRepository.findOne.mockResolvedValue(undefined);
 
       await request(app.getHttpServer())
-        .post(`/tasks/${taskId}/bundle/${bundleId}`)
+        .post(`/tasks/${taskId}/bundles/${bundleId}`)
         .set('Authorization', `Bearer ${await getValidJwt()}`)
         .send({ order })
         .expect(201);
@@ -540,7 +542,7 @@ describe('TasksController (e2e)', () => {
       mockTaskBundleRepository.findOneOrFail.mockResolvedValue(mockBundle);
 
       await request(app.getHttpServer())
-        .post(`/tasks/${taskId}/bundle/${bundleId}`)
+        .post(`/tasks/${taskId}/bundles/${bundleId}`)
         .set('Authorization', `Bearer ${await getValidJwt()}`)
         .send({ order: 0 })
         .expect(400);
@@ -566,7 +568,7 @@ describe('TasksController (e2e)', () => {
       mockTaskBundleRepository.findOneOrFail.mockResolvedValue(mockBundle);
 
       await request(app.getHttpServer())
-        .post(`/tasks/${taskId}/bundle/${bundleId}`)
+        .post(`/tasks/${taskId}/bundles/${bundleId}`)
         .set('Authorization', `Bearer ${await getValidJwt()}`)
         .send({ order: 0 })
         .expect(400);
@@ -577,7 +579,7 @@ describe('TasksController (e2e)', () => {
       const taskId = 'task-404';
       mockTaskRepository.findOneOrFail.mockRejectedValue(new NotFoundException());
       await request(app.getHttpServer())
-        .post(`/tasks/${taskId}/bundle/${bundleId}`)
+        .post(`/tasks/${taskId}/bundles/${bundleId}`)
         .set('Authorization', `Bearer ${await getValidJwt()}`)
         .send({ order: 0 })
         .expect(404);
@@ -594,15 +596,19 @@ describe('TasksController (e2e)', () => {
       mockTaskRepository.findOneOrFail.mockResolvedValue(mockTask);
       mockTaskBundleRepository.findOneOrFail.mockRejectedValue(new NotFoundException());
       await request(app.getHttpServer())
-        .post(`/tasks/${taskId}/bundle/${bundleId}`)
+        .post(`/tasks/${taskId}/bundles/${bundleId}`)
         .set('Authorization', `Bearer ${await getValidJwt()}`)
         .send({ order: 0 })
         .expect(404);
     });
   });
 
-  describe('/tasks/bundle/:bundleId/tasks (POST)', () => {
-    testEndpointAuth('/tasks/bundle/bundle-3/tasks', 'POST', () => app);
+  describe('/tasks/bundles (POST)', () => {
+    testEndpointAuth('/tasks/bundles', 'POST', () => app);
+  });
+
+  describe('/tasks/bundles/:bundleId/tasks (POST)', () => {
+    testEndpointAuth('/tasks/bundles/bundle-3/tasks', 'POST', () => app);
 
     it('should bulk assign tasks to a bundle', async () => {
       const bundleId = 'bundle-3';
@@ -622,7 +628,7 @@ describe('TasksController (e2e)', () => {
       mockTaskOrderRepository.create.mockReturnValue({});
 
       await request(app.getHttpServer())
-        .post(`/tasks/bundle/${bundleId}/tasks`)
+        .post(`/tasks/bundles/${bundleId}/tasks`)
         .set('Authorization', `Bearer ${await getValidJwt()}`)
         .send({ taskIds })
         .expect(201);
@@ -657,7 +663,7 @@ describe('TasksController (e2e)', () => {
       mockTaskOrderRepository.create.mockReturnValue({});
 
       await request(app.getHttpServer())
-        .post(`/tasks/bundle/${bundleId}/tasks`)
+        .post(`/tasks/bundles/${bundleId}/tasks`)
         .set('Authorization', `Bearer ${await getValidJwt()}`)
         .send({ taskIds })
         .expect(400);
@@ -668,7 +674,7 @@ describe('TasksController (e2e)', () => {
       const taskIds = ['task-4', 'task-5'];
       mockTaskBundleRepository.findOneOrFail.mockRejectedValue(new NotFoundException());
       await request(app.getHttpServer())
-        .post(`/tasks/bundle/${bundleId}/tasks`)
+        .post(`/tasks/bundles/${bundleId}/tasks`)
         .set('Authorization', `Bearer ${await getValidJwt()}`)
         .send({ taskIds })
         .expect(404);
@@ -697,7 +703,7 @@ describe('TasksController (e2e)', () => {
         });
       });
       await request(app.getHttpServer())
-        .post(`/tasks/bundle/${bundleId}/tasks`)
+        .post(`/tasks/bundles/${bundleId}/tasks`)
         .set('Authorization', `Bearer ${await getValidJwt()}`)
         .send({ taskIds })
         .expect(404);
@@ -738,7 +744,7 @@ describe('TasksController (e2e)', () => {
       mockTaskOrderRepository.create.mockReturnValue({});
 
       await request(app.getHttpServer())
-        .post(`/tasks/bundle/${bundleId}/tasks`)
+        .post(`/tasks/bundles/${bundleId}/tasks`)
         .set('Authorization', `Bearer ${await getValidJwt()}`)
         .send({ taskIds: newTaskIds })
         .expect(201);

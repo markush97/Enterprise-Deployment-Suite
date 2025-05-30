@@ -25,6 +25,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
+import { CreateTaskBundleDto } from './dto/task-bundle-create.dto';
 import { CreateTaskDto } from './dto/task-create.dto';
 import { TaskBundleEntity } from './entities/task-bundle.entity';
 import { TasksEntity } from './entities/task.entity';
@@ -67,6 +68,23 @@ export class TaskController {
     await stream.finalize();
   }
 
+  @Get('bundles/:bundleId/content')
+  @UseInterceptors(LocalFileUploadInterceptor({ fieldName: 'file', path: 'tasksContent' }))
+  async downloadTaskBundleContent(
+    @Param('bundleId') id: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
+    this.logger.debug(`Downloading content for task-bundle ${id}`);
+
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename=task-${id}-content.zip`);
+
+    const stream = await this.taskService.getTaskBundleContent(id);
+
+    stream.pipe(res);
+    await stream.finalize();
+  }
+
   @Post(':id/content')
   @UseInterceptors(LocalFileUploadInterceptor({ fieldName: 'file', path: 'tasksContent' }))
   async uploadTaskContent(
@@ -92,7 +110,7 @@ export class TaskController {
     return this.taskService.saveTaskContent(id, file);
   }
 
-  @Post(':taskId/bundle/:bundleId')
+  @Post(':taskId/bundles/:bundleId')
   async assignTaskToBundle(
     @Param('bundleId') bundleId: string,
     @Param('taskId') taskId: string,
@@ -101,7 +119,13 @@ export class TaskController {
     return this.taskService.assignTaskToBundle(taskId, bundleId, order);
   }
 
-  @Post('/bundle/:bundleId/tasks')
+  @Post('bundles')
+  async createTaskBundle(@Body() taskBundle: CreateTaskBundleDto): Promise<TaskBundleEntity> {
+    this.logger.debug('Creating a new task bundle');
+    return this.taskService.createTaskBundle(taskBundle);
+  }
+
+  @Post('/bundles/:bundleId/tasks')
   async bulkSetTasks(
     @Param('bundleId') bundleId: string,
     @Body('taskIds') taskIds: string[],
