@@ -15,7 +15,7 @@ export class EntraIdStrategy extends PassportStrategy(Strategy, 'EntraId') {
       issuer: `https://sts.windows.net/${entraConfig.tenantId}/`,
       algorithms: ['RS256'],
       audience: `api://${entraConfig.clientId}`,
-      ignoreExpiration: true,
+      ignoreExpiration: false,
       secretOrKeyProvider: jwksRsa.passportJwtSecret({
         cache: true,
         rateLimit: true,
