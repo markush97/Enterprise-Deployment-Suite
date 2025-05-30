@@ -1,7 +1,10 @@
 import * as fs from 'fs';
+import { copyFile, mkdir } from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
+import { Stream } from 'stream';
 import * as request from 'supertest';
+import * as unzipper from 'unzipper';
 
 import { INestApplication, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -11,6 +14,8 @@ import { EntityManager } from '@mikro-orm/core';
 import { AppModule } from '../src/app.module';
 import { setupApp } from '../src/main';
 import { getValidJwt, testEndpointAuth } from './testutils/auth.testutil';
+import { testConfig } from './testutils/config.testutil';
+import { binaryParser } from './testutils/file.testutil';
 import { setupTestConfig } from './testutils/setup.testutil';
 
 // Mock repositories
@@ -22,9 +27,14 @@ let mockPersist: jest.SpyInstance;
 
 describe('TasksController (e2e)', () => {
   let app: INestApplication;
+  const testUploadFolder = testConfig.FILE_UPLOAD_PATH;
 
   beforeAll(async () => {
     setupTestConfig();
+
+    if (fs.existsSync(testUploadFolder)) {
+      fs.rmSync(testUploadFolder, { recursive: true, force: true });
+    }
 
     mockTaskRepository = {
       findOneOrFail: jest.fn(),
@@ -61,6 +71,9 @@ describe('TasksController (e2e)', () => {
   });
 
   afterAll(async () => {
+    if (fs.existsSync(testUploadFolder)) {
+      fs.rmSync(testUploadFolder, { recursive: true, force: true });
+    }
     await app.close();
   });
 
@@ -95,6 +108,10 @@ describe('TasksController (e2e)', () => {
         .expect(201);
 
       expect(mockPersistAndFlush).toHaveBeenCalled();
+      // Check that the file was saved to the expected folder
+      const contentDir = path.join(testUploadFolder, 'tasks', taskId, 'content');
+      const files = fs.readdirSync(contentDir);
+      expect(files.length).toBeGreaterThan(0);
     });
 
     it('should fail if task is not found', async () => {
@@ -163,6 +180,161 @@ describe('TasksController (e2e)', () => {
         .set('Authorization', `Bearer ${await getValidJwt()}`)
         .attach('file', 'test/fixtures/invalid.txt', { contentType: 'text/plain' })
         .expect(415);
+    });
+
+    it('should reject upload if no file is attached', async () => {
+      const taskId = 'task-1';
+      const mockTask = {
+        id: taskId,
+        global: false,
+        customers: { contains: jest.fn().mockReturnValue(true) },
+      };
+      mockTaskRepository.findOne.mockResolvedValue(mockTask);
+      await request(app.getHttpServer())
+        .post(`/tasks/${taskId}/content`)
+        .set('Authorization', `Bearer ${await getValidJwt()}`)
+        .expect(415);
+    });
+
+    it('should reject upload if file is empty', async () => {
+      const taskId = 'task-1';
+      const mockTask = {
+        id: taskId,
+        global: false,
+        customers: { contains: jest.fn().mockReturnValue(true) },
+      };
+      mockTaskRepository.findOne.mockResolvedValue(mockTask);
+      // Create an empty file for upload
+      const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'task-upload-test-'));
+      const tempFilePath = path.join(tempDir, 'empty.zip');
+      fs.writeFileSync(tempFilePath, '');
+      await request(app.getHttpServer())
+        .post(`/tasks/${taskId}/content`)
+        .set('Authorization', `Bearer ${await getValidJwt()}`)
+        .attach('file', tempFilePath, { contentType: 'application/zip' })
+        .expect(415);
+      fs.unlinkSync(tempFilePath);
+      fs.rmdirSync(tempDir);
+    });
+
+    it('should upload and overwrite existing content', async () => {
+      const taskId = 'task-6';
+      const contentDir = path.join(testUploadFolder, 'tasks', taskId, 'content');
+      const firstFileName = 'test.txt';
+      const secondFileName = 'test2.txt';
+      // Mock localFilesRepository
+      const firstFileEntity = { id: 'file-entity-1', filename: 'content', path: `tasks/${taskId}` };
+      // On first call (deleteFileByPath before first upload), return null (no file to delete)
+      // On second call (deleteFileByPath before overwrite), return the first file entity
+      let findOneCallCount = 0;
+      const mockFindOne = jest.fn().mockImplementation(() => {
+        findOneCallCount++;
+        if (findOneCallCount === 1) return null;
+        if (findOneCallCount === 2) return firstFileEntity;
+        return null;
+      });
+      // Patch the localFilesRepository on the service
+      const localFileService = app.get(
+        require('../src/fileManagement/local-file/local-file.service').LocalFileService,
+      );
+      localFileService.localFilesRepository.findOne = mockFindOne;
+      // Spy on nativeDelete
+      const mockNativeDelete = jest.fn();
+      localFileService.localFilesRepository.nativeDelete = mockNativeDelete;
+
+      const mockTask = {
+        id: taskId,
+        global: false,
+        customers: { contains: jest.fn().mockReturnValue(true) },
+      };
+      mockTaskRepository.findOne.mockResolvedValue(mockTask);
+
+      // First upload with valid.zip
+      await request(app.getHttpServer())
+        .post(`/tasks/${taskId}/content`)
+        .set('Authorization', `Bearer ${await getValidJwt()}`)
+        .attach('file', 'test/fixtures/valid.zip', { contentType: 'application/zip' })
+        .expect(201);
+      // Check that the file was saved to the expected folder after first upload
+      let files = fs.readdirSync(contentDir);
+      expect(files).toContain(firstFileName);
+      const firstFilePath = path.join(contentDir, files[0]);
+      const firstFileContent = fs.readFileSync(firstFilePath);
+
+      // Second upload with valid2.zip (should overwrite)
+      await request(app.getHttpServer())
+        .post(`/tasks/${taskId}/content`)
+        .set('Authorization', `Bearer ${await getValidJwt()}`)
+        .attach('file', 'test/fixtures/valid2.zip', { contentType: 'application/zip' })
+        .expect(201);
+
+      // Check again after overwrite
+      files = fs.readdirSync(contentDir);
+      expect(files).toContain(secondFileName);
+      expect(files.length).toBe(1);
+      const secondFilePath = path.join(contentDir, files[0]);
+      const secondFileContent = fs.readFileSync(secondFilePath);
+
+      // The file content should have changed after overwrite
+      expect(Buffer.compare(firstFileContent, secondFileContent)).not.toBe(0);
+      // Check that nativeDelete was called with the first file entity
+      expect(mockNativeDelete).toHaveBeenCalledWith(firstFileEntity);
+    });
+  });
+
+  describe('/tasks/:id/content (GET)', () => {
+    it('should download content for a task with content', async () => {
+      const taskId = 'task-9';
+      const contentDir = path.join(testUploadFolder, 'tasks', taskId);
+      const folderName = 'content';
+      const fileName = 'testcontent.txt';
+
+      await mkdir(path.join(contentDir, folderName), { recursive: true });
+      await copyFile('test/fixtures/testcontent.txt', path.join(contentDir, folderName, fileName));
+
+      const mockTask = {
+        id: taskId,
+        contentFile: { id: 'file-1', path: contentDir, filename: folderName },
+      };
+      mockTaskRepository.findOne.mockResolvedValue(mockTask);
+
+      await request(app.getHttpServer())
+        .get(`/tasks/${taskId}/content`)
+        .set('Authorization', `Bearer ${await getValidJwt()}`)
+        .expect(200)
+        .expect('content-type', /application\/octet-stream|application\/zip/)
+        .responseType('blob')
+        .expect(async res => {
+          const zip = await unzipper.Open.buffer(res.body);
+          const files = zip.files;
+
+          // Check the files
+          expect(files.length).toBe(1);
+          const filePaths = files.map(f => f.path);
+          expect(filePaths).toContain(fileName);
+          const exampleFile = files.find(f => f.path === fileName);
+          const content = await exampleFile.buffer();
+          expect(content.toString().trim()).toEqual('This is a textcontent made to be downloaded');
+        });
+    });
+
+    it('should fail to download if task does not exist', async () => {
+      const taskId = 'task-404';
+      mockTaskRepository.findOne.mockResolvedValue(undefined);
+      await request(app.getHttpServer())
+        .get(`/tasks/${taskId}/content`)
+        .set('Authorization', `Bearer ${await getValidJwt()}`)
+        .expect(404);
+    });
+
+    it('should fail to download if task has no content', async () => {
+      const taskId = 'task-2';
+      const mockTask = { id: taskId, contentFile: undefined };
+      mockTaskRepository.findOne.mockResolvedValue(mockTask);
+      await request(app.getHttpServer())
+        .get(`/tasks/${taskId}/content`)
+        .set('Authorization', `Bearer ${await getValidJwt()}`)
+        .expect(404);
     });
   });
 
