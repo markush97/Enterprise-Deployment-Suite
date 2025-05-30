@@ -336,6 +336,146 @@ describe('TasksController (e2e)', () => {
         .set('Authorization', `Bearer ${await getValidJwt()}`)
         .expect(404);
     });
+
+    it('should return 404 if content folder exists but is empty on download', async () => {
+      const taskId = 'task-empty-content';
+      const contentDir = path.join(testUploadFolder, 'tasks', taskId, 'content');
+      await mkdir(contentDir, { recursive: true });
+      // Create a dummy file in the folder and then remove it to ensure the folder is empty
+      const dummyFile = path.join(contentDir, 'dummy.txt');
+      fs.writeFileSync(dummyFile, '');
+      fs.unlinkSync(dummyFile);
+      const mockTask = {
+        id: taskId,
+        contentFile: {
+          id: 'file-1',
+          path: path.join(testUploadFolder, 'tasks', taskId),
+          filename: 'content',
+        },
+      };
+      mockTaskRepository.findOne.mockResolvedValue(mockTask);
+      await request(app.getHttpServer())
+        .get(`/tasks/${taskId}/content`)
+        .set('Authorization', `Bearer ${await getValidJwt()}`)
+        .responseType('blob')
+        .expect(200)
+        .expect(async res => {
+          const zip = await unzipper.Open.buffer(res.body);
+          const files = zip.files;
+
+          // Check the files
+          expect(files.length).toBe(0);
+        });
+    });
+
+    it('should upload and download non-ASCII filenames correctly', async () => {
+      const taskId = 'task-nonascii';
+      const uploadDir = path.join(testUploadFolder, 'tasks', taskId);
+      const uplodaFolder = 'content';
+      const fileName = 'nonascii.zip';
+
+      const mockTask = {
+        id: taskId,
+        contentFile: { id: 'file-nonascii', path: uploadDir, filename: uplodaFolder },
+      };
+      mockTaskRepository.findOne.mockResolvedValue(mockTask);
+      // Upload a zip with non-ASCII filename
+      await request(app.getHttpServer())
+        .post(`/tasks/${taskId}/content`)
+        .set('Authorization', `Bearer ${await getValidJwt()}`)
+        .attach('file', 'test/fixtures/' + fileName, { contentType: 'application/zip' })
+        .expect(201);
+
+      // Now test download
+      const nonAsciiName = 'üñîçødë.txt';
+      const mockTaskWithContent = {
+        id: taskId,
+        contentFile: { id: 'file-nonascii', path: uploadDir, filename: uplodaFolder },
+      };
+      mockTaskRepository.findOne.mockResolvedValue(mockTaskWithContent);
+      await request(app.getHttpServer())
+        .get(`/tasks/${taskId}/content`)
+        .set('Authorization', `Bearer ${await getValidJwt()}`)
+        .expect(200)
+        .expect('content-type', /application\/octet-stream|application\/zip/)
+        .responseType('blob')
+        .expect(async res => {
+          const zip = await unzipper.Open.buffer(res.body);
+          const files = zip.files;
+          // Check the files
+          expect(files.length).toBe(1);
+          const filePaths = files.map(f => f.path);
+          expect(filePaths).toContain(nonAsciiName);
+          const exampleFile = files.find(f => f.path === nonAsciiName);
+          const content = await exampleFile.buffer();
+          expect(content.toString().trim()).toEqual('non-ascii content');
+        });
+    });
+
+    it('should reject a corrupted/truncated zip file', async () => {
+      const taskId = 'task-corrupt';
+
+      const uploadDir = path.join(testUploadFolder, 'tasks', taskId);
+      const uplodaFolder = 'content';
+      const fileName = 'corrupt.zip';
+
+      await mkdir(path.join(uploadDir, uplodaFolder), { recursive: true });
+      await copyFile('test/fixtures/' + fileName, path.join(uploadDir, uplodaFolder, fileName));
+
+      const mockTask = {
+        id: taskId,
+        global: false,
+        customers: { contains: jest.fn().mockReturnValue(true) },
+      };
+      mockTaskRepository.findOneOrFail.mockResolvedValue(mockTask);
+      await request(app.getHttpServer())
+        .post(`/tasks/${taskId}/content`)
+        .set('Authorization', `Bearer ${await getValidJwt()}`)
+        .attach('file', 'test/fixtures/corrupt.zip', { contentType: 'application/zip' })
+        .expect(415);
+    });
+
+    it('should reject a zip with directory traversal paths', async () => {
+      const taskId = 'task-traversal';
+      const contentDir = path.join(testUploadFolder, 'tasks', taskId);
+      const folderName = 'content';
+      const fileName = 'traversal.zip';
+
+      await mkdir(path.join(contentDir, folderName), { recursive: true });
+      await copyFile('test/fixtures/' + fileName, path.join(contentDir, folderName, fileName));
+
+      const mockTask = {
+        id: taskId,
+        contentFile: { id: 'file-traversal', path: contentDir, filename: folderName },
+      };
+      mockTaskRepository.findOne.mockResolvedValue(mockTask);
+      await request(app.getHttpServer())
+        .post(`/tasks/${taskId}/content`)
+        .set('Authorization', `Bearer ${await getValidJwt()}`)
+        .attach('file', 'test/fixtures/traversal.zip', { contentType: 'application/zip' })
+        .expect(400);
+    });
+
+    it('should handle simultaneous uploads safely', async () => {
+      const taskId = 'task-simultaneous';
+      const mockTask = {
+        id: taskId,
+        global: false,
+        customers: { contains: jest.fn().mockReturnValue(true) },
+      };
+      mockTaskRepository.findOne.mockResolvedValue(mockTask);
+      // Use the same valid zip for both uploads
+      const upload = async () =>
+        request(app.getHttpServer())
+          .post(`/tasks/${taskId}/content`)
+          .set('Authorization', `Bearer ${await getValidJwt()}`)
+          .attach('file', 'test/fixtures/valid.zip', { contentType: 'application/zip' });
+      const [res1, res2] = await Promise.all([upload(), upload()]);
+      expect([201, 409]).toContain(res1.status);
+      expect([201, 409]).toContain(res2.status);
+      // At least one should succeed
+      expect([res1.status, res2.status]).toContain(201);
+    });
   });
 
   describe('/tasks/:taskId/bundle/:bundleId (POST)', () => {

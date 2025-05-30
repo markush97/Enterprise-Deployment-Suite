@@ -1,6 +1,7 @@
 import * as archiver from 'archiver';
 import { rm, rmdir, stat, unlink } from 'fs/promises';
-import { join, resolve } from 'path';
+import { isAbsolute, join, normalize, resolve } from 'path';
+import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-request.mti-exception';
 import { InternalMTIException } from 'src/core/errorhandling/exceptions/internal.mti-exception';
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
 import { TasksEntity } from 'src/tasks/entities/task.entity';
@@ -71,6 +72,7 @@ export class LocalFileService {
     const folderName = pathParts[pathParts.length - 1];
 
     const zip = await unzipper.Open.buffer(fileBuffer);
+    await this.validateZipNoTraversal(zip, destPath);
 
     await zip.extract({ path: destPath, concurrency: 5 }).catch(error => {
       this.logger.error(`Error unpacking archive: ${error.message}`);
@@ -133,5 +135,31 @@ export class LocalFileService {
     }
 
     return file;
+  }
+
+  private async validateZipNoTraversal(zip: unzipper.CentralDirectory, targetDir: string) {
+    for (const entry of zip.files) {
+      const entryPath = entry.path;
+      // Forbid absolute paths and traversal
+      if (
+        entryPath.includes('..') ||
+        isAbsolute(entryPath) ||
+        entryPath.startsWith('/') ||
+        entryPath.startsWith('\\')
+      ) {
+        throw new BadRequestMTIException(
+          MTIErrorCodes.ZIP_WITH_PATH_TRAVERSAL,
+          'Zip contains forbidden path: ' + entryPath,
+        );
+      }
+      // Forbid escaping the target directory
+      const destPath = normalize(join(targetDir, entryPath));
+      if (!destPath.startsWith(resolve(targetDir))) {
+        throw new BadRequestMTIException(
+          MTIErrorCodes.ZIP_WITH_PATH_TRAVERSAL,
+          'Zip contains forbidden path: ' + entryPath,
+        );
+      }
+    }
   }
 }
