@@ -11,6 +11,7 @@ import { AccountEntity, UserRole } from './entities/account.entity';
 import { EntraIdTokenPayload } from './strategies/entraID/interface/emtra-token.interface';
 import { AuthJwtService } from './strategies/jwt/jwt.service';
 import { RefreshTokenService } from './strategies/refreshtoken/refreshtoken.service';
+import { NotFoundMTIException } from 'src/core/errorhandling/exceptions/not-found.mti-exception';
 
 @Injectable()
 export class AuthService {
@@ -77,7 +78,7 @@ export class AuthService {
 
   public async refreshAccessToken(refreshToken?: string): Promise<LoginResultDto> {
     if (!refreshToken) {
-      throw new UnauthorizedMTIException(
+      throw new NotFoundMTIException(
         MTIErrorCodes.REFRESHTOKEN_INVALID,
         'Refreshtoken invalid',
       );
