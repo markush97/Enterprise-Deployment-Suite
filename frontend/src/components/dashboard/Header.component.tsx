@@ -1,12 +1,15 @@
 import { LogOut } from "lucide-react";
 import { useAuthStore } from "../../states/auth.store";
 import { ThemeToggle } from "./ThemeToggle.component";
+import { useNavigate, useLocation } from "react-router-dom";
+import { DashboardModule } from "./dashboard-module.interface";
 
 
-export function Header() {
+export function Header({ modules }: { modules: DashboardModule[] }) {
     const user = useAuthStore((state) => state.user);
     const logout = useAuthStore((state) => state.logout);
-
+    const navigate = useNavigate();
+    const location = useLocation();
 
     return (
         <header className="bg-white shadow dark:bg-gray-800">
@@ -38,75 +41,27 @@ export function Header() {
                     </div>
                 </div>
 
-                {/*!location.pathname.includes('/devices/') && (
-                    <div className="mt-4 border-b border-gray-200 dark:border-gray-700">
-                        <nav className="-mb-px flex space-x-8">
-                            <button
-                                onClick={() => setActiveTab('jobs')}
-                                className={`${activeTab === 'jobs'
-                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
-                                    } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                            >
-                                <Play className="h-5 w-5 mr-2" />
-                                Jobs
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('devices')}
-                                className={`${activeTab === 'devices'
-                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
-                                    } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                            >
-                                <Monitor className="h-5 w-5 mr-2" />
-                                Devices
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('customers')}
-                                className={`${activeTab === 'customers'
-                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
-                                    } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                            >
-                                <Users className="h-5 w-5 mr-2" />
-                                Customers
-                            </button>
-                            {user?.role === 'administrator' && (
-                                <>
-                                    <button
-                                        onClick={() => setActiveTab('admin')}
-                                        className={`${activeTab === 'admin'
+                <div className="mt-4 border-b border-gray-200 dark:border-gray-700">
+                    <nav className="-mb-px flex space-x-8">
+                        {modules.map((mod) => {
+                            const isActive = location.pathname === mod.route;
+                            return (
+                                <button
+                                    key={mod.route}
+                                    onClick={() => navigate(mod.route)}
+                                    className={
+                                        `${isActive
                                             ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                                             : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
-                                            } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                                    >
-                                        <Users className="h-5 w-5 mr-2" />
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveTab('settings')}
-                                        className={`${activeTab === 'settings'
-                                            ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
-                                            } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                                    >
-                                        <Settings className="h-5 w-5 mr-2" />
-                                        Settings
-                                    </button>
-                                </>
-                            )}
-                            <button
-                                onClick={() => setActiveTab('system')}
-                                className={`${activeTab === 'system'
-                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
-                                    } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                            >
-                                <Cpu className="h-5 w-5 mr-2" />
-                                System
-                            </button>
-                        </nav>
-                    </div>
-                )*/}
+                                        } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                                >
+                                    {mod.icon}
+                                    {mod.label}
+                                </button>
+                            );
+                        })}
+                    </nav>
+                </div>
             </div>
         </header>
     )
