@@ -1,6 +1,7 @@
 import { CookieOptions } from 'express';
 import { AccountEntity } from 'src/auth/entities/account.entity';
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
+import { NotFoundMTIException } from 'src/core/errorhandling/exceptions/not-found.mti-exception';
 import { UnauthorizedMTIException } from 'src/core/errorhandling/exceptions/unauthorized.mti-exception';
 import { generateSecureRandomString } from 'src/core/utils/crypto.helper';
 
@@ -44,7 +45,7 @@ export class RefreshTokenService {
     );
 
     if (!storedToken || !isValid(storedToken)) {
-      throw new UnauthorizedMTIException(
+      throw new NotFoundMTIException(
         MTIErrorCodes.REFRESHTOKEN_INVALID,
         'Refreshtoken invalid or expired',
       );
@@ -76,6 +77,13 @@ export class RefreshTokenService {
         sameSite: 'strict',
       },
     ];
+  }
+
+  async rejectRefreshtokenByToken(token: string): Promise<void> {
+    this.logger.debug(`Deleting token by token`);
+    await this.refreshTokenRepository.nativeDelete({
+      token: token,
+    });
   }
 
   async rejectRefreshtokenById(accountId: string, refreshTokenId: string): Promise<void> {

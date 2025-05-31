@@ -106,6 +106,7 @@ export const useAuthStore = create<AuthStore>()(
                     } catch (error: any) {
                         // If 401, the api interceptor will attempt refresh automatically
                         // If refresh fails, user will be logged out by the interceptor
+                        await authApi.post(`/logout`);
                         await state.logout();
                     }
                 }

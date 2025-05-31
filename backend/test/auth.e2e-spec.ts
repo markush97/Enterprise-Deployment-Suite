@@ -194,7 +194,7 @@ describe('AuthController (e2e)', () => {
 
   describe('/auth/refresh (POST)', () => {
     it('should return 404 without refresh-token-cookie', async () => {
-      await request(app.getHttpServer()).post('/auth/refresh').expect(401);
+      await request(app.getHttpServer()).post('/auth/refresh').expect(404);
     });
 
     it('should login the user and return accessToken with valid refresh token', async () => {
@@ -259,7 +259,7 @@ describe('AuthController (e2e)', () => {
       await request(app.getHttpServer())
         .post('/auth/refresh')
         .set('Cookie', `${REFRESH_TOKEN_COOKIE_NAME}=${token}`)
-        .expect(401);
+        .expect(404);
 
       expect(mockRefreshTokenRepository.findOne).toHaveBeenCalledWith(
         { token: token },
@@ -276,7 +276,7 @@ describe('AuthController (e2e)', () => {
       await request(app.getHttpServer())
         .post('/auth/refresh')
         .set('Cookie', `${REFRESH_TOKEN_COOKIE_NAME}=${token}`)
-        .expect(401);
+        .expect(404);
 
       expect(mockRefreshTokenRepository.findOne).toHaveBeenCalledWith(
         { token: token },
@@ -293,7 +293,7 @@ describe('AuthController (e2e)', () => {
       await request(app.getHttpServer())
         .post('/auth/refresh')
         .set('Cookie', `${token}`)
-        .expect(401);
+        .expect(404);
 
       expect(mockRefreshTokenRepository.findOne).toHaveBeenCalledTimes(0);
       expect(mockAccountRepository.findOneOrFail).toHaveBeenCalledTimes(0);
@@ -306,7 +306,7 @@ describe('AuthController (e2e)', () => {
       await request(app.getHttpServer())
         .post('/auth/refresh')
         .set('Cookie', `${REFRESH_TOKEN_COOKIE_NAME}=${token}`)
-        .expect(401);
+        .expect(404);
 
       expect(mockRefreshTokenRepository.findOne).toHaveBeenCalledTimes(0);
       expect(mockAccountRepository.findOneOrFail).toHaveBeenCalledTimes(0);
@@ -342,6 +342,41 @@ describe('AuthController (e2e)', () => {
         account: { id: TOKEN_PAYLOAD_VALID.sub },
         id: tokenId,
       });
+    });
+  });
+
+  describe('/auth/logout (POST)', () => {
+    it('should clear the refresh token cookie and delete the token in DB', async () => {
+      const token = 'test-refresh-token';
+      mockRefreshTokenRepository.nativeDelete.mockResolvedValue({});
+      await request(app.getHttpServer())
+        .post('/auth/logout')
+        .set('Cookie', `${REFRESH_TOKEN_COOKIE_NAME}=${token}`)
+        .expect(200)
+        .expect(res => {
+          // Should clear the cookie
+          const setCookie = res.headers['set-cookie'] || [];
+          const setCookieArray = Array.isArray(setCookie) ? setCookie : [setCookie];
+          expect(setCookieArray.join(';')).toMatch(new RegExp(`${REFRESH_TOKEN_COOKIE_NAME}=;`));
+        });
+      expect(mockRefreshTokenRepository.nativeDelete).toHaveBeenCalledWith({ token });
+    });
+
+    it('should not fail if no refresh token cookie is present', async () => {
+      mockRefreshTokenRepository.nativeDelete.mockClear();
+      await request(app.getHttpServer())
+        .post('/auth/logout')
+        .expect(200)
+        .expect(res => {
+          const setCookie = res.headers['set-cookie'] || [];
+          const setCookieArray = Array.isArray(setCookie) ? setCookie : [setCookie];
+          expect(setCookieArray.join(';')).toMatch(new RegExp(`${REFRESH_TOKEN_COOKIE_NAME}=;`));
+        });
+      expect(mockRefreshTokenRepository.nativeDelete).not.toHaveBeenCalled();
+    });
+
+    it('should be public (no auth required)', async () => {
+      await request(app.getHttpServer()).post('/auth/logout').expect(200);
     });
   });
 });

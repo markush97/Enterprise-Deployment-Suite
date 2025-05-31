@@ -1,4 +1,16 @@
-import { Controller, Delete, Get, HttpCode, HttpStatus, Logger, Param, Post } from '@nestjs/common';
+import { Response } from 'express';
+
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Logger,
+  Param,
+  Post,
+  Res,
+} from '@nestjs/common';
 
 import { AccountInfo } from '../utils/decorators/auth-user.decorator';
 import { Cookie } from '../utils/decorators/cookie.decorator';
@@ -46,9 +58,23 @@ export class AuthController {
   public async refreshAccessToken(
     @Cookie(REFRESH_TOKEN_COOKIE_NAME) token: string,
   ): Promise<LoginResultDto> {
-    this.logger.log(`Refreshing access token`);
+    this.logger.debug(`Refreshing access token`);
 
     return this.authService.refreshAccessToken(token);
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  @Public()
+  public async logout(
+    @Cookie(REFRESH_TOKEN_COOKIE_NAME) token: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
+    this.logger.debug(`Logging out user and clearing refresh token`);
+    if (token) {
+      await this.refreshTokenService.rejectRefreshtokenByToken(token);
+    }
+    res.clearCookie(REFRESH_TOKEN_COOKIE_NAME);
   }
 
   @Post('validate')
