@@ -25,8 +25,11 @@ if (typeof window !== 'undefined') {
 
 export const useAuthStore = create<AuthStore>()(
     persist(
-        (set, get) => ({
+        (set, get, stateApi) => ({
             ...initialState,
+            setAuthenticated: (isAuthenticated: boolean) => {
+                set({ isAuthenticated });
+            },
             loginWithEntraId: async (entraIdAccessToken: string) => {
                 try {
                     const response = await authApi.post(`${AUTH_ENTRAID_URL}/login`, undefined, { headers: { 'Authorization': `Bearer ${entraIdAccessToken}` } });
@@ -49,10 +52,7 @@ export const useAuthStore = create<AuthStore>()(
                 try {
                     const token = get().authToken
                     if (token) {
-                        await authApi.delete('/refresh', {
-                            headers: { Authorization: `Bearer ${token}` },
-                            withCredentials: true,
-                        });
+                        await authApi.post(`/logout`);
                     }
                 } catch (e) {
                     // Ignore errors, just ensure cookie is removed if possible
@@ -101,12 +101,11 @@ export const useAuthStore = create<AuthStore>()(
                 if (state?.authToken) {
                     try {
                         // Validate token by calling a protected endpoint
-                        await api.get('/auth/validate');
-                        state.isAuthenticated = true;
+                        await api.post('/auth/validate', undefined, { responseType: 'text', validateStatus: (status) => status >= 200 && status < 300 });
+                        state.setAuthenticated(true);
                     } catch (error: any) {
                         // If 401, the api interceptor will attempt refresh automatically
                         // If refresh fails, user will be logged out by the interceptor
-                        await authApi.post(`/logout`);
                         await state.logout();
                     }
                 }

@@ -8,10 +8,13 @@ export type AuthState = {
     } | null
 }
 
+export type AuthPersistedState = Pick<AuthState, 'authToken' | 'user'>;
+
 export type AuthAction = {
     loginWithEntraId: (accessToken: string) => Promise<void>;
     logout: () => Promise<void>;
     refreshAccessToken: () => Promise<string | null>;
+    setAuthenticated: (isAuthenticated: boolean) => void;
 }
 
 export type AuthStore = AuthState & AuthAction;
