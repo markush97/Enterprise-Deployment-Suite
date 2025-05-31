@@ -21,4 +21,7 @@ export class RefreshTokenEntity extends CoreBaseEntity {
 
   @ManyToOne(() => AccountEntity)
   account: AccountEntity;
+
+  @Property({ nullable: true })
+  ipAddress: string;
 }

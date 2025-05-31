@@ -23,6 +23,7 @@ import {
   REFRESH_TOKEN_COOKIE_NAME,
   RefreshTokenEntity,
 } from './strategies/refreshtoken/refresh-token.entity';
+import { RefreshTokenOutDto } from './strategies/refreshtoken/refresh-token.out.dto';
 import { RefreshTokenService } from './strategies/refreshtoken/refreshtoken.service';
 
 @Controller('auth')
@@ -46,10 +47,11 @@ export class AuthController {
   @Get('refresh')
   public async getRefreshTokens(
     @AccountInfo() accountInfo: AuthTokenPayload,
-  ): Promise<RefreshTokenEntity[]> {
+    @Cookie(REFRESH_TOKEN_COOKIE_NAME) currentToken: string,
+  ): Promise<RefreshTokenOutDto[]> {
     this.logger.log(`Refreshing access token`);
 
-    return this.refreshTokenService.getRefreshTokens(accountInfo.sub);
+    return this.refreshTokenService.getRefreshTokens(accountInfo.sub, currentToken);
   }
 
   @Post('refresh')
@@ -87,6 +89,7 @@ export class AuthController {
   }
 
   @Delete('refresh/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   public async rejectRefreshTokenById(
     @AccountInfo() accountInfo: AuthTokenPayload,
     @Param('id') tokenId: string,

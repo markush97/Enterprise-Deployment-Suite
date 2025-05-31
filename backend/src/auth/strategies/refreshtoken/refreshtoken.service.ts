@@ -7,10 +7,11 @@ import { generateSecureRandomString } from 'src/core/utils/crypto.helper';
 
 import { Injectable, Logger } from '@nestjs/common';
 
-import { EntityManager, EntityRepository } from '@mikro-orm/core';
+import { EntityManager, EntityRepository, Loaded } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 
 import { RefreshTokenEntity } from './refresh-token.entity';
+import { RefreshTokenOutDto } from './refresh-token.out.dto';
 import { CreateRefreshTokenDto } from './refresh-token.register.dto';
 
 const TOKEN_LENGTH = 32;
@@ -58,8 +59,18 @@ export class RefreshTokenService {
     return storedToken.account;
   }
 
-  async getRefreshTokens(accountId: string): Promise<RefreshTokenEntity[]> {
-    return this.refreshTokenRepository.find({ account: { id: accountId } });
+  async getRefreshTokens(accountId: string, currentToken?: string): Promise<RefreshTokenOutDto[]> {
+    const refreshTokens = await this.refreshTokenRepository.find(
+      { account: { id: accountId } },
+      { fields: ['*'] },
+    );
+    return refreshTokens.map(token => {
+      const { token: _token, ...rest } = token;
+      return {
+        ...rest,
+        isCurrent: token.token === currentToken,
+      };
+    });
   }
 
   async createRefreshTokenCookie(

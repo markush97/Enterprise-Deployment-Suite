@@ -1,4 +1,4 @@
-import { LogOut } from "lucide-react";
+import { LogOut, User as UserIcon } from "lucide-react";
 import { useAuthStore } from "../../states/auth.store";
 import { ThemeToggle } from "./ThemeToggle.component";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -31,6 +31,14 @@ export function Header({ modules }: { modules: DashboardModule[] }) {
                         <span className="text-sm text-gray-600 dark:text-gray-300">
                             Logged in as <span className="font-medium">{user?.name || 'Anonymous'}</span>
                         </span>
+                        <button
+                            onClick={() => navigate('/account')}
+                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            title="Account Information"
+                        >
+                            <UserIcon className="h-4 w-4 mr-2" />
+                            Account
+                        </button>
                         <button
                             onClick={logout}
                             className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
