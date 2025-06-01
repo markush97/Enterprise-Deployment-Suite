@@ -288,10 +288,3 @@ export function CustomerList() {
     );
 }
 
-
-export const CustomersModule: DashboardModule = {
-    route: "/customers",
-    label: "Customers",
-    icon: <Users className="h-4 w-4 mr-2" />,
-    Component: CustomerList
-};
