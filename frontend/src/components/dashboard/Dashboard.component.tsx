@@ -7,9 +7,9 @@ import { AccountPage } from "../account/AccountPage.component";
 import { CustomersModule } from '../customers/CustomerModule';
 
 const modules: DashboardModule[] = [
-    JobsModule,
+    CustomersModule,
     DevicesModule,
-    CustomersModule
+    JobsModule
 ];
 
 export function Dashboard() {
@@ -19,7 +19,7 @@ export function Dashboard() {
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <Routes>
                     {modules.map((mod) => (
-                        <Route key={mod.route} path={mod.route} element={<mod.Component />} />
+                        <Route key={`${mod.route}/*`} path={`${mod.route}/*`} element={<mod.Component />} />
                     ))}
                     <Route path="/account" element={<AccountPage />} />
                     <Route index element={<div>Select a module</div>} />

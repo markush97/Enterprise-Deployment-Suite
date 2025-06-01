@@ -52,7 +52,9 @@ export function Header({ modules }: { modules: DashboardModule[] }) {
                 <div className="mt-4 border-b border-gray-200 dark:border-gray-700">
                     <nav className="-mb-px flex space-x-8">
                         {modules.map((mod) => {
-                            const isActive = location.pathname === mod.route;
+                            // Consider a module active if the current path starts with its route (ignoring trailing /*)
+                            const baseRoute = mod.route.replace(/\/*$/, '');
+                            const isActive = location.pathname === baseRoute || location.pathname.startsWith(baseRoute + '/');
                             return (
                                 <button
                                     key={mod.route}

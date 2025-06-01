@@ -17,7 +17,7 @@ function CustomerPageWrapper() {
 export function CustomersModuleRoutes() {
     return (
         <Routes>
-            <Route path="" element={<CustomerList />} />
+            <Route index element={<CustomerList />} />
             <Route path="add" element={<CustomerList />} />
             <Route path=":customerid" element={<CustomerPageWrapper />} />
             <Route path=":customerid/edit" element={<CustomerList />} />
@@ -27,7 +27,7 @@ export function CustomersModuleRoutes() {
 
 
 export const CustomersModule: DashboardModule = {
-    route: "/customers/*",
+    route: "/customers",
     label: "Customers",
     icon: <Users className="h-4 w-4 mr-2" />,
     Component: CustomersModuleRoutes
