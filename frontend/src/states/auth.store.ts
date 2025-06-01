@@ -88,6 +88,8 @@ export const useAuthStore = create<AuthStore>()(
                             set(initialState);
                             return null;
                         }
+                        // Add a short delay before retrying
+                        await new Promise(res => setTimeout(res, 500));
                     }
                 }
                 return null;
