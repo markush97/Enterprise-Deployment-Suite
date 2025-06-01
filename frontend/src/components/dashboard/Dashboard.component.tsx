@@ -7,7 +7,6 @@ import { AccountPage } from "../account/AccountPage.component";
 import { CustomersModule } from "../customers/CustomerList.component";
 import { CustomerList } from "../customers/CustomerList.component";
 import { CustomerPage } from "../customers/CustomerPage.component";
-import { CustomerModal } from "../customers/CustomerModal.component";
 import { useParams } from 'react-router-dom';
 import { useCustomers } from '../../hooks/useCustomers';
 
