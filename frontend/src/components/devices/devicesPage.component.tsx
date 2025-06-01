@@ -1,5 +1,5 @@
 import { Monitor } from "lucide-react";
-import { DashboardModule } from "../dashboard/dashboard-module.interface";
+import { DashboardModule } from "../../types/dashboard-module.interface";
 
 function DevicesPage() {
     // ...your jobs page logic...

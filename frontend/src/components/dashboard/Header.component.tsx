@@ -2,7 +2,7 @@ import { LogOut, User as UserIcon } from "lucide-react";
 import { useAuthStore } from "../../states/auth.store";
 import { ThemeToggle } from "./ThemeToggle.component";
 import { useNavigate, useLocation } from "react-router-dom";
-import { DashboardModule } from "./dashboard-module.interface";
+import { DashboardModule } from "../../types/dashboard-module.interface";
 
 
 export function Header({ modules }: { modules: DashboardModule[] }) {
