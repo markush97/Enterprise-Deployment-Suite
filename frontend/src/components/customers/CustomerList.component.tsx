@@ -1,58 +1,44 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
+import { useCustomers } from '../../hooks/useCustomers';
 import { CustomerModal } from './CustomerModal.component';
 import { CustomerPage } from './CustomerPage.component';
 import { CustomerListSkeleton } from './CustomerSkeleton.component';
-import { Plus, Building2, ChevronRight, AlertCircle, Users } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { Plus, Building2, AlertCircle, Users } from 'lucide-react';
 import { Customer } from '../../types/customer.interface';
-import { customerService } from '../../services/customer.service';
 import { DashboardModule } from '../../types/dashboard-module.interface';
+import { ContextMenu } from '../utils/ContextMenu';
 
 export function CustomerList() {
-    const queryClient = useQueryClient();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [showDetails, setShowDetails] = useState(false);
+    const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+    const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
+    const menuRef = useRef<HTMLDivElement | null>(null);
 
-    // Fetch customers
     const {
-        data: customers = [],
-        isLoading,
-        isError,
-        error,
-        refetch
-    } = useQuery({
-        queryKey: ['customers'],
-        queryFn: customerService.getCustomers
-    });
+        customersQuery,
+        addCustomerMutation,
+        updateCustomerMutation,
+        deleteCustomerMutation,
+    } = useCustomers();
 
-    // Add customer mutation
-    const addCustomerMutation = useMutation({
-        mutationFn: customerService.addCustomer,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['customers'] });
-            toast.success('Customer added successfully');
-        },
-        onError: (error: Error) => {
-            toast.error(error.message || 'Failed to add customer');
-            throw error;
-        }
-    });
+    const { data: customers = [], isLoading, isError, error, refetch } = customersQuery;
 
-    // Update customer mutation
-    const updateCustomerMutation = useMutation({
-        mutationFn: ({ id, data }: { id: string, data: Partial<Customer> }) =>
-            customerService.updateCustomer(id, data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['customers'] });
-            toast.success('Customer updated successfully');
-        },
-        onError: (error: Error) => {
-            toast.error(error.message || 'Failed to update customer');
-            throw error;
+    // Close menu on outside click
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setMenuOpenId(null);
+            }
         }
-    });
+        if (menuOpenId) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [menuOpenId]);
 
     // Handle adding customer
     const handleAddCustomer = async (customerData: Omit<Customer, 'id' | 'createdAt'>) => {
@@ -88,11 +74,30 @@ export function CustomerList() {
                     setSelectedCustomer(updatedCustomer);
                 }}
                 onCustomerDeleted={() => {
-                    queryClient.invalidateQueries({ queryKey: ['customers'] });
+                    customersQuery.refetch();
                 }}
             />
         );
     }
+
+    // Render the context menu as a portal
+    const menuEntries = menuOpenId
+        ? [
+            {
+                label: 'Delete',
+                danger: true,
+                onClick: async () => {
+                    const customer = customers.find((c: Customer) => c.id === menuOpenId);
+                    setMenuOpenId(null);
+                    setMenuPosition(null);
+                    if (customer && window.confirm(`Delete customer '${customer.name}'? This action cannot be undone.`)) {
+                        await deleteCustomerMutation.mutateAsync(customer.id);
+                        customersQuery.refetch();
+                    }
+                },
+            },
+        ]
+        : [];
 
     return (
         <div className="space-y-6">
@@ -139,8 +144,8 @@ export function CustomerList() {
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead className="bg-gray-50 dark:bg-gray-700">
                             <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Code</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Short Code</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Pulseway ID</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Created</th>
                                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
@@ -173,45 +178,70 @@ export function CustomerList() {
                                 customers.map((customer: Customer) => (
                                     <tr
                                         key={customer.id}
-                                        className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition duration-150 ease-in-out"
+                                        className="group hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition duration-150 ease-in-out"
                                         onClick={() => {
                                             setSelectedCustomer(customer);
                                             setShowDetails(true);
                                         }}
                                     >
+                                        <td className="px-6 py-4 w-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{customer.shortCode}</td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
                                                 <Building2 className="h-5 w-5 text-gray-400 mr-3" />
                                                 <div>
                                                     <div className="text-sm font-medium text-gray-900 dark:text-white">{customer.name}</div>
-                                                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                        {customer.settings?.defaultClientImage && `Client: ${customer.settings.defaultClientImage}`}
-                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{customer.shortCode}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{customer.pulsewayId}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {new Date(customer.createdAt).toLocaleDateString()}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setSelectedCustomer(customer);
-                                                    setIsModalOpen(true);
-                                                }}
-                                                className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition duration-150 ease-in-out"
-                                            >
-                                                <ChevronRight className="h-5 w-5" />
-                                            </button>
+                                            <div className="flex justify-end space-x-2 relative">
+                                                <button
+                                                    onClick={event => {
+                                                        event.stopPropagation();
+                                                        const rect = (event.target as HTMLElement).getBoundingClientRect();
+                                                        if (menuOpenId === customer.id) {
+                                                            setMenuOpenId(null);
+                                                            setMenuPosition(null);
+                                                        } else {
+                                                            setMenuOpenId(customer.id);
+                                                            setMenuPosition({
+                                                                top: rect.bottom + window.scrollY,
+                                                                left: rect.right - 160,
+                                                            });
+                                                        }
+                                                    }}
+                                                    className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none group-hover:bg-transparent"
+                                                    title="Actions"
+                                                >
+                                                    <span className="sr-only">Actions</span>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-600 dark:text-gray-300">
+                                                        <circle cx="12" cy="12" r="1.5" />
+                                                        <circle cx="19" cy="12" r="1.5" />
+                                                        <circle cx="5" cy="12" r="1.5" />
+                                                    </svg>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
                             )}
                         </tbody>
                     </table>
+                    <ContextMenu
+                        isOpen={!!menuOpenId}
+                        anchorPosition={menuPosition}
+                        entries={menuEntries}
+                        onClose={() => {
+                            setMenuOpenId(null);
+                            setMenuPosition(null);
+                        }}
+                        menuRef={menuRef}
+                        title="Actions"
+                    />
                 </div>
             </div>
 
