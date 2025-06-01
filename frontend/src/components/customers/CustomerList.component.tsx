@@ -7,8 +7,12 @@ import { Plus, Building2, AlertCircle, Users } from 'lucide-react';
 import { Customer } from '../../types/customer.interface';
 import { DashboardModule } from '../../types/dashboard-module.interface';
 import { ContextMenu } from '../utils/ContextMenu';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 
 export function CustomerList() {
+    const navigate = useNavigate();
+    const { customerid, action } = useParams();
+    const location = useLocation();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [showDetails, setShowDetails] = useState(false);
@@ -39,6 +43,20 @@ export function CustomerList() {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [menuOpenId]);
+
+    // Modal open/close logic based on URL
+    useEffect(() => {
+        if (location.pathname.endsWith('/add')) {
+            setSelectedCustomer(null);
+            setIsModalOpen(true);
+        } else if (customerid && location.pathname.endsWith('/edit')) {
+            const customer = customers.find((c) => c.id === customerid);
+            setSelectedCustomer(customer || null);
+            setIsModalOpen(true);
+        } else {
+            setIsModalOpen(false);
+        }
+    }, [location.pathname, customers, customerid]);
 
     // Handle adding customer
     const handleAddCustomer = async (customerData: Omit<Customer, 'id' | 'createdAt'>) => {
@@ -84,6 +102,17 @@ export function CustomerList() {
     const menuEntries = menuOpenId
         ? [
             {
+                label: 'Edit',
+                onClick: () => {
+                    const customer = customers.find((c: Customer) => c.id === menuOpenId);
+                    setMenuOpenId(null);
+                    setMenuPosition(null);
+                    if (customer) {
+                        navigate(`/customers/${customer.id}/edit`);
+                    }
+                },
+            },
+            {
                 label: 'Delete',
                 danger: true,
                 onClick: async () => {
@@ -111,10 +140,7 @@ export function CustomerList() {
                             </h2>
                         </div>
                         <button
-                            onClick={() => {
-                                setSelectedCustomer(null);
-                                setIsModalOpen(true);
-                            }}
+                            onClick={() => navigate('/customers/add')}
                             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
                         >
                             <Plus className="h-4 w-4 mr-2" />
@@ -179,10 +205,7 @@ export function CustomerList() {
                                     <tr
                                         key={customer.id}
                                         className="group hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition duration-150 ease-in-out"
-                                        onClick={() => {
-                                            setSelectedCustomer(customer);
-                                            setShowDetails(true);
-                                        }}
+                                        onClick={() => navigate(`/customers/${customer.id}`)}
                                     >
                                         <td className="px-6 py-4 w-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{customer.shortCode}</td>
                                         <td className="px-6 py-4 whitespace-nowrap">
@@ -193,7 +216,7 @@ export function CustomerList() {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{customer.pulsewayId}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{customer.rmmId}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {new Date(customer.createdAt).toLocaleDateString()}
                                         </td>
@@ -251,6 +274,7 @@ export function CustomerList() {
                 onClose={() => {
                     setIsModalOpen(false);
                     setSelectedCustomer(null);
+                    navigate('/customers');
                 }}
                 onSave={async (data) => {
                     if (selectedCustomer) {

@@ -7,9 +7,8 @@ export interface Customer {
     id: string;
     name: string;
     shortCode: string;
-    pulsewayId: string;
     createdAt: string;
-    settings?: CustomerSettings;
-    zohoId?: string;
-    itGlueId?: string;
+    rmmId: number,
+    zohoId: number;
+    itGlueId: number;
 }
