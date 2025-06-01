@@ -1,18 +1,18 @@
 import { Clock, CheckCircle, AlertCircle, Loader2, XCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { jobService } from '../../services/job.service';
-import type { Job } from '../../types/job.type';
+import { Job } from '../../types/job.interface';
 
 export function JobsList() {
     const {
-      data: jobs = [],
-      isLoading,
-      isError,
-      error
+        data: jobs = [],
+        isLoading,
+        isError,
+        error
     } = useQuery<Job[]>({
-      queryKey: ['jobs'],
-      queryFn: jobService.getJobs,
-      refetchInterval: 5000 // Refresh every 5 seconds
+        queryKey: ['jobs'],
+        queryFn: jobService.getJobs,
+        refetchInterval: 5000 // Refresh every 5 seconds
     });
 
     if (isLoading) {

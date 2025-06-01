@@ -1,5 +1,4 @@
-// src/types/job.type.ts
-
+// src/types/job.interface.ts
 export interface Job {
   id: string;
   device: {

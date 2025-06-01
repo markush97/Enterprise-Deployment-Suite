@@ -1,10 +1,9 @@
-// src/services/job.service.ts
 import { api } from '../api/api.service';
-import { Job } from '../types/job.type';
+import type { Job } from '../types/job.interface';
 
 export const jobService = {
-  async getJobs(): Promise<Job[]> {
-    const response = await api.get<Job[]>('/jobs');
-    return response.data;
-  },
+    async getJobs(): Promise<Job[]> {
+        const response = await api.get<Job[]>('/jobs');
+        return response.data;
+    },
 };

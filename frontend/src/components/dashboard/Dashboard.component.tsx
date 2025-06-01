@@ -4,24 +4,28 @@ import { DashboardModule } from "../../types/dashboard-module.interface";
 import { Header } from "./Header.component";
 import { DevicesModule } from "../devices/devicesPage.component";
 import { AccountPage } from "../account/AccountPage.component";
+import { CustomersModule } from "../customers/CustomerList.component";
 
 const modules: DashboardModule[] = [
     JobsModule,
-    DevicesModule
+    DevicesModule,
+    CustomersModule
 ];
 
 export function Dashboard() {
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
             <Header modules={modules}></Header>
-            <Routes>
-                {modules.map((mod) => (
-                    <Route key={mod.route} path={mod.route} element={<mod.Component />} />
-                ))}
-                <Route path="/account" element={<AccountPage />} />
-                {/* Optionally, add a default route */}
-                <Route index element={<div>Select a module</div>} />
-            </Routes>
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <Routes>
+                    {modules.map((mod) => (
+                        <Route key={mod.route} path={mod.route} element={<mod.Component />} />
+                    ))}
+                    <Route path="/account" element={<AccountPage />} />
+                    {/* Optionally, add a default route */}
+                    <Route index element={<div>Select a module</div>} />
+                </Routes>
+            </main>
         </div>
     );
 }

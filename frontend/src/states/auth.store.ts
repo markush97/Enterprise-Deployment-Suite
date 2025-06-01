@@ -1,8 +1,27 @@
 import { create } from 'zustand';
-import { AuthState, AuthStore } from './auth.state';
 import { persist } from 'zustand/middleware';
 import { AUTH_ENTRAID_URL, authApi } from '../api/auth.api.service';
 import { api } from '../api/api.service';
+
+type AuthState = {
+    isAuthenticated: boolean;
+    authToken: string | null;
+    user: {
+        email: string;
+        id: string
+        name?: string;
+    } | null
+}
+
+type AuthAction = {
+    loginWithEntraId: (accessToken: string) => Promise<void>;
+    logout: () => Promise<void>;
+    refreshAccessToken: () => Promise<string | null>;
+    setAuthenticated: (isAuthenticated: boolean) => void;
+}
+
+type AuthStore = AuthState & AuthAction;
+
 
 const initialState: AuthState = {
     isAuthenticated: false,
@@ -25,7 +44,7 @@ if (typeof window !== 'undefined') {
 
 export const useAuthStore = create<AuthStore>()(
     persist(
-        (set, get, stateApi) => ({
+        (set, get) => ({
             ...initialState,
             setAuthenticated: (isAuthenticated: boolean) => {
                 set({ isAuthenticated });
@@ -65,7 +84,7 @@ export const useAuthStore = create<AuthStore>()(
                 let attempts = 0;
                 while (attempts < 3) {
                     try {
-                        const response = await authApi.post(`${AUTH_ENTRAID_URL}/refresh`);
+                        const response = await authApi.post('/refresh');
                         const backendToken = response.data?.token;
                         if (backendToken) {
                             const user = {
@@ -88,8 +107,6 @@ export const useAuthStore = create<AuthStore>()(
                             set(initialState);
                             return null;
                         }
-                        // Add a short delay before retrying
-                        await new Promise(res => setTimeout(res, 500));
                     }
                 }
                 return null;
