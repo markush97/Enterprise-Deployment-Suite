@@ -1,5 +1,5 @@
 import { useAuthStore } from "./states/auth.store";
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useThemeStore } from "./states/themeStore";
 import { useEffect } from "react";
 import { LoginForm } from "./components/auth/Login-page.component";
@@ -8,7 +8,8 @@ import { Dashboard } from "./components/dashboard/Dashboard.component";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-    return isAuthenticated ? children : <Navigate to="/login" />;
+    const location = useLocation();
+    return isAuthenticated ? children : <Navigate to="/login" state={{ from: location }} replace />;
 }
 
 function App({ }) {

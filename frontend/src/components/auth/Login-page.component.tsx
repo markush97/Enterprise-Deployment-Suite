@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AlertCircle, ExternalLink, LogIn } from 'lucide-react';
 import { useAuthStore } from "../../states/auth.store";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ENTRA_CLIENT_ID, ENTRA_AUTHORITY, ENTRA_SCOPES } from "../../configs/entra.config";
 import { PublicClientApplication } from "@azure/msal-browser";
 
@@ -25,12 +25,14 @@ export function LoginForm() {
     const loginWithEntraId = useAuthStore((state) => state.loginWithEntraId);
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
     const navigate = useNavigate();
+    const location = useLocation();
+    const from = (location.state as any)?.from?.pathname || "/dashboard";
 
     useEffect(() => {
         if (isAuthenticated) {
-            navigate('/dashboard');
+            navigate(from, { replace: true });
         }
-    }, [isAuthenticated, navigate]);
+    }, [isAuthenticated, navigate, from]);
 
     const handleEntraLogin = async () => {
         try {
