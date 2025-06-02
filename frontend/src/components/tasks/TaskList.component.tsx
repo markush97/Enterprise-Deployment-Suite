@@ -50,7 +50,7 @@ export function TaskList() {
                 ]}
                 actions={[
                     {
-                        label: 'Edit', onClick: (task) => navigate(`/tasks/${task.id}/edit`),
+                        label: 'Edit', onClick: (task) => { setIsModalOpen(true); setSelectedTask(task); },
                     },
                     {
                         label: 'Delete', onClick: (task) => deleteTaskMutation.mutate(task.id), danger: true,

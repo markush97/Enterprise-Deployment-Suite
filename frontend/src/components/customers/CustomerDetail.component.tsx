@@ -1,20 +1,21 @@
 import { useState, useEffect } from 'react';
+import { CustomerModal } from './CustomerModal.component';
 import { ArrowLeft, Building2, Trash2, AlertCircle, Edit } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { customerService } from '../../services/customer.service';
+import { Customer } from '../../types/customer.interface';
+import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
 import { useNavigate } from 'react-router-dom';
-import { Task } from '../../types/task.interface';
-import { taskService } from '../../services/task.service';
-import { TaskModal } from './TaskModal.component';
 
-interface TaskPageProps {
-    task: Task;
+interface CustomerPageProps {
+    customer: Customer;
     onBack: () => void;
-    onTaskUpdated?: (task: Task) => void;
-    onTaskDeleted?: () => void;
+    onCustomerUpdated?: (customer: Customer) => void;
+    onCustomerDeleted?: () => void;
 }
 
-export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMode }: TaskPageProps & { editMode?: boolean }) {
+export function CustomerDetail({ customer, onBack, onCustomerUpdated, onCustomerDeleted, editMode }: CustomerPageProps & { editMode?: boolean }) {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     useEffect(() => {
         setIsEditModalOpen(!!editMode);
@@ -35,30 +36,30 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
     const navigate = useNavigate();
 
 
-    const handleEditTask = async (data: Partial<Task>): Promise<void> => {
+    const handleEditCustomer = async (data: Partial<Customer>): Promise<void> => {
         try {
-            const updateTask = await taskService.updateTask(task.id, data);
-            if (onTaskUpdated) {
-                onTaskUpdated(updateTask);
+            const updatedCustomer = await customerService.updateCustomer(customer.id, data);
+            if (onCustomerUpdated) {
+                onCustomerUpdated(updatedCustomer);
             }
-            toast.success('Task updated successfully');
+            toast.success('Customer updated successfully');
         } catch (error: any) {
-            toast.error(error.message || 'Failed to update task');
+            toast.error(error.message || 'Failed to update customer');
             throw error;
         }
     };
 
-    const handleDeleteTask = async () => {
+    const handleDeleteCustomer = async () => {
         try {
             setIsDeleting(true);
-            await taskService.deleteTask(task.id);
-            toast.success('Task deleted successfully');
-            if (onTaskDeleted) {
-                onTaskDeleted();
+            await customerService.deleteCustomer(customer.id);
+            toast.success('Customer deleted successfully');
+            if (onCustomerDeleted) {
+                onCustomerDeleted();
             }
             onBack();
         } catch (error: any) {
-            toast.error(error.message || 'Failed to delete task');
+            toast.error(error.message || 'Failed to delete customer');
         } finally {
             setIsDeleting(false);
             setIsDeleteConfirmOpen(false);
@@ -73,10 +74,10 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                     className="inline-flex items-center mr-4 px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     <ArrowLeft className="h-4 w-4 mr-1" />
-                    Back to Tasks
+                    Back to Customers
                 </button>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {task.name}
+                    {customer.name}
                 </h1>
             </div>
 
@@ -85,12 +86,12 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                     <div className="flex items-center space-x-3">
                         <Building2 className="h-6 w-6 text-gray-500 dark:text-gray-400" />
                         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                            Task Details
+                            Customer Details
                         </h2>
                     </div>
                     <div className="flex space-x-2">
                         <button
-                            onClick={() => navigate(`/tasks/${task.id}/edit`)}
+                            onClick={() => navigate(`/customers/${customer.id}/edit`)}
                             className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
                         >
                             <Edit className="h-4 w-4 mr-1" />
@@ -114,15 +115,81 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                                 Name
                             </dt>
                             <dd className="mt-1 text-lg text-gray-900 dark:text-white">
-                                {task.name}
+                                {customer.name}
                             </dd>
                         </div>
                         <div>
                             <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                Description
+                                Short Code
                             </dt>
                             <dd className="mt-1 text-lg text-gray-900 dark:text-white">
-                                {task.description}
+                                {customer.shortCode}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                Pulseway ID
+                            </dt>
+                            <dd className="mt-1 text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                                {customer.rmmId ? (
+                                    <Tippy content="Open in Pulseway">
+                                        <a
+                                            href={`${window.PULSEWAY_URL_PREFIX || 'https://my.pulseway.com/'}?customerId=${customer.rmmId}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 dark:text-blue-400 underline cursor-pointer font-normal"
+                                            style={{ marginLeft: 0, fontSize: 'inherit', lineHeight: 'inherit' }}
+                                        >
+                                            {customer.rmmId}
+                                        </a>
+                                    </Tippy>
+                                ) : (
+                                    <span>{customer.rmmId}</span>
+                                )}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                Zoho ID
+                            </dt>
+                            <dd className="mt-1 text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                                {customer.zohoId ? (
+                                    <Tippy content="Open in Zoho Desk">
+                                        <a
+                                            href={`${window.ZOHO_URL_PREFIX || 'https://support.cwi.at/agent/cwiit/cwi/kunden/details/'}${customer.zohoId}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 dark:text-blue-400 underline cursor-pointer font-normal"
+                                            style={{ marginLeft: 0, fontSize: 'inherit', lineHeight: 'inherit' }}
+                                        >
+                                            {customer.zohoId}
+                                        </a>
+                                    </Tippy>
+                                ) : (
+                                    <span>{customer.zohoId}</span>
+                                )}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                IT-Glue ID
+                            </dt>
+                            <dd className="mt-1 text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                                {customer.itGlueId ? (
+                                    <Tippy content="Open in IT-Glue">
+                                        <a
+                                            href={`${window.ITGLUE_URL_PREFIX || 'https://cwi.eu.itglue.com/'}${customer.itGlueId}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 dark:text-blue-400 underline cursor-pointer font-normal"
+                                            style={{ marginLeft: 0, fontSize: 'inherit', lineHeight: 'inherit' }}
+                                        >
+                                            {customer.itGlueId}
+                                        </a>
+                                    </Tippy>
+                                ) : (
+                                    <span>{customer.itGlueId}</span>
+                                )}
                             </dd>
                         </div>
                         <div>
@@ -130,25 +197,25 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                                 Created On
                             </dt>
                             <dd className="mt-1 text-lg text-gray-900 dark:text-white">
-                                {new Date(task.createdAt).toLocaleDateString()}
+                                {new Date(customer.createdAt).toLocaleDateString()}
                             </dd>
                         </div>
                     </dl>
                 </div>
             </div>
 
-            {/* Edit Task Modal */}
-            <TaskModal
-                task={task}
+            {/* Edit Customer Modal */}
+            <CustomerModal
+                customer={customer}
                 isOpen={isEditModalOpen}
                 onClose={() => {
                     setIsEditModalOpen(false);
                     // Remove /edit from the URL when closing the modal
                     if (editMode) {
-                        navigate(`/tasks/${task.id}`, { replace: true });
+                        navigate(`/customers/${customer.id}`, { replace: true });
                     }
                 }}
-                onSave={handleEditTask}
+                onSave={handleEditCustomer}
             />
 
             {/* Delete Confirmation Modal */}
@@ -169,11 +236,11 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                                     </div>
                                     <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                                         <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="delete-modal-title">
-                                            Delete Task
+                                            Delete Customer
                                         </h3>
                                         <div className="mt-2">
                                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                Are you sure you want to delete <span className="font-semibold">{task.name}</span>? This action cannot be undone.
+                                                Are you sure you want to delete <span className="font-semibold">{customer.name}</span>? This action cannot be undone.
                                             </p>
                                         </div>
                                     </div>
@@ -182,7 +249,7 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                             <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                                 <button
                                     type="button"
-                                    onClick={handleDeleteTask}
+                                    onClick={handleDeleteCustomer}
                                     disabled={isDeleting}
                                     className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm ${isDeleting ? 'opacity-75 cursor-not-allowed' : ''
                                         }`}

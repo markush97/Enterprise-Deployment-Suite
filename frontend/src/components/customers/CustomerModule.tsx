@@ -1,6 +1,6 @@
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import { CustomerList } from './CustomerList.component';
-import { CustomerPage } from './CustomerPage.component';
+import { CustomerDetail } from './CustomerDetail.component';
 import { useParams } from 'react-router-dom';
 import { useCustomers } from '../../hooks/useCustomers';
 import { DashboardModule } from '../../types/dashboard-module.interface';
@@ -12,7 +12,7 @@ function CustomerPageWrapper({ editMode }: { editMode?: boolean } = {}) {
     const { customersQuery } = useCustomers();
     const customer = customersQuery.data?.find(c => c.id === customerid);
     if (!customer) return <div className="text-center py-8">Customer not found</div>;
-    return <CustomerPage customer={customer} onBack={() => navigate("/customers")} editMode={editMode} />;
+    return <CustomerDetail customer={customer} onBack={() => navigate("/customers")} editMode={editMode} />;
 }
 
 export function CustomersModuleRoutes() {
