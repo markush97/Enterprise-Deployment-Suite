@@ -1,4 +1,4 @@
-import { Cpu } from "lucide-react";
+import { Boxes } from "lucide-react";
 import { TaskBundleList } from "./TaskBundleList.component";
 
 export function TaskBundlePage() {
@@ -10,7 +10,7 @@ export function TaskBundlePage() {
                 <div className="px-6 py-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                            <Cpu className="h-8 w-8 text-gray-500 dark:text-gray-400" />
+                            <Boxes className="h-8 w-8 text-gray-500 dark:text-gray-400" />
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Task Bundles</h1>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Group multiple tasks together. These are assigned to a job/device for a complete automated setup.</p>

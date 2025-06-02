@@ -1,7 +1,7 @@
 import { TaskBundlePage } from './TaskBundlePage.component';
 import { Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { DashboardModule } from '../../types/dashboard-module.interface';
-import { Cpu } from 'lucide-react';
+import { Boxes, } from 'lucide-react';
 import { TaskBundleDetail } from './TaskBundleDetail.component';
 import { useTaskBundles } from '../../hooks/useTaskBundles';
 
@@ -27,6 +27,6 @@ export function TaskBundleModuleRoutes() {
 export const TaskBundleModule: DashboardModule = {
     route: "/taskbundles",
     label: "Task Bundles",
-    icon: <Cpu className="h-4 w-4 mr-2" />,
+    icon: <Boxes className="h-4 w-4 mr-2" />,
     Component: TaskBundleModuleRoutes,
 };

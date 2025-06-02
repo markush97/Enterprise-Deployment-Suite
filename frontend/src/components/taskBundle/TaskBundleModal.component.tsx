@@ -1,5 +1,8 @@
 import { TaskBundle } from '../../types/taskbundle.interface';
 import { EntityFormModal, FieldConfig } from '../utils/EntityFormModal';
+import { useCustomers } from '../../hooks/useCustomers';
+import { useEffect, useState } from 'react';
+import Tippy from '@tippyjs/react';
 
 interface TaskBundleModalProps {
     isOpen: boolean;
@@ -31,31 +34,41 @@ const taskFields: FieldConfig[] = [
         required: false,
         placeholder: '',
         validate: undefined,
-    }
+    },
+    // The customer assignment will be handled in the modal body, not as a FieldConfig
 ];
 
 export function TaskBundleModal({ taskBundle, isOpen, onClose, onSave, loading }: TaskBundleModalProps) {
-    const initialValues = taskBundle ? {
-        name: taskBundle.name,
-        description: taskBundle.description || '',
-        global: taskBundle.global,
-    } : {
-        name: '',
-        description: '',
-        global: false
+    const [selectedCustomers, setSelectedCustomers] = useState<string[]>(taskBundle?.customerIds || []);
+    const [global, setGlobal] = useState(taskBundle?.global || false);
+
+    useEffect(() => {
+        setSelectedCustomers(taskBundle?.customerIds || []);
+        setGlobal(taskBundle?.global || false);
+    }, [taskBundle]);
+
+    const handleSave = async (data: any) => {
+        await onSave({ ...data, customerIds: global ? [] : selectedCustomers, global });
     };
 
-    // Improved toggle switch for the global field
     return (
-        <EntityFormModal
-            isOpen={isOpen}
-            onClose={onClose}
-            onSave={onSave}
-            title={taskBundle ? 'Edit Task-Bundle' : 'Add New Task-Bundle'}
-            fields={taskFields}
-            initialValues={initialValues}
-            loading={loading}
-        />
+        <>
+
+            <EntityFormModal
+                isOpen={isOpen}
+                onClose={onClose}
+                onSave={handleSave}
+                title={taskBundle ? 'Edit Task-Bundle' : 'Add New Task-Bundle'}
+                fields={taskFields}
+                initialValues={{
+                    name: taskBundle?.name || '',
+                    description: taskBundle?.description || '',
+                    global: global,
+                }}
+                loading={loading}
+            />
+
+        </>
     );
 }
 

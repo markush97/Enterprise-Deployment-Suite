@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class UpdateTaskBundleDto {
   @IsString()
@@ -12,4 +12,8 @@ export class UpdateTaskBundleDto {
   @IsBoolean()
   @IsOptional()
   global: boolean;
+
+  @IsArray()
+  @IsOptional()
+  customerIds: string[];
 }

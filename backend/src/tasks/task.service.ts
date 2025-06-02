@@ -208,7 +208,29 @@ export class TaskService {
     this.logger.debug(`Updating task bundle with id ${taskBundleId}`);
     const bundle = await this.taskBundleRepository.findOneOrFail(taskBundleId);
 
-    Object.assign(bundle, taskBundleInfo);
+    if (
+      taskBundleInfo.global &&
+      taskBundleInfo.customerIds &&
+      taskBundleInfo.customerIds.length > 0
+    ) {
+      throw new BadRequestMTIException(
+        MTIErrorCodes.GLOBAL_TASKBUNDLE_CANNOT_HAVE_CUSTOMERS,
+        'A global task bundle cannot have customers assigned.',
+      );
+    }
+
+    const customerIds = taskBundleInfo.customerIds || [];
+    const { customerIds: _, ...rest } = taskBundleInfo;
+    this.em.assign(bundle, rest);
+
+    if (customerIds.length === 0) {
+      bundle.customers.removeAll();
+    } else {
+      bundle.customers.set(
+        customerIds.map(customerId => this.em.getReference(CustomerEntity, customerId)),
+      );
+    }
+
     await this.em.persistAndFlush(bundle);
     return bundle;
   }

@@ -83,8 +83,11 @@ export function TaskBundleTasksCard({ bundleId }: TaskBundleTasksCardProps) {
 
     return (
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg mt-6">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Tasks in this Bundle</h3>
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between gap-4">
+                <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Tasks in this Bundle</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 text-left">Tasks of this bundle are executed in the order that they are listed below</p>
+                </div>
                 {isEditing && (
                     <button
                         className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
@@ -95,6 +98,7 @@ export function TaskBundleTasksCard({ bundleId }: TaskBundleTasksCardProps) {
                     </button>
                 )}
             </div>
+
             <div className="px-6 py-4">
                 {loading ? (
                     <div className="text-gray-500 dark:text-gray-400">Loading tasks...</div>
