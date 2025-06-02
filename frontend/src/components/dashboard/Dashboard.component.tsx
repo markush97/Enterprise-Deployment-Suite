@@ -5,10 +5,12 @@ import { Header } from "./Header.component";
 import { DevicesModule } from "../devices/devicesPage.component";
 import { AccountPage } from "../account/AccountPage.component";
 import { CustomersModule } from '../customers/CustomerModule';
+import { TasksModule } from "../tasks/TaskModule";
 
 const modules: DashboardModule[] = [
     CustomersModule,
     DevicesModule,
+    TasksModule,
     JobsModule
 ];
 

@@ -1,0 +1,18 @@
+// src/types/task.interface.ts
+export interface Task {
+    id: string;
+    name: string;
+    description?: string;
+    global: boolean;
+    installScript?: string;
+    createdAt: string;
+}
+
+export interface TaskBundle {
+    id: string;
+    name: string;
+    description?: string;
+    global: boolean;
+    createdAt: string;
+    taskList: Task[];
+}
