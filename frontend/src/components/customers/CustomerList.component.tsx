@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useCustomers } from '../../hooks/useCustomers';
 import { CustomerModal } from './CustomerModal.component';
-import { CustomerListSkeleton } from './CustomerSkeleton.component';
 import { Plus, Building2, AlertCircle } from 'lucide-react';
 import { Customer } from '../../types/customer.interface';
 import { ContextMenu } from '../utils/ContextMenu';
@@ -9,7 +8,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 
 export function CustomerList() {
     const navigate = useNavigate();
-    const { customerid, action } = useParams();
+    const { customerid } = useParams();
     const location = useLocation();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -167,9 +166,7 @@ export function CustomerList() {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                            {isLoading ? (
-                                <CustomerListSkeleton />
-                            ) : customers.length === 0 ? (
+                            {isLoading ? null : customers.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                                         <div className="flex flex-col items-center justify-center">
