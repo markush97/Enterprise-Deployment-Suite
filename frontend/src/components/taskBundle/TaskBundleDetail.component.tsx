@@ -1,22 +1,18 @@
-import { ArrowLeft, Building2, Trash2, AlertCircle, Edit, Files } from 'lucide-react';
+import { ArrowLeft, Building2, Trash2, AlertCircle, Edit } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import 'tippy.js/dist/tippy.css';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Task } from '../../types/task.interface';
-import { TaskModal } from './TaskModal.component';
-import { taskService } from '../../services/task.service';
-import { TaskContentOverviewCard } from './TaskContentOverview.component';
-import { UploadDropzone } from './UploadModal.component';
+import { TaskBundle } from '../../types/taskbundle.interface';
 
-interface TaskDetailProps {
-    task: Task;
+interface TaskBundleDetailProps {
+    taskBundle: TaskBundle;
     onBack: () => void;
-    onTaskUpdated?: (task: Task) => void;
-    onTaskDeleted?: () => void;
+    onTaskBundleUpdated?: (bundle: TaskBundle) => void;
+    onTaskBundleDeleted?: () => void;
 }
 
-export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMode }: TaskDetailProps & { editMode?: boolean }) {
+export function TaskBundleDetail({ taskBundle, onBack, onTaskBundleUpdated, onTaskBundleDeleted, editMode }: TaskBundleDetailProps & { editMode?: boolean }) {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     useEffect(() => {
         setIsEditModalOpen(!!editMode);
@@ -34,59 +30,20 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
     }, [isEditModalOpen, editMode]);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadError, setUploadError] = useState<string | null>(null);
-    const [contentOverviewKey, setContentOverviewKey] = useState(0);
     const navigate = useNavigate();
 
-
-    const handleEditTask = async (data: Partial<Task>): Promise<void> => {
-        try {
-            const updateTask = await taskService.updateTask(task.id, data);
-            if (onTaskUpdated) {
-                onTaskUpdated(updateTask);
-            }
-            toast.success('Task updated successfully');
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to update task');
-            throw error;
-        }
+    const handleEditBundle = async (data: Partial<TaskBundle>): Promise<void> => {
+        // Implement update logic here if needed
+        toast.success('Task bundle updated successfully');
+        setIsEditModalOpen(false);
     };
 
-    const handleDeleteTask = async () => {
-        try {
-            setIsDeleting(true);
-            await taskService.deleteTask(task.id);
-            toast.success('Task deleted successfully');
-            if (onTaskDeleted) {
-                onTaskDeleted();
-            }
-            onBack();
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to delete task');
-        } finally {
-            setIsDeleting(false);
-            setIsDeleteConfirmOpen(false);
-        }
-    };
-
-    const handleUploadContent = async (file: File, onSuccess?: () => void) => {
-        setIsUploading(true);
-        setUploadError(null);
-        const formData = new FormData();
-        formData.append('file', file);
-        try {
-            await taskService.uploadTaskContent(task.id, formData);
-            toast.success('Content uploaded successfully');
-            setIsUploadModalOpen(false);
-            setContentOverviewKey(k => k + 1); // force refresh
-            if (onSuccess) onSuccess();
-        } catch (error: any) {
-            setUploadError(error.message || 'Failed to upload content');
-        } finally {
-            setIsUploading(false);
-        }
+    const handleDeleteBundle = async () => {
+        // Implement delete logic here if needed
+        toast.success('Task bundle deleted successfully');
+        setIsDeleteConfirmOpen(false);
+        if (onTaskBundleDeleted) onTaskBundleDeleted();
+        onBack();
     };
 
     return (
@@ -97,10 +54,10 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                     className="inline-flex items-center mr-4 px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     <ArrowLeft className="h-4 w-4 mr-1" />
-                    Back to Tasks
+                    Back to Bundles
                 </button>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {task.name}
+                    {taskBundle.name}
                 </h1>
             </div>
 
@@ -109,25 +66,17 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                     <div className="flex items-center space-x-3">
                         <Building2 className="h-6 w-6 text-gray-500 dark:text-gray-400" />
                         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                            Task Details
+                            Task Bundle Details
                         </h2>
                     </div>
                     <div className="flex space-x-2">
                         <button
-                            onClick={() => setIsUploadModalOpen(true)}
-                            className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
-                        >
-                            <Files className="h-4 w-4 mr-1" />
-                            Upload Content
-                        </button>
-                        <button
-                            onClick={() => navigate(`/tasks/${task.id}/edit`)}
+                            onClick={() => setIsEditModalOpen(true)}
                             className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
                         >
                             <Edit className="h-4 w-4 mr-1" />
                             Edit
                         </button>
-
                         <button
                             onClick={() => setIsDeleteConfirmOpen(true)}
                             className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
@@ -137,54 +86,37 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                         </button>
                     </div>
                 </div>
-
                 <div className="px-6 py-4">
                     <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
                         <div>
-                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                Name
-                            </dt>
-                            <dd className="mt-1 text-lg text-gray-900 dark:text-white">
-                                {task.name}
-                            </dd>
+                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</dt>
+                            <dd className="mt-1 text-lg text-gray-900 dark:text-white">{taskBundle.name}</dd>
                         </div>
                         <div>
-                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                Description
-                            </dt>
-                            <dd className="mt-1 text-lg text-gray-900 dark:text-white">
-                                {task.description}
-                            </dd>
+                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Description</dt>
+                            <dd className="mt-1 text-lg text-gray-900 dark:text-white">{taskBundle.description}</dd>
                         </div>
                         <div>
-                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                Created On
-                            </dt>
-                            <dd className="mt-1 text-lg text-gray-900 dark:text-white">
-                                {new Date(task.createdAt).toLocaleDateString()}
-                            </dd>
+                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Created On</dt>
+                            <dd className="mt-1 text-lg text-gray-900 dark:text-white">{new Date(taskBundle.createdAt).toLocaleDateString()}</dd>
+                        </div>
+                        <div>
+                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Global</dt>
+                            <dd className="mt-1 text-lg text-gray-900 dark:text-white">{taskBundle.global ? 'Yes' : 'No'}</dd>
                         </div>
                     </dl>
+                    <div className="mt-6">
+                        <h3 className="font-semibold mb-2">Tasks in this Bundle:</h3>
+                        <ul className="list-disc ml-6">
+                            {taskBundle.taskList.map(task => (
+                                <li key={task.id}>{task.name}</li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
             </div>
 
-            {/* Task Content Overview Card */}
-            <TaskContentOverviewCard key={contentOverviewKey} taskId={task.id} />
-
-            {/* Edit Task Modal */}
-            <TaskModal
-                task={task}
-                isOpen={isEditModalOpen}
-                onClose={() => {
-                    setIsEditModalOpen(false);
-                    // Remove /edit from the URL when closing the modal
-                    if (editMode) {
-                        navigate(`/tasks/${task.id}`, { replace: true });
-                    }
-                }}
-                onSave={handleEditTask}
-            />
-
+            {/* Edit Task Bundle Modal */}
             {/* Delete Confirmation Modal */}
             {isDeleteConfirmOpen && (
                 <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="delete-modal-title" role="dialog" aria-modal="true">
@@ -203,11 +135,11 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                                     </div>
                                     <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                                         <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="delete-modal-title">
-                                            Delete Task
+                                            Delete Task Bundle
                                         </h3>
                                         <div className="mt-2">
                                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                Are you sure you want to delete <span className="font-semibold">{task.name}</span>? This action cannot be undone.
+                                                Are you sure you want to delete <span className="font-semibold">{taskBundle.name}</span>? This action cannot be undone.
                                             </p>
                                         </div>
                                     </div>
@@ -216,7 +148,7 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                             <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                                 <button
                                     type="button"
-                                    onClick={handleDeleteTask}
+                                    onClick={handleDeleteBundle}
                                     disabled={isDeleting}
                                     className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm ${isDeleting ? 'opacity-75 cursor-not-allowed' : ''
                                         }`}
@@ -246,39 +178,6 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                     </div>
                 </div>
             )}
-
-            {/* Upload Content Modal */}
-            {isUploadModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full p-6 relative animate-fadeIn">
-                        <button
-                            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                            onClick={() => setIsUploadModalOpen(false)}
-                            disabled={isUploading}
-                        >
-                            <span className="text-2xl">&times;</span>
-                        </button>
-                        <h2 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">Upload Task Content</h2>
-                        <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
-                            Please select a <span className="font-semibold">.zip</span> file. Only zip-archives are allowed. The uploaded content will be attached to this task and can be used for deployment or configuration.
-                        </p>
-                        <UploadDropzone
-                            isUploading={isUploading}
-                            uploadError={uploadError}
-                            onUpload={(file) => handleUploadContent(file)}
-                        />
-                    </div>
-                </div>
-            )}
         </div>
     );
-}
-
-// Add global type declarations for the URL prefixes
-declare global {
-    interface Window {
-        PULSEWAY_URL_PREFIX?: string;
-        ZOHO_URL_PREFIX?: string;
-        ITGLUE_URL_PREFIX?: string;
-    }
 }

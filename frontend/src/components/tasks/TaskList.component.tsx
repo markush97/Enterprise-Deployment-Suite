@@ -1,15 +1,19 @@
 import { useState } from 'react';
 import { useTasks } from '../../hooks/useTasks';
 import { Task } from '../../types/task.interface';
-import { Check, Plus, X } from 'lucide-react';
+import { Check, Plus, X, AlertCircle } from 'lucide-react';
+import { ConfirmDeleteModal } from '../utils/ConfirmDeleteModal';
 import { EntityList } from '../utils/EntityList';
 import { TaskModal } from './TaskModal.component';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
 export function TaskList() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+    const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const {
         tasksQuery,
         addTaskMutation,
@@ -26,8 +30,22 @@ export function TaskList() {
         } else {
             await addTaskMutation.mutateAsync(data);
         }
+        queryClient.invalidateQueries({ queryKey: ['taskBundles'] });
         setIsModalOpen(false);
         setSelectedTask(null);
+    };
+
+    const handleDelete = (task: Task) => {
+        setTaskToDelete(task);
+    };
+    const confirmDelete = () => {
+        if (taskToDelete) {
+            deleteTaskMutation.mutate(taskToDelete.id);
+            setTaskToDelete(null);
+        }
+    };
+    const cancelDelete = () => {
+        setTaskToDelete(null);
     };
 
     return (
@@ -53,7 +71,7 @@ export function TaskList() {
                         label: 'Edit', onClick: (task) => { setIsModalOpen(true); setSelectedTask(task); },
                     },
                     {
-                        label: 'Delete', onClick: (task) => deleteTaskMutation.mutate(task.id), danger: true,
+                        label: 'Delete', onClick: handleDelete, danger: true,
                     },
                 ]}
                 isLoading={isLoading}
@@ -66,6 +84,13 @@ export function TaskList() {
                 onClose={() => { setIsModalOpen(false); setSelectedTask(null); }}
                 onSave={handleSubmit}
                 task={selectedTask || undefined}
+            />
+            <ConfirmDeleteModal
+                isOpen={!!taskToDelete}
+                title="Delete Task"
+                entityName={taskToDelete?.name || ''}
+                onCancel={cancelDelete}
+                onConfirm={confirmDelete}
             />
         </div>
     );

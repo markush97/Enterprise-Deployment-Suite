@@ -1,0 +1,32 @@
+import { TaskBundlePage } from './TaskBundlePage.component';
+import { Route, Routes, useNavigate, useParams } from 'react-router-dom';
+import { DashboardModule } from '../../types/dashboard-module.interface';
+import { Cpu } from 'lucide-react';
+import { TaskBundleDetail } from './TaskBundleDetail.component';
+import { useTaskBundles } from '../../hooks/useTaskBundles';
+
+function TaskBundlePageWrapper({ editMode }: { editMode?: boolean } = {}) {
+    const navigate = useNavigate();
+    const { taskBundleId } = useParams();
+    const { taskBundlesQuery } = useTaskBundles();
+    const taskBundle = taskBundlesQuery.data?.find(t => t.id === taskBundleId);
+    if (!taskBundle) return <div className="text-center py-8">Taskbundle not found</div>;
+    return <TaskBundleDetail taskBundle={taskBundle} onBack={() => navigate('/taskbundle')} editMode={editMode} />;
+}
+
+export function TaskBundleModuleRoutes() {
+    return (
+        <Routes>
+            <Route index element={<TaskBundlePage />} />
+            <Route path=":taskBundleId" element={<TaskBundlePageWrapper />} />
+            <Route path=":taskBundleId/edit" element={<TaskBundlePageWrapper editMode={true} />} />
+        </Routes>
+    );
+}
+
+export const TaskBundleModule: DashboardModule = {
+    route: "/taskbundles",
+    label: "Task Bundles",
+    icon: <Cpu className="h-4 w-4 mr-2" />,
+    Component: TaskBundleModuleRoutes,
+};
