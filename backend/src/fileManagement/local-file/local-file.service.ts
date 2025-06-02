@@ -172,17 +172,9 @@ export class LocalFileService {
       const childFiles = await Promise.all(
         children.map(child => this.getFileInfo(join(filePath, child.name))),
       );
-      // Recursively sum the size of all child files
-      const totalSize = childFiles.reduce((sum, child) => {
-        if (!child) return sum;
-        if (child.fileType === 'directory' && child.children) {
-          return sum + child.fileSize;
-        }
-        return sum + (child.fileSize || 0);
-      }, 0);
       return {
         name: filePath.split('/').pop(),
-        fileSize: totalSize,
+        fileSize: 0,
         fileType: 'directory',
         children: childFiles.filter(child => child !== null) as FileOverviewDto[],
       };
