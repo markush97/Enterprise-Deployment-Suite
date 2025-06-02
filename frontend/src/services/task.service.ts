@@ -33,4 +33,9 @@ export const taskService = {
     async deleteTaskBundle(id: string): Promise<void> {
         await api.delete(`/tasks/bundles/${id}`);
     },
+    async uploadTaskContent(id: string, formData: FormData): Promise<void> {
+        await api.post(`/tasks/${id}/content`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+    },
 };

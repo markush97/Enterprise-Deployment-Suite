@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Building2, Trash2, AlertCircle, Edit } from 'lucide-react';
+import { ArrowLeft, Building2, Trash2, AlertCircle, Edit, Files } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import 'tippy.js/dist/tippy.css';
 import { useNavigate } from 'react-router-dom';
@@ -32,6 +32,9 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
     }, [isEditModalOpen, editMode]);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
     const navigate = useNavigate();
 
 
@@ -65,6 +68,22 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
         }
     };
 
+    const handleUploadContent = async (file: File) => {
+        setIsUploading(true);
+        setUploadError(null);
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+            await taskService.uploadTaskContent(task.id, formData);
+            toast.success('Content uploaded successfully');
+            setIsUploadModalOpen(false);
+        } catch (error: any) {
+            setUploadError(error.message || 'Failed to upload content');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     return (
         <div className="space-y-6 animate-fadeIn">
             <div className="flex items-center mb-6">
@@ -89,6 +108,13 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                         </h2>
                     </div>
                     <div className="flex space-x-2">
+                        <button
+                            onClick={() => setIsUploadModalOpen(true)}
+                            className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
+                        >
+                            <Files className="h-4 w-4 mr-1" />
+                            Upload Content
+                        </button>
                         <button
                             onClick={() => navigate(`/tasks/${task.id}/edit`)}
                             className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
@@ -212,7 +238,120 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                     </div>
                 </div>
             )}
+
+            {/* Upload Content Modal */}
+            {isUploadModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full p-6 relative animate-fadeIn">
+                        <button
+                            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                            onClick={() => setIsUploadModalOpen(false)}
+                            disabled={isUploading}
+                        >
+                            <span className="text-2xl">&times;</span>
+                        </button>
+                        <h2 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">Upload Task Content</h2>
+                        <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
+                            Please select a <span className="font-semibold">.zip</span> file. Only zip-archives are allowed. The uploaded content will be attached to this task and can be used for deployment or configuration.
+                        </p>
+                        <UploadDropzone
+                            isUploading={isUploading}
+                            uploadError={uploadError}
+                            onUpload={handleUploadContent}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
+    );
+}
+
+// --- UploadDropzone component ---
+import React, { useRef } from 'react';
+
+function UploadDropzone({ isUploading, uploadError, onUpload }: {
+    isUploading: boolean;
+    uploadError: string | null;
+    onUpload: (file: File) => void;
+}) {
+    const [dragActive, setDragActive] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            setSelectedFile(e.dataTransfer.files[0]);
+        }
+    };
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(true);
+    };
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+    };
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setSelectedFile(e.target.files[0]);
+        }
+    };
+    const handleClick = () => {
+        inputRef.current?.click();
+    };
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (selectedFile) {
+            onUpload(selectedFile);
+        }
+    };
+    return (
+        <form onSubmit={handleSubmit}>
+            <div
+                className={`flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 mb-4 transition-colors cursor-pointer ${dragActive ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/30'}`}
+                onClick={handleClick}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                tabIndex={0}
+                role="button"
+                aria-label="Upload file by clicking or dragging"
+            >
+                <input
+                    ref={inputRef}
+                    type="file"
+                    name="file"
+                    accept=".zip,application/zip,application/x-zip-compressed"
+                    className="hidden"
+                    required
+                    disabled={isUploading}
+                    onChange={handleFileChange}
+                />
+                <svg className="w-10 h-10 mb-2 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                </svg>
+                <span className="text-sm text-gray-700 dark:text-gray-200">
+                    {selectedFile ? (
+                        <span className="font-medium">{selectedFile.name}</span>
+                    ) : (
+                        <>Click or drag a <span className="font-semibold">.zip</span> file here to upload</>
+                    )}
+                </span>
+            </div>
+            {uploadError && <div className="text-red-600 mb-2">{uploadError}</div>}
+            <button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded disabled:opacity-60"
+                disabled={isUploading || !selectedFile}
+            >
+                {isUploading ? 'Uploading...' : 'Upload'}
+            </button>
+        </form>
     );
 }
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTasks } from '../../hooks/useTasks';
 import { Task } from '../../types/task.interface';
-import { Plus } from 'lucide-react';
+import { Check, Plus, X } from 'lucide-react';
 import { EntityList } from '../utils/EntityList';
 import { TaskModal } from './TaskModal.component';
 import { useNavigate } from 'react-router-dom';
@@ -46,7 +46,7 @@ export function TaskList() {
                 columns={[
                     { label: 'Name', render: (task) => task.name },
                     { label: 'Description', render: (task) => task.description },
-                    { label: 'Global', render: (task) => (task.global ? 'Yes' : 'No') },
+                    { label: 'Global', render: (task) => (task.global ? (<Check />) : (<X />)) },
                 ]}
                 actions={[
                     {

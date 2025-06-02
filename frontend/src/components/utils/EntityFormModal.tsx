@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 export interface FieldConfig {
     name: string;
     label: string;
-    type: 'text' | 'number' | 'password' | 'email';
+    type: 'text' | 'number' | 'password' | 'email' | 'checkbox';
     placeholder?: string;
     required?: boolean;
     pattern?: RegExp;

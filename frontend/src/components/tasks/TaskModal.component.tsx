@@ -27,7 +27,7 @@ const taskFields: FieldConfig[] = [
     {
         name: 'global',
         label: 'Global',
-        type: 'text', // Will be rendered as a checkbox below
+        type: 'checkbox',
         required: false,
         placeholder: '',
         validate: undefined,
@@ -54,30 +54,14 @@ export function TaskModal({ task, isOpen, onClose, onSave, loading }: TaskModalP
         installScript: '',
     };
 
-    // Custom rendering for the global checkbox
+    // Improved toggle switch for the global field
     return (
         <EntityFormModal
             isOpen={isOpen}
             onClose={onClose}
             onSave={onSave}
             title={task ? 'Edit Task' : 'Add New Task'}
-            fields={taskFields.map(f =>
-                f.name === 'global'
-                    ? {
-                        ...f, render: (value: boolean, onChange: (v: boolean) => void) => (
-                            <label className="flex items-center mb-2">
-                                <input
-                                    type="checkbox"
-                                    checked={!!value}
-                                    onChange={e => onChange(e.target.checked)}
-                                    className="mr-2"
-                                />
-                                Global
-                            </label>
-                        )
-                    }
-                    : f
-            )}
+            fields={taskFields}
             initialValues={initialValues}
             loading={loading}
         />

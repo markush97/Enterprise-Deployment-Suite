@@ -1,4 +1,4 @@
-import { Cpu, Plus } from "lucide-react";
+import { Cpu } from "lucide-react";
 import { TaskList } from "./TaskList.component";
 
 export function TaskPage() {
