@@ -2,6 +2,13 @@
 import { api } from '../api/api.service';
 import type { Task, TaskBundle } from '../types/task.interface';
 
+export interface TaskContentFileInfo {
+    name: string;
+    fileSize: number;
+    fileType: 'file' | 'directory';
+    children: TaskContentFileInfo[] | null;
+}
+
 export const taskService = {
     async getTasks(): Promise<Task[]> {
         const res = await api.get<Task[]>('/tasks');
@@ -37,5 +44,9 @@ export const taskService = {
         await api.post(`/tasks/${id}/content`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
+    },
+    async getTaskContentOverview(id: string): Promise<TaskContentFileInfo | null> {
+        const res = await api.get<TaskContentFileInfo | null>(`/tasks/${id}/contentOverview`);
+        return res.data;
     },
 };
