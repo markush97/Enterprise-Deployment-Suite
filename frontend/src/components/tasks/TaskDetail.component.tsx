@@ -6,8 +6,8 @@ import { useState, useEffect } from 'react';
 import { Task } from '../../types/task.interface';
 import { TaskModal } from './TaskModal.component';
 import { taskService } from '../../services/task.service';
-import { UploadDropzone } from './UploadModal.component';
 import { TaskContentOverviewCard } from './TaskContentOverview.component';
+import { UploadDropzone } from './UploadModal.component';
 
 interface TaskPageProps {
     task: Task;
@@ -37,6 +37,7 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadError, setUploadError] = useState<string | null>(null);
+    const [contentOverviewKey, setContentOverviewKey] = useState(0);
     const navigate = useNavigate();
 
 
@@ -70,7 +71,7 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
         }
     };
 
-    const handleUploadContent = async (file: File) => {
+    const handleUploadContent = async (file: File, onSuccess?: () => void) => {
         setIsUploading(true);
         setUploadError(null);
         const formData = new FormData();
@@ -79,6 +80,8 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
             await taskService.uploadTaskContent(task.id, formData);
             toast.success('Content uploaded successfully');
             setIsUploadModalOpen(false);
+            setContentOverviewKey(k => k + 1); // force refresh
+            if (onSuccess) onSuccess();
         } catch (error: any) {
             setUploadError(error.message || 'Failed to upload content');
         } finally {
@@ -166,7 +169,7 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
             </div>
 
             {/* Task Content Overview Card */}
-            <TaskContentOverviewCard taskId={task.id} />
+            <TaskContentOverviewCard key={contentOverviewKey} taskId={task.id} />
 
             {/* Edit Task Modal */}
             <TaskModal
@@ -262,7 +265,7 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                         <UploadDropzone
                             isUploading={isUploading}
                             uploadError={uploadError}
-                            onUpload={handleUploadContent}
+                            onUpload={(file) => handleUploadContent(file)}
                         />
                     </div>
                 </div>

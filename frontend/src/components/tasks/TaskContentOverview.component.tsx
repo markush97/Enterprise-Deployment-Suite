@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { taskService } from '../../services/task.service';
 import type { TaskContentFileInfo } from '../../services/task.service';
-import { Files } from 'lucide-react';
+import { File, FolderOpen } from 'lucide-react';
 
 export function TaskContentOverviewCard({ taskId }: { taskId: string }) {
     const [root, setRoot] = useState<TaskContentFileInfo | null>(null);
@@ -31,7 +31,7 @@ export function TaskContentOverviewCard({ taskId }: { taskId: string }) {
             return (
                 <li key={node.name + depth} className={depth === 0 ? '' : 'ml-4'}>
                     <div className="flex items-center font-semibold text-blue-700 dark:text-blue-300">
-                        <Files className="h-4 w-4 mr-2 text-blue-500" />
+                        <FolderOpen className="h-4 w-4 mr-2 text-blue-500" />
                         <span>{node.name}/</span>
                     </div>
                     {node.children && node.children.length > 0 && (
@@ -45,7 +45,7 @@ export function TaskContentOverviewCard({ taskId }: { taskId: string }) {
             return (
                 <li key={node.name + depth} className="ml-4 flex items-center justify-between">
                     <div className="flex items-center">
-                        <Files className="h-4 w-4 mr-2 text-blue-400" />
+                        <File className="h-4 w-4 mr-2 text-blue-400" />
                         <span className="text-gray-900 dark:text-white">{node.name}</span>
                     </div>
                     <span className="text-xs text-gray-500 dark:text-gray-400 ml-4">{(node.fileSize / 1024).toFixed(1)} KB</span>
