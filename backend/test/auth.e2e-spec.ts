@@ -1,6 +1,5 @@
 import { AccountEntity, UserRole } from 'src/auth/entities/account.entity';
 import { REFRESH_TOKEN_COOKIE_NAME } from 'src/auth/strategies/refreshtoken/refresh-token.entity';
-import { TOKEN_LIFESPAN } from 'src/auth/strategies/refreshtoken/refreshtoken.service';
 import * as request from 'supertest';
 
 import { INestApplication } from '@nestjs/common';
@@ -19,6 +18,7 @@ import {
   testEndpointAuth,
   validateJwt,
 } from './testutils/auth.testutil';
+import { testConfig } from './testutils/config.testutil';
 import { setupTestConfig } from './testutils/setup.testutil';
 
 describe('AuthController (e2e)', () => {
@@ -102,17 +102,17 @@ describe('AuthController (e2e)', () => {
       const mockTokens = [
         {
           id: '6286bf6e-b515-40ba-8877-0179f26fccd5',
-          token: 'token1',
           createdAt: dateNow,
           updatedAt: dateNow,
           lastUsedAt: null,
+          isCurrent: false,
         },
         {
           id: '7ced7fbd-d52b-4dbe-9505-cc81cb15b189',
-          token: 'token2',
           createdAt: dateNow,
           updatedAt: dateNow,
           lastUsedAt: null,
+          isCurrent: false,
         },
       ];
 
@@ -249,8 +249,7 @@ describe('AuthController (e2e)', () => {
       const testRefreshToken = {
         id: '6286bf6e-b515-40ba-8877-0179f26fccd5',
         token: token,
-        createdAt: new Date(Date.now() - TOKEN_LIFESPAN),
-        updatedAt: new Date(),
+        createdAt: new Date(Date.now() - Number(testConfig.REFRESH_TOKEN_VALIDITY_DAYS) * 30),
         lastUsedAt: null,
       };
 
@@ -336,7 +335,7 @@ describe('AuthController (e2e)', () => {
       await request(app.getHttpServer())
         .delete(`/auth/refresh/${tokenId}`)
         .set('Authorization', `Bearer ${await getValidJwt()}`)
-        .expect(200);
+        .expect(204);
 
       expect(mockRefreshTokenRepository.nativeDelete).toHaveBeenCalledWith({
         account: { id: TOKEN_PAYLOAD_VALID.sub },

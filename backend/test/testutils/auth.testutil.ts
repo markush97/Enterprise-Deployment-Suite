@@ -90,6 +90,8 @@ export function testEndpointAuth(
       req = reqBase.put(endpoint);
     } else if (method === 'DELETE') {
       req = reqBase.delete(endpoint);
+    } else if (method === 'PATCH') {
+      req = reqBase.patch(endpoint);
     }
     return req.set('Authorization', `Bearer ${token}`).expect(401);
   });
@@ -107,6 +109,8 @@ export function testEndpointAuth(
       req = reqBase.put(endpoint);
     } else if (method === 'DELETE') {
       req = reqBase.delete(endpoint);
+    } else if (method === 'PATCH') {
+      req = reqBase.patch(endpoint);
     }
     return req.set('Authorization', `Bearer ${token}`).expect(401);
   });

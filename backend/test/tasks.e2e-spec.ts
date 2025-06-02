@@ -105,12 +105,12 @@ describe('TasksController (e2e)', () => {
     testEndpointAuth('/tasks/27579475-8c11-46c3-933a-436483691239', 'PATCH', () => app);
   });
 
-  describe('/tasks/bundle/:id (DELETE)', () => {
-    testEndpointAuth('/tasks/bundle/27579475-8c11-46c3-933a-436483691239', 'DELETE', () => app);
+  describe('/tasks/bundles/:id (DELETE)', () => {
+    testEndpointAuth('/tasks/bundles/27579475-8c11-46c3-933a-436483691239', 'DELETE', () => app);
   });
 
-  describe('/tasks/bundle/:id (PATCH)', () => {
-    testEndpointAuth('/tasks/bundle/27579475-8c11-46c3-933a-436483691239', 'PATCH', () => app);
+  describe('/tasks/bundles/:id (PATCH)', () => {
+    testEndpointAuth('/tasks/bundles/27579475-8c11-46c3-933a-436483691239', 'PATCH', () => app);
   });
 
   describe('/tasks (POST)', () => {
@@ -311,8 +311,6 @@ describe('TasksController (e2e)', () => {
   });
 
   describe('/tasks/:id/content (GET)', () => {
-    testEndpointAuth('/tasks/task-1/content', 'GET', () => app);
-
     it('should download content for a task with content', async () => {
       const taskId = 'task-9';
       const contentDir = path.join(testUploadFolder, 'tasks', taskId);

@@ -42,7 +42,7 @@ export class RefreshTokenService {
       { populate: ['account'] },
     );
 
-    if (!storedToken || !this.checkTokenValidity(storedToken)) {
+    if (!storedToken || !this.checkTokenValidity(storedToken) || !storedToken.account) {
       throw new NotFoundMTIException(
         MTIErrorCodes.REFRESHTOKEN_INVALID,
         'Refreshtoken invalid or expired',

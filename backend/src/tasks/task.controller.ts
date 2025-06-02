@@ -72,6 +72,7 @@ export class TaskController {
 
   @Get(':id/content')
   @UseInterceptors(LocalFileUploadInterceptor({ fieldName: 'file', path: 'tasksContent' }))
+  @Public()
   async downloadTaskContent(
     @Param('id') id: string,
     @Res({ passthrough: true }) res: Response,
@@ -96,6 +97,7 @@ export class TaskController {
 
   @Get('bundles/:bundleId/content')
   @UseInterceptors(LocalFileUploadInterceptor({ fieldName: 'file', path: 'tasksContent' }))
+  @Public()
   async downloadTaskBundleContent(
     @Param('bundleId') id: string,
     @Res({ passthrough: true }) res: Response,
