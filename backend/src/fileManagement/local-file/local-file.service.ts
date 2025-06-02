@@ -151,7 +151,11 @@ export class LocalFileService {
    * Returns a list of files (with name and size) in the given directory.
    */
   async getFilesOverview(fileMetadata: LocalFileMetadataEntity): Promise<FileOverviewDto> {
-    const fullPath = join(process.cwd(), fileMetadata.path, fileMetadata.filename);
+    const fullPath = join(
+      this.fileConfigService.uploadPath,
+      fileMetadata.path,
+      fileMetadata.filename,
+    );
     this.logger.debug(`Getting files in directory: ${fullPath}`);
 
     return this.getFileInfo(fullPath);
@@ -168,18 +172,26 @@ export class LocalFileService {
       const childFiles = await Promise.all(
         children.map(child => this.getFileInfo(join(filePath, child.name))),
       );
+      // Recursively sum the size of all child files
+      const totalSize = childFiles.reduce((sum, child) => {
+        if (!child) return sum;
+        if (child.fileType === 'directory' && child.children) {
+          return sum + child.fileSize;
+        }
+        return sum + (child.fileSize || 0);
+      }, 0);
       return {
-        name: filePath.split('/').pop() || '',
-        fileSize: stats.size,
+        name: filePath.split('/').pop(),
+        fileSize: totalSize,
         fileType: 'directory',
         children: childFiles.filter(child => child !== null) as FileOverviewDto[],
       };
     }
 
     return {
-      name: filePath.split('/').pop() || '',
+      name: filePath.split('/').pop(),
       fileSize: stats.size,
-      fileType: 'directory',
+      fileType: 'file',
       children: null,
     };
   }

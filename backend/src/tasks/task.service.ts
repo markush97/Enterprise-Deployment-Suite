@@ -156,7 +156,6 @@ export class TaskService {
    * that contains the file names and sizes of the files in the task following the correct structure.
    */
   public async getTaskContentOverivew(id: string): Promise<FileOverviewDto> {
-    this.logger.debug(`Getting content overview for task ${id}`);
     const task = await this.taskRepository.findOneOrFail(id, { populate: ['contentFile'] });
     if (!task || !task.contentFile) {
       throw new NotFoundMTIException(
