@@ -9,6 +9,10 @@ import { JwtModuleOptions, JwtOptionsFactory } from '@nestjs/jwt';
 export class AuthConfigService implements JwtOptionsFactory {
   constructor(private readonly config: CoreConfigService) {}
 
+  public get refreshTokenLifespan(): number {
+    return this.config.get<number>('REFRESH_TOKEN_VALIDITY_DAYS', 30) * 24 * 60 * 60 * 1000;
+  }
+
   private get jwtSecret(): string {
     const secret = this.config.get<string>('JWT_SECRET');
     if (!secret) {

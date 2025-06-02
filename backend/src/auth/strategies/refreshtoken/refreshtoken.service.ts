@@ -1,8 +1,8 @@
 import { CookieOptions } from 'express';
+import { AuthConfigService } from 'src/auth/auth.config.service';
 import { AccountEntity } from 'src/auth/entities/account.entity';
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
 import { NotFoundMTIException } from 'src/core/errorhandling/exceptions/not-found.mti-exception';
-import { UnauthorizedMTIException } from 'src/core/errorhandling/exceptions/unauthorized.mti-exception';
 import { generateSecureRandomString } from 'src/core/utils/crypto.helper';
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -15,10 +15,6 @@ import { RefreshTokenOutDto } from './refresh-token.out.dto';
 import { CreateRefreshTokenDto } from './refresh-token.register.dto';
 
 const TOKEN_LENGTH = 32;
-export const TOKEN_LIFESPAN = 10000000;
-
-const isValid = (token: RefreshTokenEntity) =>
-  new Date(token?.createdAt).getTime() + TOKEN_LIFESPAN > Date.now();
 
 @Injectable()
 export class RefreshTokenService {
@@ -28,6 +24,7 @@ export class RefreshTokenService {
     @InjectRepository(RefreshTokenEntity)
     private readonly refreshTokenRepository: EntityRepository<RefreshTokenEntity>,
     private readonly em: EntityManager,
+    private readonly authConfig: AuthConfigService,
   ) {}
 
   async createRefreshToken(refreshToken: CreateRefreshTokenDto): Promise<RefreshTokenEntity> {
@@ -45,7 +42,7 @@ export class RefreshTokenService {
       { populate: ['account'] },
     );
 
-    if (!storedToken || !isValid(storedToken)) {
+    if (!storedToken || !this.checkTokenValidity(storedToken)) {
       throw new NotFoundMTIException(
         MTIErrorCodes.REFRESHTOKEN_INVALID,
         'Refreshtoken invalid or expired',
@@ -83,7 +80,7 @@ export class RefreshTokenService {
         httpOnly: true,
         secure: true,
         // expires 3 months from now
-        expires: new Date(now.setMonth(now.getMonth() + 3)),
+        expires: new Date(now.getTime() + this.authConfig.refreshTokenLifespan),
         path: '/',
         sameSite: 'strict',
       },
@@ -108,5 +105,9 @@ export class RefreshTokenService {
   async rejectAllRefreshtoken(accountId: string): Promise<void> {
     this.logger.debug('Deleting refresh Token');
     await this.refreshTokenRepository.nativeDelete({ account: { id: accountId } });
+  }
+
+  checkTokenValidity(token: RefreshTokenEntity): boolean {
+    return new Date(token?.createdAt).getTime() + this.authConfig.refreshTokenLifespan > Date.now();
   }
 }
