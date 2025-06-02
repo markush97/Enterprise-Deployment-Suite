@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useCustomers } from '../../hooks/useCustomers';
 import { CustomerModal } from './CustomerModal.component';
-import { Check, Plus, X, AlertCircle } from 'lucide-react';
-import { ConfirmDeleteModal } from '../utils/ConfirmDeleteModal';
+import { Plus, Building2 } from 'lucide-react';
 import { Customer } from '../../types/customer.interface';
 import { EntityList, EntityListColumn, EntityListAction } from '../utils/EntityList';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { ConfirmDeleteModal } from '../utils/ConfirmDeleteModal';
 
 export function CustomerList() {
     const navigate = useNavigate();
@@ -14,6 +14,7 @@ export function CustomerList() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const {
         customersQuery,
@@ -54,22 +55,6 @@ export function CustomerList() {
         }
     };
 
-    // Handle deleting customer
-    const handleDelete = (customer: Customer) => {
-        setCustomerToDelete(customer);
-    };
-
-    const confirmDelete = () => {
-        if (customerToDelete) {
-            deleteCustomerMutation.mutate(customerToDelete.id);
-            setCustomerToDelete(null);
-        }
-    };
-
-    const cancelDelete = () => {
-        setCustomerToDelete(null);
-    };
-
     // Customer-specific columns
     const columns: EntityListColumn<Customer>[] = [
         { label: 'Code', accessor: 'shortCode' },
@@ -98,14 +83,28 @@ export function CustomerList() {
         },
         {
             label: 'Delete',
-            onClick: handleDelete,
             danger: true,
+            onClick: (customer) => {
+                setCustomerToDelete(customer);
+            },
         },
     ];
 
+    const handleConfirmDelete = async () => {
+        if (!customerToDelete) return;
+        setIsDeleting(true);
+        try {
+            await deleteCustomerMutation.mutateAsync(customerToDelete.id);
+            setCustomerToDelete(null);
+            customersQuery.refetch();
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     return (
-        <div>
-            <EntityList<Customer>
+        <>
+            <EntityList
                 data={customers}
                 columns={columns}
                 actions={actions}
@@ -136,19 +135,34 @@ export function CustomerList() {
                 onRetry={refetch}
             />
             <CustomerModal
-                isOpen={isModalOpen}
-                onClose={() => { setIsModalOpen(false); setSelectedCustomer(null); }}
-                onSave={handleSubmit}
                 customer={selectedCustomer || undefined}
+                isOpen={isModalOpen}
+                onClose={() => {
+                    setIsModalOpen(false);
+                    setSelectedCustomer(null);
+                    if (location.pathname.endsWith('/add')) {
+                        navigate(-1);
+                    } else {
+                        setIsModalOpen(false);
+                    }
+                }}
+                onSave={async (data) => {
+                    if (selectedCustomer) {
+                        await handleEditCustomer(selectedCustomer.id, data);
+                    } else {
+                        await handleAddCustomer(data);
+                    }
+                }}
             />
             <ConfirmDeleteModal
                 isOpen={!!customerToDelete}
                 title="Delete Customer"
                 entityName={customerToDelete?.name || ''}
-                onCancel={cancelDelete}
-                onConfirm={confirmDelete}
+                onCancel={() => setCustomerToDelete(null)}
+                onConfirm={handleConfirmDelete}
+                isLoading={isDeleting}
             />
-        </div>
+        </>
     );
 }
 

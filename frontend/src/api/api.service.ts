@@ -43,13 +43,13 @@ api.interceptors.response.use(
             }
         }
         // Enhanced error handling: log error and show user-friendly message if needed
-        if (error.response) {
-            console.error('API Error:', error.response.status, error.response.data);
-        } else if (error.request) {
-            console.error('API Error: No response received', error.request);
-        } else {
-            console.error('API Error:', error.message);
+        if (
+            (error.response && error.response.status >= 500) ||
+            !(error.response?.data && (error.response.data as any).mtiErrorCode)
+        ) {
+            console.error('API Error:', error.response?.status, error.response?.data);
         }
+
         return Promise.reject(error);
     }
 );
