@@ -4,6 +4,7 @@ import 'tippy.js/dist/tippy.css';
 import { useState, useEffect } from 'react';
 import { TaskBundle } from '../../types/taskbundle.interface';
 import { ConfirmDeleteModal } from '../utils/ConfirmDeleteModal';
+import { TaskBundleTasksCard } from './TaskBundleTasksCard.component';
 
 interface TaskBundleDetailProps {
     taskBundle: TaskBundle;
@@ -99,7 +100,10 @@ export function TaskBundleDetail({ taskBundle, onBack, onTaskBundleDeleted, edit
                 </div>
             </div>
 
-            {/* Edit Task Bundle Modal */}
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+                <TaskBundleTasksCard bundleId={taskBundle.id} />
+            </div>
+
             {/* Delete Confirmation Modal */}
             <ConfirmDeleteModal
                 isOpen={isDeleteConfirmOpen}
