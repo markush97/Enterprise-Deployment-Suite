@@ -16,6 +16,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   HttpStatus,
   Logger,
   Param,
@@ -51,6 +52,13 @@ export class TaskController {
   async createTask(@Body() createTaskDto: CreateTaskDto): Promise<TasksEntity> {
     this.logger.debug('Creating a new task');
     return this.taskService.createTask(createTaskDto);
+  }
+
+  @Get('bundles')
+  async getTaskbudles(): Promise<TaskBundleEntity[]> {
+    this.logger.debug('Getting Task Bundles');
+
+    return this.taskService.getTaskBundles();
   }
 
   @Get(':id/content')
@@ -134,7 +142,7 @@ export class TaskController {
     return this.taskService.createTaskBundle(taskBundle);
   }
 
-  @Post('/bundles/:bundleId/tasks')
+  @Post('bundles/:bundleId/tasks')
   async bulkSetTasks(
     @Param('bundleId') bundleId: string,
     @Body('taskIds') taskIds: string[],
@@ -142,7 +150,15 @@ export class TaskController {
     return this.taskService.bulkSetTasks(bundleId, taskIds);
   }
 
+  @Delete('bundles/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteTaskBundle(@Param('id') taskBundleId: string): Promise<void> {
+    this.logger.debug(`Deleting taskbundle with id ${taskBundleId}`);
+    return this.taskService.deleteTaskBundle(taskBundleId);
+  }
+
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async deleteTask(@Param('id') taskId: string): Promise<void> {
     this.logger.debug(`Deleting task with id ${taskId}`);
     return this.taskService.deleteTask(taskId);

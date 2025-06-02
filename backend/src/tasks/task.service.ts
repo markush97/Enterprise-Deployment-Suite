@@ -38,8 +38,11 @@ export class TaskService {
   ) {}
 
   public async getTasks(): Promise<TaskEntity[]> {
-    this.logger.debug('Getting task list');
     return this.taskRepository.findAll({ filters: {}, populate: ['contentFile'] });
+  }
+
+  public async getTaskBundles(): Promise<TaskBundleEntity[]> {
+    return this.taskBundleRepository.findAll({ filters: {} });
   }
 
   public async createTaskBundle(
@@ -183,6 +186,12 @@ export class TaskService {
 
   public async deleteTask(id: string): Promise<void> {
     await this.taskRepository.nativeDelete(id);
+    await this.em.flush();
+    return;
+  }
+
+  public async deleteTaskBundle(id: string): Promise<void> {
+    await this.taskBundleRepository.nativeDelete(id);
     await this.em.flush();
     return;
   }
