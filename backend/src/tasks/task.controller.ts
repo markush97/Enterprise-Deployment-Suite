@@ -63,6 +63,13 @@ export class TaskController {
     return this.taskService.getTaskBundles();
   }
 
+  @Get('bundles/:id')
+  async getTaskbudle(@Param('id') taskBundleId: string): Promise<TaskBundleEntity> {
+    this.logger.debug('Getting Task Bundle with id ' + taskBundleId);
+
+    return this.taskService.getTaskBundle(taskBundleId);
+  }
+
   @Get(':id/content')
   @UseInterceptors(LocalFileUploadInterceptor({ fieldName: 'file', path: 'tasksContent' }))
   async downloadTaskContent(

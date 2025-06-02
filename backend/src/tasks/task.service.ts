@@ -46,6 +46,10 @@ export class TaskService {
     return this.taskBundleRepository.findAll({ filters: {} });
   }
 
+  public async getTaskBundle(taskBundleId: string): Promise<TaskBundleEntity> {
+    return this.taskBundleRepository.findOne(taskBundleId, { populate: ['taskList', 'customers'] });
+  }
+
   public async createTaskBundle(
     createTaskBundleDto: CreateTaskBundleDto,
   ): Promise<TaskBundleEntity> {
