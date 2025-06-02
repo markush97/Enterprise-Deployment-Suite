@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 import { CustomerList } from './CustomerList.component';
 import { CustomerPage } from './CustomerPage.component';
 import { useParams } from 'react-router-dom';
@@ -6,12 +6,13 @@ import { useCustomers } from '../../hooks/useCustomers';
 import { DashboardModule } from '../../types/dashboard-module.interface';
 import { Users } from 'lucide-react';
 
-function CustomerPageWrapper() {
+function CustomerPageWrapper({ editMode }: { editMode?: boolean } = {}) {
+    const navigate = useNavigate()
     const { customerid } = useParams();
     const { customersQuery } = useCustomers();
     const customer = customersQuery.data?.find(c => c.id === customerid);
     if (!customer) return <div className="text-center py-8">Customer not found</div>;
-    return <CustomerPage customer={customer} onBack={() => window.history.back()} />;
+    return <CustomerPage customer={customer} onBack={() => navigate("/customers")} editMode={editMode} />;
 }
 
 export function CustomersModuleRoutes() {
@@ -20,7 +21,7 @@ export function CustomersModuleRoutes() {
             <Route index element={<CustomerList />} />
             <Route path="add" element={<CustomerList />} />
             <Route path=":customerid" element={<CustomerPageWrapper />} />
-            <Route path=":customerid/edit" element={<CustomerList />} />
+            <Route path=":customerid/edit" element={<CustomerPageWrapper editMode={true} />} />
         </Routes>
     );
 }

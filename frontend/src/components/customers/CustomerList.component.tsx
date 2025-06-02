@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useCustomers } from '../../hooks/useCustomers';
 import { CustomerModal } from './CustomerModal.component';
-import { CustomerPage } from './CustomerPage.component';
 import { CustomerListSkeleton } from './CustomerSkeleton.component';
-import { Plus, Building2, AlertCircle, Users } from 'lucide-react';
+import { Plus, Building2, AlertCircle } from 'lucide-react';
 import { Customer } from '../../types/customer.interface';
-import { DashboardModule } from '../../types/dashboard-module.interface';
 import { ContextMenu } from '../utils/ContextMenu';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 
@@ -15,7 +13,6 @@ export function CustomerList() {
     const location = useLocation();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-    const [showDetails, setShowDetails] = useState(false);
     const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
     const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
     const menuRef = useRef<HTMLDivElement | null>(null);
@@ -49,10 +46,6 @@ export function CustomerList() {
         if (location.pathname.endsWith('/add')) {
             setSelectedCustomer(null);
             setIsModalOpen(true);
-        } else if (customerid && location.pathname.endsWith('/edit')) {
-            const customer = customers.find((c) => c.id === customerid);
-            setSelectedCustomer(customer || null);
-            setIsModalOpen(true);
         } else {
             setIsModalOpen(false);
         }
@@ -78,26 +71,6 @@ export function CustomerList() {
         }
     };
 
-    // Render customer details page
-    if (showDetails && selectedCustomer) {
-        return (
-            <CustomerPage
-                customer={selectedCustomer}
-                onBack={() => {
-                    setShowDetails(false);
-                    setSelectedCustomer(null);
-                    refetch(); // Refresh the list when coming back
-                }}
-                onCustomerUpdated={(updatedCustomer: Customer) => {
-                    setSelectedCustomer(updatedCustomer);
-                }}
-                onCustomerDeleted={() => {
-                    customersQuery.refetch();
-                }}
-            />
-        );
-    }
-
     // Render the context menu as a portal
     const menuEntries = menuOpenId
         ? [
@@ -108,7 +81,8 @@ export function CustomerList() {
                     setMenuOpenId(null);
                     setMenuPosition(null);
                     if (customer) {
-                        navigate(`/customers/${customer.id}/edit`);
+                        setSelectedCustomer(customer);
+                        setIsModalOpen(true);
                     }
                 },
             },
@@ -127,6 +101,21 @@ export function CustomerList() {
             },
         ]
         : [];
+
+    // Close modal on back navigation
+    useEffect(() => {
+        if (!isModalOpen) return;
+        const handlePopState = () => {
+            setIsModalOpen(false);
+            setSelectedCustomer(null);
+            // Prevent navigating away
+            navigate(location.pathname, { replace: true });
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, [isModalOpen, navigate, location.pathname]);
 
     return (
         <div className="space-y-6">
@@ -274,7 +263,12 @@ export function CustomerList() {
                 onClose={() => {
                     setIsModalOpen(false);
                     setSelectedCustomer(null);
-                    navigate('/customers');
+                    // Use browser history to go back if modal was opened via URL
+                    if (location.pathname.endsWith('/add')) {
+                        navigate(-1);
+                    } else {
+                        setIsModalOpen(false);
+                    }
                 }}
                 onSave={async (data) => {
                     if (selectedCustomer) {
