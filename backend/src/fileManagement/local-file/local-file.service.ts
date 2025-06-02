@@ -1,12 +1,10 @@
 import * as archiver from 'archiver';
 import { createReadStream } from 'fs';
-import { rm, rmdir, stat, unlink } from 'fs/promises';
+import { readdir, rm, stat } from 'fs/promises';
 import { isAbsolute, join, normalize, resolve } from 'path';
 import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-request.mti-exception';
 import { InternalMTIException } from 'src/core/errorhandling/exceptions/internal.mti-exception';
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
-import { TasksEntity } from 'src/tasks/entities/task.entity';
-import Stream, { Readable } from 'stream';
 import * as unzipper from 'unzipper';
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -16,6 +14,7 @@ import { EntityManager } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 
 import { FileManagementConfigService } from '../file-management.config.service';
+import { FileOverviewDto } from './file-overview.dto';
 import { LocalFileMetadataEntity } from './local-file-metadata.entity';
 import { LocalFileDto } from './local-file.dto';
 
@@ -146,6 +145,43 @@ export class LocalFileService {
     }
 
     await this.deleteFile(file);
+  }
+
+  /**
+   * Returns a list of files (with name and size) in the given directory.
+   */
+  async getFilesOverview(fileMetadata: LocalFileMetadataEntity): Promise<FileOverviewDto> {
+    const fullPath = join(process.cwd(), fileMetadata.path, fileMetadata.filename);
+    this.logger.debug(`Getting files in directory: ${fullPath}`);
+
+    return this.getFileInfo(fullPath);
+  }
+
+  private async getFileInfo(filePath: string): Promise<FileOverviewDto | null> {
+    const stats = await stat(filePath);
+    if (!stats) {
+      return null;
+    }
+
+    if (stats.isDirectory()) {
+      const children = await readdir(filePath, { withFileTypes: true });
+      const childFiles = await Promise.all(
+        children.map(child => this.getFileInfo(join(filePath, child.name))),
+      );
+      return {
+        name: filePath.split('/').pop() || '',
+        fileSize: stats.size,
+        fileType: 'directory',
+        children: childFiles.filter(child => child !== null) as FileOverviewDto[],
+      };
+    }
+
+    return {
+      name: filePath.split('/').pop() || '',
+      fileSize: stats.size,
+      fileType: 'directory',
+      children: null,
+    };
   }
 
   private async getFileByPath(filePath: string): Promise<LocalFileMetadataEntity | null> {

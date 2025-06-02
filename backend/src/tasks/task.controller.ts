@@ -8,11 +8,13 @@ import { MTIHttpException } from 'src/core/errorhandling/exceptions/mit-exceptio
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
 import { NotFoundMTIException } from 'src/core/errorhandling/exceptions/not-found.mti-exception';
 import { ARCHIVE_FILE_MIME_TYPES_REGEXP } from 'src/fileManagement/file-management.config.service';
+import { FileOverviewDto } from 'src/fileManagement/local-file/file-overview.dto';
 import { LocalFileUploadInterceptor } from 'src/fileManagement/local-file/local-file-upload.interceptor';
 
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Logger,
@@ -66,6 +68,13 @@ export class TaskController {
 
     stream.pipe(res);
     await stream.finalize();
+  }
+
+  @Get(':id/contentOverview')
+  async getTaskContentOverview(@Param('id') taskId: string): Promise<FileOverviewDto> {
+    this.logger.debug(`Getting content overview for task ${taskId}`);
+
+    return this.taskService.getTaskContentOverivew(taskId);
   }
 
   @Get('bundles/:bundleId/content')
@@ -131,5 +140,11 @@ export class TaskController {
     @Body('taskIds') taskIds: string[],
   ): Promise<TaskBundleEntity> {
     return this.taskService.bulkSetTasks(bundleId, taskIds);
+  }
+
+  @Delete(':id')
+  async deleteTask(@Param('id') taskId: string): Promise<void> {
+    this.logger.debug(`Deleting task with id ${taskId}`);
+    return this.taskService.deleteTask(taskId);
   }
 }

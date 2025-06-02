@@ -14,6 +14,7 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 
+import { FileOverviewDto } from '../fileManagement/local-file/file-overview.dto';
 import { CreateTaskBundleDto } from './dto/task-bundle-create.dto';
 import { CreateTaskDto } from './dto/task-create.dto';
 import { TaskBundleEntity } from './entities/task-bundle.entity';
@@ -150,6 +151,22 @@ export class TaskService {
     return this.localFileService.getFileAsArchive(task.contentFile);
   }
 
+  /**
+   * Returns a overview of the content of the task. This is a list
+   * that contains the file names and sizes of the files in the task following the correct structure.
+   */
+  public async getTaskContentOverivew(id: string): Promise<FileOverviewDto> {
+    this.logger.debug(`Getting content overview for task ${id}`);
+    const task = await this.taskRepository.findOneOrFail(id, { populate: ['contentFile'] });
+    if (!task || !task.contentFile) {
+      throw new NotFoundMTIException(
+        MTIErrorCodes.TASK_NOT_FOUND,
+        `Task with id ${id} not found or has no content.`,
+      );
+    }
+    return this.localFileService.getFilesOverview(task.contentFile);
+  }
+
   public async getTaskBundleContent(id: string): Promise<archiver.Archiver> {
     this.logger.debug(`Getting content for task-bundle ${id}`);
 
@@ -163,6 +180,12 @@ export class TaskService {
         .map(task => task.contentFile)
         .filter(file => file),
     );
+  }
+
+  public async deleteTask(id: string): Promise<void> {
+    await this.taskRepository.nativeDelete(id);
+    await this.em.flush();
+    return;
   }
 
   public async saveTaskContent(id: string, file: Express.Multer.File): Promise<void> {
