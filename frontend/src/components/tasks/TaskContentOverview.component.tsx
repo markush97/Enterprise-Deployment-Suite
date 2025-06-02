@@ -17,7 +17,15 @@ export function TaskContentOverviewCard({ taskId }: { taskId: string }) {
                 if (isMounted) setRoot(root);
             })
             .catch((err) => {
-                if (isMounted) setError(err.message || 'Failed to load files');
+                // If 404, show a friendly message instead of error
+                if (isMounted) {
+                    if (err?.response?.status === 404) {
+                        setRoot(null);
+                        setError(null);
+                    } else {
+                        setError(err.message || 'Failed to load files');
+                    }
+                }
             })
             .finally(() => {
                 if (isMounted) setLoading(false);
@@ -65,7 +73,7 @@ export function TaskContentOverviewCard({ taskId }: { taskId: string }) {
                 ) : error ? (
                     <div className="text-red-600">{error}</div>
                 ) : !root ? (
-                    <div className="text-gray-500 dark:text-gray-400">No files are currently attached to this task.</div>
+                    <div className="text-gray-500 dark:text-gray-400">No content has been uploaded for this task yet.</div>
                 ) : (
                     <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                         {renderFileTree(root)}
