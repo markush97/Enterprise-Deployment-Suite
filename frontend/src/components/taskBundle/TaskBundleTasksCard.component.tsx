@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Task } from '../../types/task.interface';
 import { taskBundleService } from '../../services/taskbundle.service';
 import { useTasks } from '../../hooks/useTasks';
-import { Check, Trash2, ArrowUp, ArrowDown, Plus } from 'lucide-react';
+import { Check, Trash2, ArrowUp, ArrowDown, Plus, GripVertical } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 interface TaskBundleTasksCardProps {
@@ -18,6 +18,9 @@ export function TaskBundleTasksCard({ bundleId }: TaskBundleTasksCardProps) {
     const [addTaskId, setAddTaskId] = useState<string>('');
     const [saving, setSaving] = useState(false);
     const { tasksQuery } = useTasks();
+
+    // Drag-and-drop state
+    const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
 
     // Fetch bundle tasks
     useEffect(() => {
@@ -66,6 +69,18 @@ export function TaskBundleTasksCard({ bundleId }: TaskBundleTasksCardProps) {
         }
     };
 
+    const handleDragStart = (idx: number) => setDraggedIdx(idx);
+    const handleDragOver = (e: React.DragEvent<HTMLLIElement>) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    };
+    const handleDrop = (idx: number) => {
+        if (draggedIdx === null || draggedIdx === idx) return;
+        handleMove(draggedIdx, idx);
+        setDraggedIdx(null);
+    };
+    const handleDragEnd = () => setDraggedIdx(null);
+
     return (
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg mt-6">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
@@ -89,8 +104,23 @@ export function TaskBundleTasksCard({ bundleId }: TaskBundleTasksCardProps) {
                     <>
                         <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                             {tasks.map((task, idx) => (
-                                <li key={task.id} className="flex items-center justify-between py-2">
+                                <li
+                                    key={task.id}
+                                    className={`flex items-center justify-between py-2 transition-colors duration-200 ${draggedIdx === idx ? 'bg-blue-100 dark:bg-blue-900 scale-[1.02] shadow-lg z-10' : ''}`}
+                                    draggable
+                                    onDragStart={() => handleDragStart(idx)}
+                                    onDragOver={handleDragOver}
+                                    onDrop={() => handleDrop(idx)}
+                                    onDragEnd={handleDragEnd}
+                                    style={{ cursor: 'grab', opacity: draggedIdx === idx ? 0.7 : 1 }}
+                                >
                                     <div className="flex items-center gap-2">
+                                        <span
+                                            className={`inline-flex items-center justify-center mr-2 ${draggedIdx === idx ? 'drag-bounce' : ''}`}
+                                            title="Drag to reorder"
+                                        >
+                                            <GripVertical className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                                        </span>
                                         <span className="font-medium text-gray-900 dark:text-white">{task.name}</span>
                                         {task.global && <Check className="h-4 w-4 text-blue-500" />}
                                     </div>
@@ -148,4 +178,20 @@ export function TaskBundleTasksCard({ bundleId }: TaskBundleTasksCardProps) {
             </div>
         </div>
     );
+}
+
+// Tailwind can't do keyframes in TSX, so use a <style> tag via JSX
+export function TaskBundleTasksCardWithStyle(props: TaskBundleTasksCardProps) {
+    return <>
+        <TaskBundleTasksCard {...props} />
+        <style>{`
+        @keyframes drag-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .drag-bounce {
+            animation: drag-bounce 0.5s infinite;
+        }
+        `}</style>
+    </>;
 }
