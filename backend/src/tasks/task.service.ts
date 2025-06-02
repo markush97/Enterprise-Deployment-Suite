@@ -16,6 +16,7 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 
 import { FileOverviewDto } from '../fileManagement/local-file/file-overview.dto';
 import { CreateTaskBundleDto } from './dto/task-bundle-create.dto';
+import { UpdateTaskBundleDto } from './dto/task-bundle-update.dto';
 import { CreateTaskDto } from './dto/task-create.dto';
 import { TaskBundleEntity } from './entities/task-bundle.entity';
 import { TaskOrderEntity } from './entities/task-order.entity';
@@ -194,6 +195,27 @@ export class TaskService {
     await this.taskBundleRepository.nativeDelete(id);
     await this.em.flush();
     return;
+  }
+
+  public async updateTaskBundle(
+    taskBundleId: string,
+    taskBundleInfo: UpdateTaskBundleDto,
+  ): Promise<TaskBundleEntity> {
+    this.logger.debug(`Updating task bundle with id ${taskBundleId}`);
+    const bundle = await this.taskBundleRepository.findOneOrFail(taskBundleId);
+
+    Object.assign(bundle, taskBundleInfo);
+    await this.em.persistAndFlush(bundle);
+    return bundle;
+  }
+
+  public async updateTask(taskId: string, taskInfo: Partial<TaskEntity>): Promise<TaskEntity> {
+    this.logger.debug(`Updating task with id ${taskId}`);
+    const task = await this.taskRepository.findOneOrFail(taskId);
+
+    Object.assign(task, taskInfo);
+    await this.em.persistAndFlush(task);
+    return task;
   }
 
   public async saveTaskContent(id: string, file: Express.Multer.File): Promise<void> {

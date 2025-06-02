@@ -55,7 +55,7 @@ export async function getExpiredJwt(): Promise<string> {
 
 export function testEndpointAuth(
   endpoint: string,
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
   getApp: () => INestApplication,
 ) {
   it(`Should fail auth with no token`, async () => {
@@ -70,6 +70,8 @@ export function testEndpointAuth(
       req = reqBase.put(endpoint);
     } else if (method === 'DELETE') {
       req = reqBase.delete(endpoint);
+    } else if (method === 'PATCH') {
+      req = reqBase.patch(endpoint);
     }
 
     return req.expect(401);

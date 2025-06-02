@@ -21,6 +21,7 @@ import {
   Logger,
   Param,
   ParseFilePipeBuilder,
+  Patch,
   Post,
   Res,
   UploadedFile,
@@ -29,6 +30,7 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 
 import { CreateTaskBundleDto } from './dto/task-bundle-create.dto';
+import { UpdateTaskBundleDto } from './dto/task-bundle-update.dto';
 import { CreateTaskDto } from './dto/task-create.dto';
 import { TaskBundleEntity } from './entities/task-bundle.entity';
 import { TasksEntity } from './entities/task.entity';
@@ -148,6 +150,24 @@ export class TaskController {
     @Body('taskIds') taskIds: string[],
   ): Promise<TaskBundleEntity> {
     return this.taskService.bulkSetTasks(bundleId, taskIds);
+  }
+
+  @Patch('bundles/:id')
+  async updateTaskBundle(
+    @Param('id') taskBundleId: string,
+    @Body() taskBundleInfo: UpdateTaskBundleDto,
+  ): Promise<TaskBundleEntity> {
+    this.logger.debug(`Updateing taskbundle with id ${taskBundleId}`);
+    return this.taskService.updateTaskBundle(taskBundleId, taskBundleInfo);
+  }
+
+  @Patch(':id')
+  async updateTask(
+    @Param('id') taskId: string,
+    @Body() taskInfo: Partial<TasksEntity>,
+  ): Promise<TasksEntity> {
+    this.logger.debug(`Updating task with id ${taskId}`);
+    return this.taskService.updateTask(taskId, taskInfo);
   }
 
   @Delete('bundles/:id')

@@ -101,8 +101,16 @@ describe('TasksController (e2e)', () => {
     testEndpointAuth('/tasks/27579475-8c11-46c3-933a-436483691239', 'DELETE', () => app);
   });
 
+  describe('/tasks/:id (PATCH)', () => {
+    testEndpointAuth('/tasks/27579475-8c11-46c3-933a-436483691239', 'PATCH', () => app);
+  });
+
   describe('/tasks/bundle/:id (DELETE)', () => {
     testEndpointAuth('/tasks/bundle/27579475-8c11-46c3-933a-436483691239', 'DELETE', () => app);
+  });
+
+  describe('/tasks/bundle/:id (PATCH)', () => {
+    testEndpointAuth('/tasks/bundle/27579475-8c11-46c3-933a-436483691239', 'PATCH', () => app);
   });
 
   describe('/tasks (POST)', () => {
