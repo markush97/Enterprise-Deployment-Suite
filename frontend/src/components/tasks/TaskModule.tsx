@@ -9,10 +9,28 @@ import { TaskPage } from './TaskPage.component';
 function TaskPageWrapper({ editMode }: { editMode?: boolean } = {}) {
     const navigate = useNavigate();
     const { taskid } = useParams();
-    const { tasksQuery } = useTasks();
+    const { tasksQuery, updateTaskMutation, deleteTaskMutation } = useTasks();
     const task = tasksQuery.data?.find(t => t.id === taskid);
+
     if (!task) return <div className="text-center py-8">Task not found</div>;
-    return <TaskDetail task={task} onBack={() => navigate('/tasks')} editMode={editMode} />;
+
+    const handleTaskUpdated = async (updatedTask: typeof task) => {
+        await updateTaskMutation.mutateAsync({ id: task.id, data: updatedTask });
+    };
+
+    const deleteTaskUpdates = async () => {
+        await deleteTaskMutation.mutateAsync(task.id)
+    }
+
+    return (
+        <TaskDetail
+            task={task}
+            onBack={() => navigate('/tasks')}
+            onTaskUpdated={handleTaskUpdated}
+            onTaskDeleted={deleteTaskUpdates}
+            editMode={editMode}
+        />
+    );
 }
 
 export function TasksModuleRoutes() {

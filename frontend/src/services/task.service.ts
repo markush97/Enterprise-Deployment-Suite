@@ -47,6 +47,11 @@ export const taskService = {
     },
     async getTaskContentOverview(id: string): Promise<TaskContentFileInfo | null> {
         const res = await api.get<TaskContentFileInfo | null>(`/tasks/${id}/contentOverview`);
+
+        if (res === null || res.data === undefined) {
+            return null;
+        }
+
         return res.data;
     },
 };

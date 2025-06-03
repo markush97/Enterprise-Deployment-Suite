@@ -7,23 +7,18 @@ import { ConfirmDeleteModal } from '../utils/ConfirmDeleteModal';
 import { TaskBundleTasksCard } from './TaskBundleTasksCard.component';
 import { useCustomers } from '../../hooks/useCustomers';
 import { taskBundleService } from '../../services/taskbundle.service';
-import { useNavigate } from 'react-router-dom';
-import { TaskBundleModal } from './TaskBundleModal.component';
 
 interface TaskBundleDetailProps {
     taskBundle: TaskBundle;
     onBack: () => void;
     onTaskBundleDeleted?: () => void;
-    onTaskBundleUpdated?: (taskBundle: TaskBundle) => void;
 }
 
-export function TaskBundleDetail({ taskBundle: initialTaskBundle, onBack, onTaskBundleDeleted, onTaskBundleUpdated, editMode }: TaskBundleDetailProps & { editMode?: boolean }) {
+export function TaskBundleDetail({ taskBundle: initialTaskBundle, onBack, onTaskBundleDeleted, editMode }: TaskBundleDetailProps & { editMode?: boolean }) {
     const [taskBundle, setTaskBundle] = useState<TaskBundle & { customers?: { id: string }[] }>(initialTaskBundle);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-    const navigate = useNavigate();
-
 
     useEffect(() => {
         setLoading(true);
@@ -55,19 +50,6 @@ export function TaskBundleDetail({ taskBundle: initialTaskBundle, onBack, onTask
         onBack();
     };
 
-    const handleEditTaskBundle = async (data: Partial<TaskBundle>): Promise<void> => {
-        try {
-            const updateTaskbundle = await taskBundleService.updateTaskBundle(taskBundle.id, data);
-            if (onTaskBundleUpdated) {
-                onTaskBundleUpdated(updateTaskbundle);
-            }
-            toast.success('Taskbundle updated successfully');
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to update taskbundle');
-            throw error;
-        }
-    };
-
     if (loading) {
         return <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading bundle details...</div>;
     }
@@ -97,7 +79,7 @@ export function TaskBundleDetail({ taskBundle: initialTaskBundle, onBack, onTask
                     </div>
                     <div className="flex space-x-2">
                         <button
-                            onClick={() => navigate(`/taskbundles/${taskBundle.id}/edit`)}
+                            onClick={() => setIsEditModalOpen(true)}
                             className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
                         >
                             <Edit className="h-4 w-4 mr-1" />
@@ -148,20 +130,6 @@ export function TaskBundleDetail({ taskBundle: initialTaskBundle, onBack, onTask
             <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
                 <TaskBundleTasksCard bundleId={taskBundle.id} />
             </div>
-
-            {/* Edit Task Modal */}
-            <TaskBundleModal
-                taskBundle={taskBundle}
-                isOpen={isEditModalOpen}
-                onClose={() => {
-                    setIsEditModalOpen(false);
-                    // Remove /edit from the URL when closing the modal
-                    if (editMode) {
-                        navigate(`/taskbundles/${taskBundle.id}`, { replace: true });
-                    }
-                }}
-                onSave={handleEditTaskBundle}
-            />
 
             <ConfirmDeleteModal
                 isOpen={isDeleteConfirmOpen}
