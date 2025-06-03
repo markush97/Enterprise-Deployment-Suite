@@ -1,3 +1,5 @@
+import { TaskBundle } from "./task.interface";
+
 // src/types/job.interface.ts
 export interface Job {
     id: string;
@@ -12,4 +14,6 @@ export interface Job {
     status: 'preparing' | 'imaging' | 'pxe_selection' | 'installing' | 'verifying' | 'ready' | 'done' | 'failed' | string;
     createdAt: string;
     completedAt?: string;
+    lastConnection: string;
+    taskBundle: TaskBundle
 }

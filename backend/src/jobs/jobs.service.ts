@@ -17,6 +17,7 @@ import { RegisterJobDto } from './dto/register-job.dto';
 import { TaskInfoDto } from './dto/task-info.dto';
 import { JobConnectionsEntity } from './entities/job-connections.entity';
 import { JobEntity, JobStatus } from './entities/job.entity';
+import { JobInstructionAction, JobInstructionsDto } from './dto/job-instructions.dto';
 
 @Injectable()
 export class JobsService {
@@ -49,6 +50,16 @@ export class JobsService {
       throw new NotFoundException(`Job with ID ${id} not found`);
     }
     return job;
+  }
+
+  async getJobInstructions(id: string): Promise<JobInstructionsDto> {
+    const job = await this.jobRepository.findOneOrFail(id);
+    job.lastConnection = new Date();
+    await this.em.persistAndFlush(job);
+
+    return {
+      action: JobInstructionAction.WAIT_FOR_INSTRUCTIONS,
+    }
   }
 
   async assignJobToCustomer(jobId: string, customerId: string): Promise<JobEntity> {
@@ -130,7 +141,7 @@ export class JobsService {
     const job = this.jobRepository.create({
       device: device,
       customer: device.customer,
-      status: JobStatus.INSTALLING,
+      status: JobStatus.WAITING_FOR_INSTRUCTIONS,
     });
 
     await this.em.persistAndFlush(job);

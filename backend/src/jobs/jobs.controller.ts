@@ -1,6 +1,6 @@
 import { UseDeviceTokenGuard } from 'src/auth/decorators/device-token.decorator';
 import { Public } from 'src/auth/decorators/public.decorator';
-import { DeviceType } from 'src/devices/entities/device.entity';
+import { DeviceEntity, DeviceType } from 'src/devices/entities/device.entity';
 
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -11,6 +11,8 @@ import { RegisterJobDto } from './dto/register-job.dto';
 import { TaskInfoDto } from './dto/task-info.dto';
 import { JobEntity } from './entities/job.entity';
 import { JobsService } from './jobs.service';
+import { Device } from 'src/auth/decorators/device.decorator';
+import { JobInstructionsDto } from './dto/job-instructions.dto';
 
 @ApiTags('jobs')
 @Controller('jobs')
@@ -22,6 +24,14 @@ export class JobsController {
   @ApiResponse({ status: 200, description: 'Returns all jobs' })
   async findAll(): Promise<JobEntity[]> {
     return this.jobsService.findAll();
+  }
+
+  @Get(':id/instructions')
+  @ApiOperation({ summary: 'Get job instructions' })
+  @UseDeviceTokenGuard()
+  @ApiResponse({ status: 200, description: 'Returns job instructions' })
+  async getJobInstructions(@Param('id') id: string): Promise<JobInstructionsDto> {
+    return this.jobsService.getJobInstructions(id);
   }
 
   @Get(':id')

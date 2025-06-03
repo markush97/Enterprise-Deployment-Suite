@@ -1,47 +1,97 @@
-import { Clock, CheckCircle, AlertCircle, Loader2, XCircle } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { jobService } from '../../services/job.service';
-import { Job } from '../../types/job.interface';
+import { Clock, CheckCircle, AlertCircle, Loader2, XCircle, HelpCircle } from 'lucide-react';
+import { useJobs } from '../../hooks/useJobs';
+import { EntityList } from '../utils/EntityList';
+import type { Job } from '../../types/job.interface';
 
 export function JobsList() {
-    const {
-        data: jobs = [],
-        isLoading,
-        isError,
-        error
-    } = useQuery<Job[]>({
-        queryKey: ['jobs'],
-        queryFn: jobService.getJobs,
-        refetchInterval: 5000 // Refresh every 5 seconds
-    });
+    const { data: jobs = [], isLoading, isError, error } = useJobs();
 
-    if (isLoading) {
-        return (
-            <div className="flex justify-center items-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-            </div>
-        );
+    function formatRelativeTime(dateString: string) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffHours = diffMs / (1000 * 60 * 60);
+
+        if (diffHours < 1) {
+            const diffMinutes = Math.round(diffMs / (1000 * 60));
+            return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
+        } else if (diffHours < 18) {
+            const roundedHours = Math.round(diffHours);
+            return `${roundedHours} hour${roundedHours !== 1 ? 's' : ''} ago`;
+        } else {
+            const diffDays = Math.round(diffHours / 24);
+            return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+        }
     }
 
-    if (isError) {
-        return (
-            <div className="flex flex-col items-center justify-center py-12 text-red-500">
-                <AlertCircle className="h-12 w-12 mb-4" />
-                <p>{error instanceof Error ? error.message : 'Failed to load jobs'}</p>
-            </div>
-        );
-    }
+    const columns = [
+        {
+            label: 'Device',
+            render: (job: Job) => job.device?.name || job.device?.serialNumber || 'N/A',
+        },
+        {
+            label: 'Customer',
+            render: (job: Job) => job.customer?.shortCode || 'N/A',
+        },
+        {
+            label: 'Task Bundle',
+            render: (job: Job) => job.taskBundle?.name || 'N/A',
+        },
+        {
+            label: 'Started',
+            render: (job: Job) => new Date(job.createdAt).toLocaleString(),
+        },
+        {
+            label: 'Last Connection',
+            render: (job: Job) => formatRelativeTime(job.lastConnection),
+        },
+        {
+            label: 'Status',
+            render: (job: Job) => (
+                <div className="flex items-center space-x-2">
+                    {getStatusIcon(job.status)}
+                    <span className={`text-sm font-medium ${getStatusColor(job.status)}`}>
+                        {job.status.split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                    </span>
+                    {job.completedAt && (
+                        <p className="mt-1 text-xs text-gray-500">Completed: {formatRelativeTime(job.completedAt)}</p>
+                    )}
+                </div>
+            ),
+        },
+    ];
 
-    if (jobs.length === 0) {
-        return (
-            <div className="flex flex-col items-center justify-center py-12">
-                <Clock className="h-12 w-12 text-gray-400 mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">No recent jobs</p>
-            </div>
-        );
-    }
+    const actions = [
+        {
+            label: 'Edit',
+            onClick: () => {
+                // TODO: Implement edit job modal or navigation
+            },
+        },
+        {
+            label: 'Cancel',
+            danger: true,
+            onClick: () => {
+                // TODO: Implement cancel job logic
+            },
+        },
+        {
+            label: 'Assign Task Bundle',
+            onClick: () => {
+                // TODO: Implement assign task bundle logic
+            },
+            disabled: (job: Job) => !job.customer?.shortCode,
+            tooltip: (job: Job) => !job.customer?.shortCode ? 'Assign a customer first' : undefined,
+        },
+        {
+            label: 'Assign Customer',
+            onClick: () => {
+                // TODO: Implement assign customer logic
+            },
+        },
+    ];
 
-    const getStatusIcon = (status: Job['status']) => {
+    function getStatusIcon(status: Job['status']) {
         switch (status) {
             case 'preparing':
             case 'imaging':
@@ -53,17 +103,21 @@ export function JobsList() {
                 return <AlertCircle className="h-5 w-5 text-yellow-500" />;
             case 'done':
                 return <CheckCircle className="h-5 w-5 text-green-500" />;
+            case 'waiting_for_instructions':
+                return <HelpCircle className="h-5 w-5 text-gray-500" />;
             default:
                 return <XCircle className="h-5 w-5 text-red-500" />;
         }
-    };
+    }
 
-    const getStatusColor = (status: Job['status']) => {
+    function getStatusColor(status: Job['status']) {
         switch (status) {
             case 'preparing':
             case 'imaging':
             case 'pxe_selection':
             case 'installing':
+            case 'waiting_for_instructions':
+                return 'text-yellow-600 dark:text-yellow-400';
             case 'verifying':
                 return 'text-blue-600 dark:text-blue-400';
             case 'ready':
@@ -73,54 +127,18 @@ export function JobsList() {
             default:
                 return 'text-red-600 dark:text-red-400';
         }
-    };
+    }
 
     return (
-        <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-700">
-                    <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Device</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Customer</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Image</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Started</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                    </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                    {jobs.map((job: Job) => (
-                        <tr key={job.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                {job.device?.name || job.device?.serialNumber || 'N/A'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                {job?.customer.shortCode || 'N/A'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                {job.imageName}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                {new Date(job.createdAt).toLocaleString()}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="flex items-center space-x-2">
-                                    {getStatusIcon(job.status)}
-                                    <span className={`text-sm font-medium ${getStatusColor(job.status)}`}>
-                                        {job.status.split('_').map((word: string) =>
-                                            word.charAt(0).toUpperCase() + word.slice(1)
-                                        ).join(' ')}
-                                    </span>
-                                </div>
-                                {job.completedAt && (
-                                    <p className="mt-1 text-sm text-gray-500">
-                                        Completed: {new Date(job.completedAt).toLocaleDateString()}
-                                    </p>
-                                )}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+        <EntityList
+            data={jobs}
+            columns={columns}
+            actions={actions}
+            isLoading={isLoading}
+            isError={isError}
+            error={error instanceof Error ? error.message : undefined}
+            title={<span>Jobs</span>}
+            emptyState={<span className="text-gray-500 dark:text-gray-400">No recent jobs</span>}
+        />
     );
 }

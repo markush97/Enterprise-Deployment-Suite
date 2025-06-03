@@ -7,6 +7,7 @@ import {
   Enum,
   ManyToOne,
   OneToMany,
+  OneToOne,
   Property,
   StringType,
 } from '@mikro-orm/core';
@@ -15,8 +16,10 @@ import { CustomerEntity } from '../../customers/entities/customer.entity';
 import { DeviceEntity } from '../../devices/entities/device.entity';
 import { ImageEntity } from '../../images/entities/image.entity';
 import { JobConnectionsEntity } from './job-connections.entity';
+import { TaskBundleEntity } from 'src/tasks/entities/task-bundle.entity';
 
 export enum JobStatus {
+  WAITING_FOR_INSTRUCTIONS = 'waiting_for_instructions',
   PREPARING = 'preparing',
   IMAGING = 'imaging',
   PXE_SELECTION = 'pxe_selection',
@@ -42,6 +45,13 @@ export class JobEntity extends CoreBaseEntity {
 
   @Enum(() => JobStatus)
   status: JobStatus = JobStatus.PREPARING;
+
+  @Property({type: 'timestamptz' })
+  lastConnection: Date = new Date();
+
+  @OneToOne(() => TaskBundleEntity, { nullable: true, cascade: [Cascade.ALL] })
+  taskBundle?: TaskBundleEntity;
+  
 
   @OneToMany(() => JobConnectionsEntity, connection => connection.job, {
     cascade: [Cascade.ALL],
