@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom';
 import { RefObject } from 'react';
+import Tippy from '@tippyjs/react';
 
 export interface ContextMenuEntry {
     label: string;
@@ -15,6 +16,8 @@ export interface ContextMenuProps {
     onClose: () => void;
     menuRef: RefObject<HTMLDivElement>;
     title?: string;
+    toolTip?: string;
+    disabled?: boolean;
 }
 
 export function ContextMenu({
@@ -23,7 +26,9 @@ export function ContextMenu({
     entries,
     onClose,
     menuRef,
-    title
+    title,
+    disabled,
+    toolTip,
 }: ContextMenuProps) {
     if (!isOpen || !anchorPosition) return null;
     return createPortal(
@@ -41,18 +46,34 @@ export function ContextMenu({
                     {title}
                 </div>
             )}
-            {entries.map((entry, idx) => (
-                <button
-                    key={idx}
-                    onClick={() => {
-                        entry.onClick();
-                        onClose();
-                    }}
-                    className={`w-full text-left px-4 py-2 text-sm ${entry.danger ? 'text-red-600' : 'text-gray-900 dark:text-gray-100'} hover:bg-gray-100 dark:hover:bg-gray-700 ${entry.className || ''}`}
-                >
-                    {entry.label}
-                </button>
-            ))}
+            {entries.map((entry, idx) =>
+                toolTip ? (
+                    <Tippy key={idx} content={toolTip}>
+                        <button
+                            disabled={disabled}
+                            onClick={() => {
+                                entry.onClick();
+                                onClose();
+                            }}
+                            className={`w-full text-left px-4 py-2 text-sm ${entry.danger ? 'text-red-600' : 'text-gray-900 dark:text-gray-100'} hover:bg-gray-100 dark:hover:bg-gray-700 ${entry.className || ''}`}
+                        >
+                            {entry.label}
+                        </button>
+                    </Tippy>
+                ) : (
+                    <button
+                        key={idx}
+                        disabled={disabled}
+                        onClick={() => {
+                            entry.onClick();
+                            onClose();
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm ${entry.danger ? 'text-red-600' : 'text-gray-900 dark:text-gray-100'} hover:bg-gray-100 dark:hover:bg-gray-700 ${entry.className || ''}`}
+                    >
+                        {entry.label}
+                    </button>
+                )
+            )}
         </div>,
         document.body
     );

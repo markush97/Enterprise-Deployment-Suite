@@ -1,10 +1,46 @@
 import { Clock, CheckCircle, AlertCircle, Loader2, XCircle, HelpCircle } from 'lucide-react';
 import { useJobs } from '../../hooks/useJobs';
-import { EntityList } from '../utils/EntityList';
+import { EntityList, EntityListAction } from '../utils/EntityList';
 import type { Job } from '../../types/job.interface';
+import { JobModal } from './JobModal.component';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { ConfirmDeleteModal } from '../utils/ConfirmDeleteModal';
 
 export function JobsList() {
-    const { data: jobs = [], isLoading, isError, error } = useJobs();
+    const { jobsQuery, addJobMutation, cancelJobMutation, updateJobMutation } = useJobs();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+    const [jobToCancel, setJobToCancel] = useState<Job | null>(null);
+    const navigate = useNavigate();
+
+
+    // Handle add/edit submit
+    const handleSubmit = async (data: Omit<Job, 'id' | 'createdAt'>) => {
+        if (selectedJob) {
+            await updateJobMutation.mutateAsync({ id: selectedJob.id, data });
+        } else {
+            await addJobMutation.mutateAsync(data);
+        }
+        setIsModalOpen(false);
+        setSelectedJob(null);
+    };
+
+    const handleCancel = (job: Job) => {
+        setJobToCancel(job);
+    };
+    const confirmCancel = () => {
+        if (jobToCancel) {
+            cancelJobMutation.mutate(jobToCancel.id);
+            setJobToCancel(null);
+        }
+    };
+    const cancelCancel = () => {
+        setJobToCancel(null);
+    };
+
+    const { data: jobs = [], isLoading, isError, error } = jobsQuery;
 
     function formatRelativeTime(dateString: string) {
         const date = new Date(dateString);
@@ -61,19 +97,15 @@ export function JobsList() {
         },
     ];
 
-    const actions = [
+    const actions: EntityListAction<Job>[] = [
         {
             label: 'Edit',
-            onClick: () => {
-                // TODO: Implement edit job modal or navigation
-            },
+            onClick: (job) => {setIsModalOpen(true); setSelectedJob(job); },
         },
         {
             label: 'Cancel',
             danger: true,
-            onClick: () => {
-                // TODO: Implement cancel job logic
-            },
+            onClick: handleCancel,
         },
         {
             label: 'Assign Task Bundle',
@@ -128,17 +160,31 @@ export function JobsList() {
                 return 'text-red-600 dark:text-red-400';
         }
     }
-
     return (
-        <EntityList
-            data={jobs}
-            columns={columns}
-            actions={actions}
-            isLoading={isLoading}
-            isError={isError}
-            error={error instanceof Error ? error.message : undefined}
-            title={<span>Jobs</span>}
-            emptyState={<span className="text-gray-500 dark:text-gray-400">No recent jobs</span>}
-        />
+        <>
+            <EntityList<Job>
+                data={jobs}
+                columns={columns}
+                actions={actions}
+                isLoading={isLoading}
+                isError={isError}
+                error={error instanceof Error ? error.message : undefined}
+                emptyState={<span className="text-gray-500 dark:text-gray-400">No recent jobs</span>}
+                onRowClick={(job) => navigate(`/jobs/${job.id}`)}
+            />
+            <JobModal
+                isOpen={isModalOpen}
+                onClose={() => { setIsModalOpen(false); setSelectedJob(null); }}
+                onSave={handleSubmit}
+                job={selectedJob || undefined}
+            />
+            <ConfirmDeleteModal
+                isOpen={!!jobToCancel}
+                title="Cancel Job"
+                entityName={jobToCancel?.device.name || ''}
+                onCancel={cancelCancel}
+                onConfirm={confirmCancel}
+            />
+        </>
     );
 }

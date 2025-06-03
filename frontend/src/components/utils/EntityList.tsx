@@ -11,6 +11,8 @@ export interface EntityListColumn<T> {
 export interface EntityListAction<T> {
     label: string;
     onClick: (item: T) => void;
+    tooltip?: string | ((item: T) => string | undefined);
+    disabled?: boolean | ((item: T) => boolean);
     danger?: boolean;
 }
 
@@ -169,6 +171,8 @@ export function EntityList<T extends { id: string }>({
                         entries={menuOpenId ? actions.map(a => ({
                             label: a.label,
                             danger: a.danger,
+                            disabled: typeof a.disabled === 'function' ? a.disabled(data.find(d => d.id === menuOpenId)!) : a.disabled,
+                            tooltip: typeof a.tooltip === 'function' ? a.tooltip(data.find(d => d.id === menuOpenId)!) : a.tooltip,
                             onClick: () => {
                                 const item = data.find(d => d.id === menuOpenId);
                                 if (item) a.onClick(item);

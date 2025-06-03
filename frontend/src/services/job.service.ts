@@ -6,4 +6,25 @@ export const jobService = {
         const response = await api.get<Job[]>('/jobs');
         return response.data;
     },
+
+    async getJob(id: string): Promise<Job> {
+        const response = await api.get<Job>(`/jobs/${id}`);
+        return response.data;
+    },
+
+    async addJob(data: Omit<Job, 'id' | 'createdAt'>): Promise<Job> {
+        const response = await api.post<Job>('/jobs', data);
+        return response.data;
+    },
+    async updateJob(id: string, data: Partial<Job>): Promise<Job> {
+        const response = await api.patch<Job>(`/jobs/${id}`, data);
+        return response.data;
+    },
+    async deleteJob(id: string): Promise<void> {
+        await api.delete(`/jobs/${id}`);
+    },
+
+    async cancelJob(id: string): Promise<void> {
+        await api.delete(`/jobs/${id}`);
+    },
 };

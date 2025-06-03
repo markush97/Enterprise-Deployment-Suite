@@ -2,7 +2,7 @@ import { Clock, Play } from "lucide-react";
 import { DashboardModule } from "../../types/dashboard-module.interface";
 import { JobsList } from "./JobsList.component";
 
-function JobsPage() {
+export function JobsPage() {
     // ...your jobs page logic...
     return (
         <div className="space-y-6">
@@ -39,11 +39,3 @@ function JobsPage() {
         </div>
     );
 }
-
-export const JobsModule: DashboardModule = {
-    route: "/jobs",
-    label: "Jobs",
-    icon: <Play className="h-4 w-4 mr-2" />,
-    Component: JobsPage,
-    headerActions: <button>Add Job</button>,
-};
