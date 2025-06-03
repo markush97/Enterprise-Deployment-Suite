@@ -19,6 +19,15 @@ interface TaskDetailProps {
 
 export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMode }: TaskDetailProps & { editMode?: boolean }) {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+    const [contentOverviewKey, setContentOverviewKey] = useState(0);
+    const [hasContent, setHasContent] = useState<boolean>(false);
+    const navigate = useNavigate();
+
     useEffect(() => {
         setIsEditModalOpen(!!editMode);
     }, [editMode]);
@@ -33,14 +42,7 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
         window.addEventListener('popstate', handlePopState);
         return () => window.removeEventListener('popstate', handlePopState);
     }, [isEditModalOpen, editMode]);
-    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadError, setUploadError] = useState<string | null>(null);
-    const [contentOverviewKey, setContentOverviewKey] = useState(0);
-    const [hasContent, setHasContent] = useState<boolean>(false);
-    const navigate = useNavigate();
+
 
 
     const handleEditTask = async (data: Partial<Task>): Promise<void> => {

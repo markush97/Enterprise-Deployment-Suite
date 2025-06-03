@@ -3,7 +3,7 @@ import { Task } from '../../types/task.interface';
 import { taskBundleService } from '../../services/taskbundle.service';
 import { useTasks } from '../../hooks/useTasks';
 import { taskService } from '../../services/task.service';
-import { Trash2, ArrowUp, ArrowDown, Plus, GripVertical, Download } from 'lucide-react';
+import { Check, Trash2, ArrowUp, ArrowDown, Plus, GripVertical, Download } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 interface TaskBundleTasksCardProps {

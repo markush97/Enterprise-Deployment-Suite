@@ -7,19 +7,23 @@ import { ConfirmDeleteModal } from '../utils/ConfirmDeleteModal';
 import { TaskBundleTasksCard } from './TaskBundleTasksCard.component';
 import { useCustomers } from '../../hooks/useCustomers';
 import { taskBundleService } from '../../services/taskbundle.service';
-import { CustomerAssignmentCard } from './CustomerAssignCard.component';
+import { useNavigate } from 'react-router-dom';
+import { TaskBundleModal } from './TaskBundleModal.component';
 
 interface TaskBundleDetailProps {
     taskBundle: TaskBundle;
     onBack: () => void;
     onTaskBundleDeleted?: () => void;
+    onTaskBundleUpdated?: (taskBundle: TaskBundle) => void;
 }
 
-export function TaskBundleDetail({ taskBundle: initialTaskBundle, onBack, onTaskBundleDeleted, editMode }: TaskBundleDetailProps & { editMode?: boolean }) {
+export function TaskBundleDetail({ taskBundle: initialTaskBundle, onBack, onTaskBundleDeleted, onTaskBundleUpdated, editMode }: TaskBundleDetailProps & { editMode?: boolean }) {
     const [taskBundle, setTaskBundle] = useState<TaskBundle & { customers?: { id: string }[] }>(initialTaskBundle);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+    const navigate = useNavigate();
+
 
     useEffect(() => {
         setLoading(true);
@@ -51,6 +55,19 @@ export function TaskBundleDetail({ taskBundle: initialTaskBundle, onBack, onTask
         onBack();
     };
 
+    const handleEditTaskBundle = async (data: Partial<TaskBundle>): Promise<void> => {
+        try {
+            const updateTaskbundle = await taskBundleService.updateTaskBundle(taskBundle.id, data);
+            if (onTaskBundleUpdated) {
+                onTaskBundleUpdated(updateTaskbundle);
+            }
+            toast.success('Taskbundle updated successfully');
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to update taskbundle');
+            throw error;
+        }
+    };
+
     if (loading) {
         return <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading bundle details...</div>;
     }
@@ -80,7 +97,7 @@ export function TaskBundleDetail({ taskBundle: initialTaskBundle, onBack, onTask
                     </div>
                     <div className="flex space-x-2">
                         <button
-                            onClick={() => setIsEditModalOpen(true)}
+                            onClick={() => navigate(`/taskbundles/${taskBundle.id}/edit`)}
                             className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
                         >
                             <Edit className="h-4 w-4 mr-1" />
@@ -132,6 +149,20 @@ export function TaskBundleDetail({ taskBundle: initialTaskBundle, onBack, onTask
                 <TaskBundleTasksCard bundleId={taskBundle.id} />
             </div>
 
+            {/* Edit Task Modal */}
+            <TaskBundleModal
+                taskBundle={taskBundle}
+                isOpen={isEditModalOpen}
+                onClose={() => {
+                    setIsEditModalOpen(false);
+                    // Remove /edit from the URL when closing the modal
+                    if (editMode) {
+                        navigate(`/taskbundles/${taskBundle.id}`, { replace: true });
+                    }
+                }}
+                onSave={handleEditTaskBundle}
+            />
+
             <ConfirmDeleteModal
                 isOpen={isDeleteConfirmOpen}
                 title="Delete Task Bundle"
@@ -143,3 +174,89 @@ export function TaskBundleDetail({ taskBundle: initialTaskBundle, onBack, onTask
     );
 }
 
+function CustomerAssignmentCard({ taskBundle }: { taskBundle: TaskBundle & { customers?: { id: string }[] } }) {
+    const { customersQuery } = useCustomers();
+
+    const initialIds = taskBundle.customerIds && taskBundle.customerIds.length > 0
+        ? taskBundle.customerIds
+        : (taskBundle.customers ? taskBundle.customers.map(c => c.id) : []);
+    const [isEditing, setIsEditing] = useState(false);
+    const [assignedIds, setAssignedIds] = useState<string[]>(initialIds);
+    const [saving, setSaving] = useState(false);
+    const customers = (customersQuery.data || []).slice().sort((a, b) => a.shortCode.localeCompare(b.shortCode));
+
+    useEffect(() => {
+        setAssignedIds(
+            taskBundle.customerIds && taskBundle.customerIds.length > 0
+                ? taskBundle.customerIds
+                : (taskBundle.customers ? taskBundle.customers.map(c => c.id) : [])
+        );
+        setIsEditing(false);
+    }, [taskBundle.customerIds, taskBundle.customers]);
+
+    if (taskBundle.global) {
+        return (
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg px-6 py-4 mb-4">
+                <div className="font-semibold text-gray-900 dark:text-white mb-2">Assigned Customers</div>
+                <div className="text-gray-600 dark:text-gray-300">Cannot assign customers since this bundle is global. Every customer can use global bundles.</div>
+            </div>
+        );
+    }
+
+    const handleToggle = (id: string) => {
+        setAssignedIds(ids => {
+            const changed = ids.includes(id) ? ids.filter(cid => cid !== id) : [...ids, id];
+            setIsEditing(true);
+            return changed;
+        });
+    };
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            // Save to backend (patch bundle)
+            await import('../../services/taskbundle.service').then(({ taskBundleService }) =>
+                taskBundleService.updateTaskBundle(taskBundle.id, { customerIds: assignedIds })
+            );
+            setIsEditing(false);
+            toast.success('Customer assignment updated');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg px-6 py-4 mb-4">
+            <div className="font-semibold text-gray-900 dark:text-white mb-2">Assigned Customers</div>
+            {customers.length === 0 ? (
+                <div className="text-gray-500 dark:text-gray-400">No customers found.</div>
+            ) : (
+                <div className="max-h-64 overflow-y-auto border rounded p-2 bg-gray-50 dark:bg-gray-700">
+                    {customers.map((customer) => (
+                        <label key={customer.id} className="flex items-center gap-2 mb-1 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={assignedIds.includes(customer.id)}
+                                onChange={() => handleToggle(customer.id)}
+                                disabled={saving}
+                            />
+                            <span className="font-mono text-sm text-gray-800 dark:text-gray-200 w-24 truncate">{customer.shortCode}</span>
+                            <span className="text-gray-700 dark:text-gray-300 truncate flex-1">{customer.name}</span>
+                        </label>
+                    ))}
+                </div>
+            )}
+            <div className="flex justify-end mt-2">
+                {isEditing && (
+                    <button
+                        className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
+                        onClick={handleSave}
+                        disabled={saving}
+                    >
+                        {saving ? 'Saving...' : 'Save'}
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+}
