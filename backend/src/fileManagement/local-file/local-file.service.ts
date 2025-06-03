@@ -123,7 +123,7 @@ export class LocalFileService {
 
     try {
       await rm(filePath, { recursive: true });
-      await this.localFilesRepository.nativeDelete(fileInfo);
+      await this.em.removeAndFlush(fileInfo);
     } catch (error) {
       // Only throw if error is not "ENOENT" (folder does not exist)
       if (error.code !== 'ENOENT') {

@@ -190,14 +190,17 @@ export class TaskService {
   }
 
   public async deleteTask(id: string): Promise<void> {
-    await this.taskRepository.nativeDelete(id);
-    await this.em.flush();
+    const task = await this.taskRepository.findOneOrFail(id, { populate: ['contentFile'] });
+    if (task.contentFile) {
+      await this.localFileService.deleteFile(task.contentFile);
+    }
+    await this.em.removeAndFlush(task);
     return;
   }
 
   public async deleteTaskBundle(id: string): Promise<void> {
-    await this.taskBundleRepository.nativeDelete(id);
-    await this.em.flush();
+    const taskBundle = this.taskBundleRepository.getReference(id);
+    await this.em.removeAndFlush(taskBundle);
     return;
   }
 

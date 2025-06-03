@@ -7,12 +7,15 @@ import { LocalFileMetadataEntity } from 'src/fileManagement/local-file/local-fil
 import {
   BeforeCreate,
   BeforeUpdate,
+  Cascade,
   Collection,
   Entity,
   ManyToMany,
   OneToOne,
   Property,
 } from '@mikro-orm/core';
+import { TaskBundleEntity } from './task-bundle.entity';
+import { TaskOrderEntity } from './task-order.entity';
 
 @Entity()
 export class TasksEntity extends CoreBaseEntity {
@@ -31,7 +34,16 @@ export class TasksEntity extends CoreBaseEntity {
   @ManyToMany(() => CustomerEntity, customer => customer.tasks)
   customers = new Collection<CustomerEntity>(this);
 
-  @OneToOne(() => LocalFileMetadataEntity, { nullable: true })
+  @ManyToMany({
+    entity: () => TaskBundleEntity,
+    pivotEntity: () => TaskOrderEntity,
+    mappedBy: (bundle) => bundle.taskList,
+    cascade: [Cascade.REMOVE],
+    eager: false,
+  })
+  taskBundles = new Collection<TaskBundleEntity>(this);
+
+  @OneToOne(() => LocalFileMetadataEntity, { nullable: true, owner: true, cascade: [Cascade.REMOVE] })
   contentFile?: LocalFileMetadataEntity;
 
   @BeforeCreate()

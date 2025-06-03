@@ -1,0 +1,6 @@
+ignoredBuiltDependencies:
+  - '@scarf/scarf'
+  - nestjs-pino
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - sqlite3

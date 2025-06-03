@@ -12,9 +12,10 @@ interface TaskBundleDetailProps {
     taskBundle: TaskBundle;
     onBack: () => void;
     onTaskBundleDeleted?: () => void;
+    onTaskBundleUpdated?: (updatedBundle: TaskBundle) => void;
 }
 
-export function TaskBundleDetail({ taskBundle: initialTaskBundle, onBack, onTaskBundleDeleted, editMode }: TaskBundleDetailProps & { editMode?: boolean }) {
+export function TaskBundleDetail({ taskBundle: initialTaskBundle, onBack, onTaskBundleDeleted, editMode, onTaskBundleUpdated, }: TaskBundleDetailProps & { editMode?: boolean }) {
     const [taskBundle, setTaskBundle] = useState<TaskBundle & { customers?: { id: string }[] }>(initialTaskBundle);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);

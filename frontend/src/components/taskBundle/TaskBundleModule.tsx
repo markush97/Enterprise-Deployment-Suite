@@ -8,10 +8,21 @@ import { useTaskBundles } from '../../hooks/useTaskBundles';
 function TaskBundlePageWrapper({ editMode }: { editMode?: boolean } = {}) {
     const navigate = useNavigate();
     const { taskBundleId } = useParams();
-    const { taskBundlesQuery } = useTaskBundles();
+    const { taskBundlesQuery, deleteTaskBundleMutation, updateTaskBundleMutation } = useTaskBundles();
     const taskBundle = taskBundlesQuery.data?.find(t => t.id === taskBundleId);
+
     if (!taskBundle) return <div className="text-center py-8">Taskbundle not found</div>;
-    return <TaskBundleDetail taskBundle={taskBundle} onBack={() => navigate('/taskbundle')} editMode={editMode} />;
+
+
+    const handleTaskBundleUpdated = async (updatedTask: typeof taskBundle) => {
+        await updateTaskBundleMutation.mutateAsync({ id: taskBundle?.id, data: updatedTask });
+    };
+
+    const handleTaskBundleDeleted = async () => {
+        await deleteTaskBundleMutation.mutateAsync(taskBundle.id)
+    }
+
+    return <TaskBundleDetail taskBundle={taskBundle} onBack={() => navigate('/taskbundle')} onTaskBundleDeleted={handleTaskBundleDeleted} onTaskBundleUpdated={handleTaskBundleUpdated} editMode={editMode} />;
 }
 
 export function TaskBundleModuleRoutes() {

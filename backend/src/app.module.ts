@@ -29,7 +29,6 @@ import { VpnModule } from './vpn/vpn.module';
     DevicesModule,
     ImagesModule,
     JobsModule,
-    VpnModule,
     NetworkModule,
     CoreConfigModule,
     FileManagementModule,

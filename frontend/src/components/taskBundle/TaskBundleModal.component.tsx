@@ -48,7 +48,12 @@ export function TaskBundleModal({ taskBundle, isOpen, onClose, onSave, loading }
     }, [taskBundle]);
 
     const handleSave = async (data: any) => {
-        await onSave({ ...data, customerIds: global ? [] : selectedCustomers, global });
+        // Only include customerIds on update, not on create
+        if (taskBundle && taskBundle.id) {
+            await onSave({ ...data, customerIds: global ? [] : selectedCustomers, global });
+        } else {
+            await onSave({ ...data, global });
+        }
     };
 
     return (
