@@ -15,4 +15,5 @@ export interface TaskBundle {
     global: boolean;
     createdAt: string;
     taskList: Task[];
+    customerIds?: string[];
 }

@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
 import { API_URL } from '../configs/api.config';
 import { useAuthStore } from '../states/auth.store';
+import toast from 'react-hot-toast';
 
 
 export const api = axios.create({
@@ -47,9 +48,12 @@ api.interceptors.response.use(
             (error.response && error.response.status >= 500) ||
             !(error.response?.data && (error.response.data as any).mtiErrorCode)
         ) {
+            toast.error(
+                'An unexpected error occurred. Please try again later.')
             console.error('API Error:', error.response?.status, error.response?.data);
+            return Promise.reject(error)
         }
 
-        return Promise.reject(error);
+        return Promise.resolve(null);
     }
 );

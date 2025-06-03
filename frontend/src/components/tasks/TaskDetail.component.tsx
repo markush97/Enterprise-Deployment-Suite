@@ -1,4 +1,4 @@
-import { ArrowLeft, Building2, Trash2, Edit, Files } from 'lucide-react';
+import { ArrowLeft, Building2, Trash2, Edit, Files, Download } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import 'tippy.js/dist/tippy.css';
 import { useNavigate } from 'react-router-dom';
@@ -39,6 +39,7 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
     const [isUploading, setIsUploading] = useState(false);
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [contentOverviewKey, setContentOverviewKey] = useState(0);
+    const [hasContent, setHasContent] = useState<boolean>(false);
     const navigate = useNavigate();
 
 
@@ -90,6 +91,15 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
         }
     };
 
+    // Fetch content overview on mount and when contentOverviewKey changes
+    useEffect(() => {
+        let isMounted = true;
+        taskService.getTaskContentOverview(task.id)
+            .then((overview) => { if (isMounted) setHasContent(!!overview); })
+            .catch(() => { if (isMounted) setHasContent(false); });
+        return () => { isMounted = false; };
+    }, [task.id, contentOverviewKey]);
+
     return (
         <div className="space-y-6 animate-fadeIn">
             <div className="flex items-center mb-6">
@@ -121,6 +131,17 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                             <Files className="h-4 w-4 mr-1" />
                             Upload Content
                         </button>
+                        {hasContent && (
+                            <a
+                                href={`/api/tasks/${task.id}/content`}
+                                download
+                                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                title="Download content"
+                            >
+                                <Download className="h-4 w-4 mr-1 text-blue-500" />
+                                Download
+                            </a>
+                        )}
                         <button
                             onClick={() => navigate(`/tasks/${task.id}/edit`)}
                             className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2"

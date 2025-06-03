@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Task } from '../../types/task.interface';
 import { taskBundleService } from '../../services/taskbundle.service';
 import { useTasks } from '../../hooks/useTasks';
-import { Check, Trash2, ArrowUp, ArrowDown, Plus, GripVertical } from 'lucide-react';
+import { taskService } from '../../services/task.service';
+import { Trash2, ArrowUp, ArrowDown, Plus, GripVertical, Download } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 interface TaskBundleTasksCardProps {
@@ -17,6 +18,7 @@ export function TaskBundleTasksCard({ bundleId }: TaskBundleTasksCardProps) {
     const [allTasks, setAllTasks] = useState<Task[]>([]);
     const [addTaskId, setAddTaskId] = useState<string>('');
     const [saving, setSaving] = useState(false);
+    const [taskContentMap, setTaskContentMap] = useState<Record<string, boolean>>({});
     const { tasksQuery } = useTasks();
 
     // Drag-and-drop state
@@ -27,7 +29,21 @@ export function TaskBundleTasksCard({ bundleId }: TaskBundleTasksCardProps) {
         setLoading(true);
         setError(null);
         taskBundleService.getTaskBundle(bundleId)
-            .then(bundle => setTasks(bundle.taskList))
+            .then(async bundle => {
+                setTasks(bundle.taskList);
+                // Fetch content overview for each task
+                const entries = await Promise.all(
+                    bundle.taskList.map(async (task) => {
+                        try {
+                            const overview = await taskService.getTaskContentOverview(task.id);
+                            return [task.id, !!overview];
+                        } catch {
+                            return [task.id, false];
+                        }
+                    })
+                );
+                setTaskContentMap(Object.fromEntries(entries));
+            })
             .catch(e => setError(e.message || 'Failed to load tasks'))
             .finally(() => setLoading(false));
     }, [bundleId]);
@@ -126,9 +142,19 @@ export function TaskBundleTasksCard({ bundleId }: TaskBundleTasksCardProps) {
                                             <GripVertical className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                                         </span>
                                         <span className="font-medium text-gray-900 dark:text-white">{task.name}</span>
-                                        {task.global && <Check className="h-4 w-4 text-blue-500" />}
+
                                     </div>
                                     <div className="flex items-center gap-1">
+                                        {taskContentMap[task.id] && (
+                                            <a
+                                                href={`/api/tasks/${task.id}/content`}
+                                                download
+                                                className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+                                                title="Download content"
+                                            >
+                                                <Download className="h-4 w-4 text-blue-500" />
+                                            </a>
+                                        )}
                                         <button
                                             className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
                                             onClick={() => handleMove(idx, idx - 1)}
