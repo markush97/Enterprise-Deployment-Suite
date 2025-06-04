@@ -13,11 +13,13 @@ import { JobEntity } from './entities/job.entity';
 import { JobsService } from './jobs.service';
 import { Device } from 'src/auth/decorators/device.decorator';
 import { JobInstructionsDto } from './dto/job-instructions.dto';
+import { JobLogDataDto } from './dto/log-data.dto';
+import { JobLogsService } from './job-logs.service';
 
 @ApiTags('jobs')
 @Controller('jobs')
 export class JobsController {
-  constructor(private readonly jobsService: JobsService) {}
+  constructor(private readonly jobsService: JobsService, private readonly jobLogsService: JobLogsService) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all jobs' })
@@ -38,7 +40,7 @@ export class JobsController {
   @ApiOperation({ summary: 'Get job by id' })
   @ApiResponse({ status: 200, description: 'Returns a job' })
   async findOne(@Param('id') id: string): Promise<JobEntity> {
-    return this.jobsService.findOne(id);
+    return this.jobsService.findOneOrFail(id);
   }
 
   @Post()
@@ -65,11 +67,17 @@ export class JobsController {
     return this.jobsService.registerJob(RegisterJobDto);
   }
 
-  @Post('notify/:jobid/task')
+  @Post('notify/:jobid/task/:taskid')
   @UseDeviceTokenGuard()
   @ApiOperation({ summary: 'Notify the server about the current task-status' })
   async taskNotification(@Param('jobid') jobId: string, @Body('taskInfo') taskInfo: TaskInfoDto) {
     return this.jobsService.taskNotification(jobId, taskInfo);
+  }
+
+  @Post('logs')
+  @UseDeviceTokenGuard()
+  async writeLog(@Body() logData: JobLogDataDto, @Device() device: DeviceEntity) {
+    return this.jobLogsService.addLog(logData, device);
   }
 
   @Post('notify/:jobid')
@@ -84,6 +92,12 @@ export class JobsController {
   @ApiResponse({ status: 200, description: 'Device created successfully' })
   async createDeviceForJob(@Param('id') id: string, @Query('type') deviceType: DeviceType) {
     return this.jobsService.createDeviceForJobAutomatically(id, deviceType);
+  }
+
+  @Put(':jobid/status')
+  @ApiOperation({ summary: 'Notify the server about the current setup-status' })
+  async statusUpdate(@Param('jobid') jobId: string, @Query() jobStatus: JobStatusQueryDto) {
+    return this.jobsService.clientNotification(jobId, jobStatus.jobStatus);
   }
 
   @Put(':id/customer/:customerId')

@@ -51,6 +51,6 @@ describe('JobsController', () => {
 
   it('should get a job by id', async () => {
     expect(await controller.findOne('1')).toEqual({ id: '1' });
-    expect(jobsService.findOne).toHaveBeenCalledWith('1');
+    expect(jobsService.findOneOrFail).toHaveBeenCalledWith('1');
   });
 });

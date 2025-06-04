@@ -9,16 +9,18 @@ import { JobConnectionsEntity } from './entities/job-connections.entity';
 import { JobEntity } from './entities/job.entity';
 import { JobsController } from './jobs.controller';
 import { JobsService } from './jobs.service';
+import { JobLogEntity } from './entities/job-log.entity';
+import { JobLogsService } from './job-logs.service';
 
 @Module({
   imports: [
-    MikroOrmModule.forFeature([JobEntity, JobConnectionsEntity]),
+    MikroOrmModule.forFeature([JobEntity, JobConnectionsEntity, JobLogEntity]),
     DevicesModule,
     CustomersModule,
     ImagesModule,
   ],
   controllers: [JobsController],
-  providers: [JobsService],
+  providers: [JobsService, JobLogsService],
   exports: [JobsService],
 })
 export class JobsModule {}

@@ -41,7 +41,7 @@ export class JobsService {
     });
   }
 
-  async findOne(id: string): Promise<JobEntity> {
+  async findOneOrFail(id: string): Promise<JobEntity> {
     this.logger.debug(`Searching for job with ID ${id}`);
     const job = await this.jobRepository.findOne(id, {
       populate: ['device', 'customer', 'image'],
@@ -64,7 +64,7 @@ export class JobsService {
 
   async assignJobToCustomer(jobId: string, customerId: string): Promise<JobEntity> {
     this.logger.debug(`Assigning job with ID ${jobId} to customer with ID ${customerId}`);
-    const job = await this.findOne(jobId);
+    const job = await this.findOneOrFail(jobId);
     const customer = await this.customersService.findOne(customerId);
     job.customer = customer;
     await this.em.flush();
@@ -76,7 +76,7 @@ export class JobsService {
     deviceType: DeviceType = DeviceType.PC,
   ): Promise<JobEntity> {
     this.logger.debug(`Creating device for job with ID ${jobId} and device type ${deviceType}`);
-    const job = await this.findOne(jobId);
+    const job = await this.findOneOrFail(jobId);
 
     if (job.device) {
       throw new BadRequestMTIException(
@@ -166,7 +166,7 @@ export class JobsService {
   }
 
   async updateStatus(id: string, status: JobStatus): Promise<JobEntity> {
-    const job = await this.findOne(id);
+    const job = await this.findOneOrFail(id);
     job.status = status;
 
     if (status === JobStatus.DONE) {
@@ -188,7 +188,7 @@ Visit https://cwi.eu.itglue.com/${job.customer.itGlueId}/configurations/${job.de
   }
 
   async remove(id: string): Promise<void> {
-    const job = await this.findOne(id);
+    const job = await this.findOneOrFail(id);
     await this.em.removeAndFlush(job);
   }
 

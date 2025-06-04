@@ -7,6 +7,7 @@ import { DevicesService } from './devices.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { DeviceInformationDto } from './dto/update-device-info.dto';
 import { DeviceEntity } from './entities/device.entity';
+import { UseDeviceTokenGuard } from 'src/auth/decorators/device-token.decorator';
 
 @ApiTags('devices')
 @Controller('devices')
@@ -37,6 +38,7 @@ export class DevicesController {
   @Put('info')
   @ApiOperation({ summary: 'Submit an device-information update using the device deviceToken' })
   @ApiResponse({ status: 200, description: 'Device information updated successfully' })
+  @UseDeviceTokenGuard()
   async updateDeviceInfo(
     @Body() updateDeviceDto: DeviceInformationDto,
     @Device() device: DeviceEntity,

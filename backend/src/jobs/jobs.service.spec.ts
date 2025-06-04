@@ -47,6 +47,6 @@ describe('JobsService', () => {
   it('should throw NotFoundException if job not found', async () => {
     const jobRepository = (service as any).jobRepository;
     jobRepository.findOne.mockResolvedValue(undefined);
-    await expect(service.findOne('123')).rejects.toThrow('Job with ID 123 not found');
+    await expect(service.findOneOrFail('123')).rejects.toThrow('Job with ID 123 not found');
   });
 });
