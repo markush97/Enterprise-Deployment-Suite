@@ -15,6 +15,7 @@ import { Device } from 'src/auth/decorators/device.decorator';
 import { JobInstructionsDto } from './dto/job-instructions.dto';
 import { JobLogDataDto } from './dto/log-data.dto';
 import { JobLogsService } from './job-logs.service';
+import { JobLogEntity } from './entities/job-log.entity';
 
 @ApiTags('jobs')
 @Controller('jobs')
@@ -27,6 +28,13 @@ export class JobsController {
   async findAll(): Promise<JobEntity[]> {
     return this.jobsService.findAll();
   }
+
+  @Get(':id/logs')
+  @ApiOperation({ summary: 'Get logs for a job' })
+  async getLogsForJob(@Param('id') id: string): Promise<JobLogEntity[]> {
+    return this.jobLogsService.getLogsForJob(id);
+  }
+
 
   @Get(':id/instructions')
   @ApiOperation({ summary: 'Get job instructions' })

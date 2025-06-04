@@ -39,6 +39,6 @@ export class JobLogsService {
   }
 
   async getLogsForJob(jobId: string): Promise<JobLogEntity[]> {
-    return this.em.find(JobLogEntity, { job: jobId }, { orderBy: { timestamp: 'ASC' } });
+    return this.jobLogRepository.findAll({filters: { job: {id: jobId} }, orderBy: { timestamp: 'ASC' } });
   }
 }
