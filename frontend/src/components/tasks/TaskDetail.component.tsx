@@ -9,6 +9,7 @@ import { taskService } from '../../services/task.service';
 import { TaskContentOverviewCard } from './TaskContentOverview.component';
 import { UploadDropzone } from './UploadModal.component';
 import { ConfirmDeleteModal } from '../utils/ConfirmDeleteModal';
+import { ScriptContentCard } from './ScriptContentCard.component';
 
 interface TaskDetailProps {
     task: Task;
@@ -40,6 +41,7 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [contentOverviewKey, setContentOverviewKey] = useState(0);
     const [hasContent, setHasContent] = useState<boolean>(false);
+    const [savingScript, setSavingScript] = useState(false);
     const navigate = useNavigate();
 
 
@@ -88,6 +90,15 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
             setUploadError(error.message || 'Failed to upload content');
         } finally {
             setIsUploading(false);
+        }
+    };
+
+    const handleSaveScript = async (newScript: string) => {
+        setSavingScript(true);
+        try {
+            await handleEditTask({ installScript: newScript });
+        } finally {
+            setSavingScript(false);
         }
     };
 
@@ -189,6 +200,13 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                     </dl>
                 </div>
             </div>
+
+            {/* Script Content Card */}
+            <ScriptContentCard
+                script={task.installScript || ''}
+                onSave={handleSaveScript}
+                isSaving={savingScript}
+            />
 
             {/* Task Content Overview Card */}
             <TaskContentOverviewCard key={contentOverviewKey} taskId={task.id} />

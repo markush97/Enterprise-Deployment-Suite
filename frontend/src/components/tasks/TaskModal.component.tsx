@@ -29,16 +29,9 @@ const taskFields: FieldConfig[] = [
         label: 'Global',
         type: 'checkbox',
         required: false,
-        placeholder: '',
+        placeholder: 'true',
         validate: undefined,
-    },
-    {
-        name: 'installScript',
-        label: 'Install Script',
-        type: 'text',
-        required: false,
-        placeholder: 'Paste install script here',
-    },
+    }
 ];
 
 export function TaskModal({ task, isOpen, onClose, onSave, loading }: TaskModalProps) {
