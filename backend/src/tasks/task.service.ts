@@ -9,9 +9,9 @@ import { FileManagementConfigService } from 'src/fileManagement/file-management.
 import { LocalFileMetadataEntity } from 'src/fileManagement/local-file/local-file-metadata.entity';
 import { LocalFileService } from 'src/fileManagement/local-file/local-file.service';
 
-import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 
-import { EntityManager, EntityRepository } from '@mikro-orm/core';
+import { EntityManager, EntityRepository, OnInit } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 
 import { FileOverviewDto } from '../fileManagement/local-file/file-overview.dto';
@@ -21,9 +21,10 @@ import { CreateTaskDto } from './dto/task-create.dto';
 import { TaskBundleEntity } from './entities/task-bundle.entity';
 import { TaskOrderEntity } from './entities/task-order.entity';
 import { TasksEntity as TaskEntity } from './entities/task.entity';
+import { BUILTIN_TASKS } from './entities/builtin/task-builtin-seed';
 
 @Injectable()
-export class TaskService {
+export class TaskService implements OnModuleInit {
   private readonly logger = new Logger('TasksService');
 
   constructor(
@@ -37,6 +38,17 @@ export class TaskService {
     private readonly localFileService: LocalFileService,
     private readonly fileConfigService: FileManagementConfigService,
   ) {}
+
+  async onModuleInit() {
+    // Ensure built-in tasks are created on startup
+    this.logger.log(`Initializing built-in tasks...`); 
+    for (const builtin of BUILTIN_TASKS) {
+      const exists = await this.taskRepository.findOne({ name: builtin.name, buildIn: true });
+      if (!exists) {
+        await this.em.persistAndFlush(this.taskRepository.create(builtin));
+      }
+    }
+  }
 
   public async getTasks(): Promise<TaskEntity[]> {
     return this.taskRepository.findAll({ filters: {}, populate: ['contentFile'] });

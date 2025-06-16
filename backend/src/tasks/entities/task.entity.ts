@@ -29,6 +29,9 @@ export class TasksEntity extends CoreBaseEntity {
   @Property()
   global: boolean;
 
+  @Property({ default: false })
+  buildIn: boolean = false;
+
   @Property({ type: 'longtext', nullable: true })
   installScript: string;
 
