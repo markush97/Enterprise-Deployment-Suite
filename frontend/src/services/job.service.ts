@@ -25,6 +25,10 @@ export const jobService = {
     },
 
     async cancelJob(id: string): Promise<void> {
-        await api.delete(`/jobs/${id}`);
+        await api.put(`/jobs/${id}/status?jobStatus=canceled`);
+    },
+    async assignCustomerOrTaskBundle(id: string, data: { customerId?: string; taskBundleId?: string }): Promise<Job> {
+        const response = await api.put<Job>(`/jobs/${id}`, data);
+        return response.data;
     },
 };

@@ -21,6 +21,7 @@ import { CreateTaskDto } from './dto/task-create.dto';
 import { TaskBundleEntity } from './entities/task-bundle.entity';
 import { TaskOrderEntity } from './entities/task-order.entity';
 import { TasksEntity as TaskEntity } from './entities/task.entity';
+import { LocalFileMetadataEntity } from 'src/fileManagement/local-file/local-file-metadata.entity';
 
 @Injectable()
 export class TaskService {
@@ -184,8 +185,11 @@ export class TaskService {
     return this.localFileService.getFilesAsArchive(
       taskBundle.taskList
         .getItems()
-        .map(task => task.contentFile)
-        .filter(file => file),
+        .filter(task => task.contentFile) // Only include tasks with content
+        .map<(LocalFileMetadataEntity & {zipFolderName: string})>(task => {
+          (task.contentFile as any).zipFolderName = task.id;
+          return task.contentFile as (LocalFileMetadataEntity & {zipFolderName: string});
+        })
     );
   }
 

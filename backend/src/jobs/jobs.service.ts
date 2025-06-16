@@ -3,6 +3,8 @@ import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-re
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
 import { DeviceType } from 'src/devices/entities/device.entity';
 
+import * as archiver from 'archiver';
+
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
@@ -18,6 +20,8 @@ import { TaskInfoDto } from './dto/task-info.dto';
 import { JobConnectionsEntity } from './entities/job-connections.entity';
 import { JobEntity, JobStatus } from './entities/job.entity';
 import { JobInstructionAction, JobInstructionsDto } from './dto/job-instructions.dto';
+import { TaskService } from 'src/tasks/task.service';
+import { TaskBundleEntity } from '../tasks/entities/task-bundle.entity';
 
 @Injectable()
 export class JobsService {
@@ -31,12 +35,13 @@ export class JobsService {
     private readonly imagesService: ImagesService,
     private readonly mailService: EMailService,
     private readonly em: EntityManager,
+    private readonly taskService: TaskService
   ) {}
 
   async findAll(): Promise<JobEntity[]> {
     this.logger.debug('Fetching all jobs');
     return this.jobRepository.findAll({
-      populate: ['device', 'customer', 'image'],
+      populate: ['device', 'customer', 'image', 'taskBundle'],
       orderBy: { createdAt: 'DESC' },
     });
   }
@@ -44,7 +49,7 @@ export class JobsService {
   async findOneOrFail(id: string): Promise<JobEntity> {
     this.logger.debug(`Searching for job with ID ${id}`);
     const job = await this.jobRepository.findOne(id, {
-      populate: ['device', 'customer', 'image'],
+      populate: ['device', 'customer', 'image', 'taskBundle'],
     });
     if (!job) {
       throw new NotFoundException(`Job with ID ${id} not found`);
@@ -60,6 +65,23 @@ export class JobsService {
     return {
       action: JobInstructionAction.WAIT_FOR_INSTRUCTIONS,
     }
+  }
+
+  async getJobContent(id: string): Promise<archiver.Archiver> {
+    const job = await this.jobRepository.findOneOrFail(id, {
+      populate: ['device', 'customer', 'taskBundle'],
+    });
+    const taskBundle = job.taskBundle;
+    if (!taskBundle) {
+      throw new BadRequestMTIException(
+        MTIErrorCodes.JOB_NO_TASK_BUNDLE,
+        `Job with ID ${id} has no task bundle assigned. Cannot execute a job without a task bundle.`,
+      );
+    }
+
+    const bundleContent = await this.taskService.getTaskBundleContent(taskBundle.id);
+
+    return bundleContent
   }
 
   async assignJobToCustomer(jobId: string, customerId: string): Promise<JobEntity> {
@@ -230,5 +252,20 @@ configfile grub/config/main.cfg
     this.logger.debug(
       `Client notified us about task status ${taskInfo.status} for job  ${jobId}...`,
     );
+  }
+
+  async updateJob(id: string, update: { taskBundleId?: string; customerId?: string }): Promise<JobEntity> {
+    const job = await this.findOneOrFail(id);
+    if (update.customerId) {
+      const customer = await this.customersService.findOne(update.customerId);
+      job.customer = customer;
+    }
+
+    if (update.taskBundleId) {
+      const taskBundle = await this.taskService.getTaskBundle(update.taskBundleId);
+      job.taskBundle = taskBundle;
+    }
+    await this.em.flush();
+    return job;
   }
 }

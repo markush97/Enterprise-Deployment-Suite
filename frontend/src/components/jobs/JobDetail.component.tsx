@@ -1,11 +1,14 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { jobService } from '../../services/job.service';
 import type { Job } from '../../types/job.interface';
-import { ArrowLeft, Ban, CrossIcon, Edit, Loader2, Server, XCircle } from 'lucide-react';
+import { ArrowLeft, Ban, ChevronDownIcon, CrossIcon, Edit, Loader2, Server, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { JobModal } from './JobModal.component';
+import { customerService } from '../../services/customer.service';
+import { taskBundleService } from '../../services/taskbundle.service';
+import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/react';
 
 interface JobDetailProps {
     job: Job;
@@ -33,10 +36,55 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
         return () => window.removeEventListener('popstate', handlePopState);
     }, [isEditModalOpen, editMode]);
     const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
-    const [isCanceling, setIsCanceling] = useState(false);
-    const [contentOverviewKey, setContentOverviewKey] = useState(0);
-    const [hasContent, setHasContent] = useState<boolean>(false);
-    const navigate = useNavigate();
+    // Remove unused state
+    // const [isCanceling, setIsCanceling] = useState(false);
+
+    const [customerOptions, setCustomerOptions] = useState<{ id: string; name: string; shortCode: string }[]>([]);
+    const [taskBundleOptions, setTaskBundleOptions] = useState<{ id: string; name: string; description?: string }[]>([]);
+    // Use id if available, else try to match by shortCode
+    const getCustomerId = () => {
+        if (job.customer && 'id' in job.customer) return (job.customer as any).id;
+        if (job.customer && job.customer.shortCode) {
+            const found = customerOptions.find(c => c.shortCode === job.customer.shortCode);
+            return found?.id || '';
+        }
+        return '';
+    };
+    const getTaskBundleId = () => {
+        if (job.taskBundle && typeof job.taskBundle === 'object' && 'id' in job.taskBundle) return (job.taskBundle as any).id;
+        if (job.taskBundle && typeof job.taskBundle === 'object' && 'name' in job.taskBundle) {
+            const found = taskBundleOptions.find(tb => tb.name === (job.taskBundle as any).name);
+            return found?.id || '';
+        }
+        return '';
+    };
+    const [selectedCustomer, setSelectedCustomer] = useState<string>(getCustomerId());
+    const [selectedTaskBundle, setSelectedTaskBundle] = useState<string>(getTaskBundleId());
+    const [isAssigning, setIsAssigning] = useState(false);
+
+    // Local state for staged selection (not immediately applied)
+    const [stagedCustomer, setStagedCustomer] = useState<string>(selectedCustomer);
+    const [stagedTaskBundle, setStagedTaskBundle] = useState<string>(selectedTaskBundle);
+    const [savingCustomer, setSavingCustomer] = useState(false);
+    const [savingTaskBundle, setSavingTaskBundle] = useState(false);
+
+    useEffect(() => {
+        customerService.getCustomers().then((data) => setCustomerOptions(data));
+        taskBundleService.getTaskBundles().then((data) => setTaskBundleOptions(data));
+    }, []);
+
+    useEffect(() => {
+        setSelectedCustomer(getCustomerId());
+        setSelectedTaskBundle(getTaskBundleId());
+    }, [job.customer, job.taskBundle, customerOptions, taskBundleOptions]);
+
+    // Keep staged values in sync with job changes
+    useEffect(() => {
+        setStagedCustomer(selectedCustomer);
+    }, [selectedCustomer]);
+    useEffect(() => {
+        setStagedTaskBundle(selectedTaskBundle);
+    }, [selectedTaskBundle]);
 
     const handleEditJob = async (data: Partial<Job>): Promise<void> => {
         try {
@@ -53,7 +101,7 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
 
     const handleCancelJob = async () => {
         try {
-            setIsCanceling(true);
+            // setIsCanceling(true);
             await jobService.cancelJob(job.id);
             toast.success('Job deleted successfully');
             if (onJobDeleted) {
@@ -63,10 +111,28 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
         } catch (error: any) {
             toast.error(error.message || 'Failed to delete job');
         } finally {
-            setIsCanceling(false);
+            // setIsCanceling(false);
             setIsCancelConfirmOpen(false);
         }
     };
+
+    const handleAssign = async (type: 'customer' | 'taskBundle', value: string) => {
+        setIsAssigning(true);
+        try {
+            const payload: { customerId?: string; taskBundleId?: string } = {};
+            if (type === 'customer') payload.customerId = value;
+            if (type === 'taskBundle') payload.taskBundleId = value;
+            const updatedJob = await jobService.assignCustomerOrTaskBundle(job.id, payload);
+            toast.success(`${type === 'customer' ? 'Customer' : 'Task Bundle'} assigned successfully`);
+            if (onJobUpdated) onJobUpdated(updatedJob);
+        } catch (e: any) {
+            toast.error(e.message || 'Assignment failed');
+        } finally {
+            setIsAssigning(false);
+        }
+    };
+
+    const navigate = useNavigate();
 
     return (
         <div className="space-y-6 animate-fadeIn">
@@ -100,13 +166,14 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
                             Edit
                         </button>
 
+                        { job.status !== 'canceled' && ( 
                         <button
                             onClick={() => setIsCancelConfirmOpen(true)}
                             className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                         >
                             <Ban className="h-4 w-4 mr-1 text-red-500" />
                             Cancel
-                        </button>
+                        </button>)}
                     </div>
                 </div>
 
@@ -203,6 +270,132 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
                         </div>
                     </div>
                 )}
+            </div>
+
+            {/* Customer Assignment Card */}
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg mt-6">
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Assign Customer</h2>
+                </div>
+                <div className="px-6 py-4 flex flex-col gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customer</label>
+                        <Combobox value={customerOptions.find(c => c.id === stagedCustomer) || null} onChange={val => {
+                            if (val) setStagedCustomer(val.id);
+                        }} disabled={isAssigning || savingCustomer}>
+                            <div className="relative">
+                                <ComboboxInput
+                                    className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                    displayValue={(c: any) => c ? `${c.shortCode} - ${c.name}` : ''}
+                                    placeholder="Select customer..."
+                                />
+                                <ComboboxButton className="group absolute inset-y-0 right-0 px-2.5">
+                                    <ChevronDownIcon className="size-4 fill-white/60 group-data-hover:fill-white" />
+                                </ComboboxButton>
+                                <ComboboxOptions className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-auto">
+                                    {customerOptions.length === 0 && (
+                                        <div className="px-4 py-2 text-gray-500">No customers found</div>
+                                    )}
+                                    {customerOptions.map(c => (
+                                        <ComboboxOption
+                                            key={c.id}
+                                            value={c}
+                                            className={({ active }) => `cursor-pointer select-none px-4 py-2 ${active ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-gray-100'}`}
+                                        >
+                                            {c.shortCode} - {c.name}
+                                        </ComboboxOption>
+                                    ))}
+                                </ComboboxOptions>
+                            </div>
+                        </Combobox>
+                    </div>
+                    {stagedCustomer && (
+                        <div className="text-sm text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 rounded p-3 border border-gray-200 dark:border-gray-600">
+                            {(() => {
+                                const c = customerOptions.find(c => c.id === stagedCustomer);
+                                if (!c) return null;
+                                return <>
+                                    <div><span className="font-semibold">Name:</span> {c.name}</div>
+                                    <div><span className="font-semibold">Short Code:</span> {c.shortCode}</div>
+                                </>;
+                            })()}
+                        </div>
+                    )}
+                    <button
+                        className="mt-2 px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-400 transition disabled:opacity-50"
+                        onClick={async () => {
+                            setSavingCustomer(true);
+                            await handleAssign('customer', stagedCustomer);
+                            setSavingCustomer(false);
+                        }}
+                        disabled={isAssigning || savingCustomer || stagedCustomer === selectedCustomer}
+                    >
+                        {savingCustomer ? 'Saving...' : 'Save'}
+                    </button>
+                </div>
+            </div>
+
+            {/* Task Bundle Assignment Card */}
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg mt-6">
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Assign Task Bundle</h2>
+                </div>
+                <div className="px-6 py-4 flex flex-col gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Task Bundle</label>
+                        <Combobox value={taskBundleOptions.find(tb => tb.id === stagedTaskBundle) || null} onChange={val => {
+                            if (val) setStagedTaskBundle(val.id);
+                        }} disabled={isAssigning || savingTaskBundle}>
+                            <div className="relative">
+                                <ComboboxInput
+                                    className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                    displayValue={(tb: any) => tb ? tb.name : ''}
+                                    placeholder="Select task bundle..."
+                                />
+                                <ComboboxButton className="group absolute inset-y-0 right-0 px-2.5">
+                                    <ChevronDownIcon className="size-4 fill-white/60 group-data-hover:fill-white" />
+                                </ComboboxButton>
+                                <ComboboxOptions className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-auto">
+                                    {taskBundleOptions.length === 0 && (
+                                        <div className="px-4 py-2 text-gray-500">No task bundles found</div>
+                                    )}
+                                    {taskBundleOptions.map(tb => (
+                                        <ComboboxOption
+                                            key={tb.id}
+                                            value={tb}
+                                            className={({ active }) => `cursor-pointer select-none px-4 py-2 ${active ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-gray-100'}`}
+                                        >
+                                            {tb.name}
+                                        </ComboboxOption>
+                                    ))}
+                                </ComboboxOptions>
+                            </div>
+                        </Combobox>
+                    </div>
+                    {stagedTaskBundle && (
+                        <div className="text-sm text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 rounded p-3 border border-gray-200 dark:border-gray-600">
+                            {(() => {
+                                const tb = taskBundleOptions.find(tb => tb.id === stagedTaskBundle);
+                                if (!tb) return null;
+                                return <>
+                                    <div><span className="font-semibold">Name:</span> {tb.name}</div>
+                                    {tb.description && <div><span className="font-semibold">Description:</span> {tb.description}</div>}
+                                </>;
+                            })()}
+                        </div>
+                    )}
+                    <button
+                        className="mt-2 px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-400 transition disabled:opacity-50"
+                        onClick={async () => {
+                            setSavingTaskBundle(true);
+                            await handleAssign('taskBundle', stagedTaskBundle);
+                            setSavingTaskBundle(false);
+                        }}
+                        disabled={isAssigning || savingTaskBundle || stagedTaskBundle === selectedTaskBundle}
+                    >
+                        {savingTaskBundle ? 'Saving...' : 'Save'}
+                    </button>
+                </div>
             </div>
         </div>
     );

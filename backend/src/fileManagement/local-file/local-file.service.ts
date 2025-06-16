@@ -60,7 +60,7 @@ export class LocalFileService {
     return archive;
   }
 
-  public async getFilesAsArchive(fileInfos: LocalFileMetadataEntity[]): Promise<archiver.Archiver> {
+  public async getFilesAsArchive(fileInfos: (LocalFileMetadataEntity & {zipFolderName: string})[]): Promise<archiver.Archiver> {
     this.logger.debug(`Getting files as archive for ${fileInfos.length} files`);
 
     const archive = archiver('zip', { zlib: { level: 9 } });
@@ -80,7 +80,7 @@ export class LocalFileService {
         throw new InternalMTIException(MTIErrorCodes.FILE_READING_ERROR, `Error reading file!`);
       });
 
-      archive.directory(filePath, join(fileInfo.path, fileInfo.filename));
+      archive.directory(filePath, join(fileInfo.zipFolderName, fileInfo.filename));
     }
 
     return archive;

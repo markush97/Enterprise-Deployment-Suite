@@ -45,12 +45,12 @@ export function TaskModal({ task, isOpen, onClose, onSave, loading }: TaskModalP
     const initialValues = task ? {
         name: task.name,
         description: task.description || '',
-        global: task.global,
+        global: task.global || true,
         installScript: task.installScript || '',
     } : {
         name: '',
         description: '',
-        global: false,
+        global: true,
         installScript: '',
     };
 

@@ -2,7 +2,7 @@ import { UseDeviceTokenGuard } from 'src/auth/decorators/device-token.decorator'
 import { Public } from 'src/auth/decorators/public.decorator';
 import { DeviceEntity, DeviceType } from 'src/devices/entities/device.entity';
 
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Logger, Param, Post, Put, Query, Res } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { CreateJobDto } from './dto/create-job.dto';
@@ -16,10 +16,13 @@ import { JobInstructionsDto } from './dto/job-instructions.dto';
 import { JobLogDataDto } from './dto/log-data.dto';
 import { JobLogsService } from './job-logs.service';
 import { JobLogEntity } from './entities/job-log.entity';
+import { Response } from 'express';
+import { UpdateJobDto } from './dto/update-job.dto';
 
 @ApiTags('jobs')
 @Controller('jobs')
 export class JobsController {
+  private readonly logger = new Logger('Jobs Controller');
   constructor(private readonly jobsService: JobsService, private readonly jobLogsService: JobLogsService) {}
 
   @Get()
@@ -43,6 +46,22 @@ export class JobsController {
   async getJobInstructions(@Param('id') id: string): Promise<JobInstructionsDto> {
     return this.jobsService.getJobInstructions(id);
   }
+
+  @Get(':id/content')
+  @ApiOperation({ summary: 'Get job content' })
+  @UseDeviceTokenGuard()
+  async getJobContent(@Param('id') id: string, @Res({ passthrough: true }) res: Response) {
+    this.logger.debug(`Downloading content for job ${id}`);
+
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename=job-content.zip`);
+
+    const stream = await this.jobsService.getJobContent(id);
+
+    stream.pipe(res);
+    await stream.finalize();
+  }
+
 
   @Get(':id')
   @ApiOperation({ summary: 'Get job by id' })
@@ -116,6 +135,16 @@ export class JobsController {
     @Param('customerId') customerId: string,
   ): Promise<JobEntity> {
     return this.jobsService.assignJobToCustomer(id, customerId);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update a job (assign TaskBundle and/or Customer)' })
+  @ApiResponse({ status: 200, description: 'Job updated successfully' })
+  async updateJob(
+    @Param('id') id: string,
+    @Body() updateInfo: UpdateJobDto
+  ): Promise<JobEntity> {
+    return this.jobsService.updateJob(id, updateInfo);
   }
 
   @Delete(':id')

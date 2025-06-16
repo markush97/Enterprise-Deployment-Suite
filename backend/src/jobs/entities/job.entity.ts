@@ -27,6 +27,7 @@ export enum JobStatus {
   VERIFYING = 'verifying',
   READY = 'ready',
   DONE = 'done',
+  CANCELED = 'canceled',
 }
 
 @Entity()
@@ -49,10 +50,9 @@ export class JobEntity extends CoreBaseEntity {
   @Property({type: 'timestamptz' })
   lastConnection: Date = new Date();
 
-  @OneToOne(() => TaskBundleEntity, { nullable: true, cascade: [Cascade.ALL] })
+  @ManyToOne(() => TaskBundleEntity, { nullable: true, cascade: [Cascade.ALL] })
   taskBundle?: TaskBundleEntity;
   
-
   @OneToMany(() => JobConnectionsEntity, connection => connection.job, {
     cascade: [Cascade.ALL],
     orphanRemoval: true,

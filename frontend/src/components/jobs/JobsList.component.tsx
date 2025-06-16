@@ -1,10 +1,9 @@
-import { Clock, CheckCircle, AlertCircle, Loader2, XCircle, HelpCircle } from 'lucide-react';
+import { CheckCircle, AlertCircle, Loader2, XCircle, HelpCircle } from 'lucide-react';
 import { useJobs } from '../../hooks/useJobs';
 import { EntityList, EntityListAction } from '../utils/EntityList';
 import type { Job } from '../../types/job.interface';
 import { JobModal } from './JobModal.component';
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { ConfirmDeleteModal } from '../utils/ConfirmDeleteModal';
 
@@ -106,21 +105,9 @@ export function JobsList() {
             label: 'Cancel',
             danger: true,
             onClick: handleCancel,
-        },
-        {
-            label: 'Assign Task Bundle',
-            onClick: () => {
-                // TODO: Implement assign task bundle logic
-            },
-            disabled: (job: Job) => !job.customer?.shortCode,
-            tooltip: (job: Job) => !job.customer?.shortCode ? 'Assign a customer first' : undefined,
-        },
-        {
-            label: 'Assign Customer',
-            onClick: () => {
-                // TODO: Implement assign customer logic
-            },
-        },
+            disabled: (job: Job) => job.status === 'canceled' || job.status === 'done',
+            tooltip: 'Cancel this job',
+        }
     ];
 
     function getStatusIcon(status: Job['status']) {
@@ -137,6 +124,8 @@ export function JobsList() {
                 return <CheckCircle className="h-5 w-5 text-green-500" />;
             case 'waiting_for_instructions':
                 return <HelpCircle className="h-5 w-5 text-gray-500" />;
+            case 'canceled':
+                return <XCircle className="h-5 w-5 text-red-500" />;
             default:
                 return <XCircle className="h-5 w-5 text-red-500" />;
         }

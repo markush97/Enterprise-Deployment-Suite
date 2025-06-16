@@ -11,6 +11,7 @@ import { JobsController } from './jobs.controller';
 import { JobsService } from './jobs.service';
 import { JobLogEntity } from './entities/job-log.entity';
 import { JobLogsService } from './job-logs.service';
+import { TaskModule } from 'src/tasks/task.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { JobLogsService } from './job-logs.service';
     DevicesModule,
     CustomersModule,
     ImagesModule,
+    TaskModule,
   ],
   controllers: [JobsController],
   providers: [JobsService, JobLogsService],
