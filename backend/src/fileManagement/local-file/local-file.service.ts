@@ -60,7 +60,9 @@ export class LocalFileService {
     return archive;
   }
 
-  public async getFilesAsArchive(fileInfos: (LocalFileMetadataEntity & {zipFolderName: string})[]): Promise<archiver.Archiver> {
+  public async getFilesAsArchive(
+    fileInfos: (LocalFileMetadataEntity & { zipFolderName: string })[],
+  ): Promise<archiver.Archiver> {
     this.logger.debug(`Getting files as archive for ${fileInfos.length} files`);
 
     const archive = archiver('zip', { zlib: { level: 9 } });

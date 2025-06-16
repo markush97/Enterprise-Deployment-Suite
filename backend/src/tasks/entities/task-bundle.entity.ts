@@ -32,7 +32,7 @@ export class TaskBundleEntity extends CoreBaseEntity {
   @ManyToMany({
     entity: () => TasksEntity,
     pivotEntity: () => TaskOrderEntity,
-    mappedBy: (task) => task.taskBundles,
+    mappedBy: task => task.taskBundles,
     fixedOrder: true,
     fixedOrderColumn: 'order',
     owner: true,

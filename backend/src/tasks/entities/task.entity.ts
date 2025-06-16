@@ -14,6 +14,7 @@ import {
   OneToOne,
   Property,
 } from '@mikro-orm/core';
+
 import { TaskBundleEntity } from './task-bundle.entity';
 import { TaskOrderEntity } from './task-order.entity';
 
@@ -37,13 +38,17 @@ export class TasksEntity extends CoreBaseEntity {
   @ManyToMany({
     entity: () => TaskBundleEntity,
     pivotEntity: () => TaskOrderEntity,
-    mappedBy: (bundle) => bundle.taskList,
+    mappedBy: bundle => bundle.taskList,
     cascade: [Cascade.REMOVE],
     eager: false,
   })
   taskBundles = new Collection<TaskBundleEntity>(this);
 
-  @OneToOne(() => LocalFileMetadataEntity, { nullable: true, owner: true, cascade: [Cascade.REMOVE] })
+  @OneToOne(() => LocalFileMetadataEntity, {
+    nullable: true,
+    owner: true,
+    cascade: [Cascade.REMOVE],
+  })
   contentFile?: LocalFileMetadataEntity;
 
   @BeforeCreate()

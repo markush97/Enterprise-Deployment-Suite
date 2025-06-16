@@ -1,3 +1,4 @@
+import { UseDeviceTokenGuard } from 'src/auth/decorators/device-token.decorator';
 import { Device } from 'src/auth/decorators/device.decorator';
 
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
@@ -7,7 +8,6 @@ import { DevicesService } from './devices.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { DeviceInformationDto } from './dto/update-device-info.dto';
 import { DeviceEntity } from './entities/device.entity';
-import { UseDeviceTokenGuard } from 'src/auth/decorators/device-token.decorator';
 
 @ApiTags('devices')
 @Controller('devices')

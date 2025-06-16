@@ -1,9 +1,9 @@
+import * as archiver from 'archiver';
 import { EMailService } from 'src/core/email/email.service';
 import { BadRequestMTIException } from 'src/core/errorhandling/exceptions/bad-request.mti-exception';
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
 import { DeviceType } from 'src/devices/entities/device.entity';
-
-import * as archiver from 'archiver';
+import { TaskService } from 'src/tasks/task.service';
 
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
@@ -13,15 +13,14 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { CustomersService } from '../customers/customers.service';
 import { DevicesService } from '../devices/devices.service';
 import { ImagesService } from '../images/images.service';
+import { TaskBundleEntity } from '../tasks/entities/task-bundle.entity';
 import { ClientInfoDto } from './dto/client-info.dto';
 import { CreateJobDto } from './dto/create-job.dto';
+import { JobInstructionAction, JobInstructionsDto } from './dto/job-instructions.dto';
 import { RegisterJobDto } from './dto/register-job.dto';
 import { TaskInfoDto } from './dto/task-info.dto';
 import { JobConnectionsEntity } from './entities/job-connections.entity';
 import { JobEntity, JobStatus } from './entities/job.entity';
-import { JobInstructionAction, JobInstructionsDto } from './dto/job-instructions.dto';
-import { TaskService } from 'src/tasks/task.service';
-import { TaskBundleEntity } from '../tasks/entities/task-bundle.entity';
 
 @Injectable()
 export class JobsService {
@@ -35,7 +34,7 @@ export class JobsService {
     private readonly imagesService: ImagesService,
     private readonly mailService: EMailService,
     private readonly em: EntityManager,
-    private readonly taskService: TaskService
+    private readonly taskService: TaskService,
   ) {}
 
   async findAll(): Promise<JobEntity[]> {
@@ -64,7 +63,7 @@ export class JobsService {
 
     return {
       action: JobInstructionAction.WAIT_FOR_INSTRUCTIONS,
-    }
+    };
   }
 
   async getJobContent(id: string): Promise<archiver.Archiver> {
@@ -79,14 +78,14 @@ export class JobsService {
       );
     }
 
-    const archive = await this.taskService.getTaskBundleContent(taskBundle.id, 'jobs', false); 
+    const archive = await this.taskService.getTaskBundleContent(taskBundle.id, 'jobs', false);
 
     const jobData = {
       id: job.id,
       customerId: job.customer?.id,
       customerName: job.customer?.name,
       customerShortCode: job.customer?.shortCode,
-    }
+    };
 
     archive.append(JSON.stringify(jobData), { name: 'job.json' });
 
@@ -263,7 +262,10 @@ configfile grub/config/main.cfg
     );
   }
 
-  async updateJob(id: string, update: { taskBundleId?: string; customerId?: string }): Promise<JobEntity> {
+  async updateJob(
+    id: string,
+    update: { taskBundleId?: string; customerId?: string },
+  ): Promise<JobEntity> {
     const job = await this.findOneOrFail(id);
     if (update.customerId) {
       const customer = await this.customersService.findOne(update.customerId);

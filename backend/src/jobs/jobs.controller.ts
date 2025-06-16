@@ -1,29 +1,43 @@
+import { Response } from 'express';
 import { UseDeviceTokenGuard } from 'src/auth/decorators/device-token.decorator';
+import { Device } from 'src/auth/decorators/device.decorator';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { DeviceEntity, DeviceType } from 'src/devices/entities/device.entity';
 
-import { Body, Controller, Delete, Get, Logger, Param, Post, Put, Query, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Logger,
+  Param,
+  Post,
+  Put,
+  Query,
+  Res,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { CreateJobDto } from './dto/create-job.dto';
+import { JobInstructionsDto } from './dto/job-instructions.dto';
 import { JobStatusQueryDto } from './dto/job-status.query.dto';
+import { JobLogDataDto } from './dto/log-data.dto';
 import { RegisterJobDto } from './dto/register-job.dto';
 import { TaskInfoDto } from './dto/task-info.dto';
-import { JobEntity } from './entities/job.entity';
-import { JobsService } from './jobs.service';
-import { Device } from 'src/auth/decorators/device.decorator';
-import { JobInstructionsDto } from './dto/job-instructions.dto';
-import { JobLogDataDto } from './dto/log-data.dto';
-import { JobLogsService } from './job-logs.service';
-import { JobLogEntity } from './entities/job-log.entity';
-import { Response } from 'express';
 import { UpdateJobDto } from './dto/update-job.dto';
+import { JobLogEntity } from './entities/job-log.entity';
+import { JobEntity } from './entities/job.entity';
+import { JobLogsService } from './job-logs.service';
+import { JobsService } from './jobs.service';
 
 @ApiTags('jobs')
 @Controller('jobs')
 export class JobsController {
   private readonly logger = new Logger('Jobs Controller');
-  constructor(private readonly jobsService: JobsService, private readonly jobLogsService: JobLogsService) {}
+  constructor(
+    private readonly jobsService: JobsService,
+    private readonly jobLogsService: JobLogsService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all jobs' })
@@ -37,7 +51,6 @@ export class JobsController {
   async getLogsForJob(@Param('id') id: string): Promise<JobLogEntity[]> {
     return this.jobLogsService.getLogsForJob(id);
   }
-
 
   @Get(':id/instructions')
   @ApiOperation({ summary: 'Get job instructions' })
@@ -61,7 +74,6 @@ export class JobsController {
     stream.pipe(res);
     await stream.finalize();
   }
-
 
   @Get(':id')
   @ApiOperation({ summary: 'Get job by id' })
@@ -140,10 +152,7 @@ export class JobsController {
   @Put(':id')
   @ApiOperation({ summary: 'Update a job (assign TaskBundle and/or Customer)' })
   @ApiResponse({ status: 200, description: 'Job updated successfully' })
-  async updateJob(
-    @Param('id') id: string,
-    @Body() updateInfo: UpdateJobDto
-  ): Promise<JobEntity> {
+  async updateJob(@Param('id') id: string, @Body() updateInfo: UpdateJobDto): Promise<JobEntity> {
     return this.jobsService.updateJob(id, updateInfo);
   }
 

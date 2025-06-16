@@ -1,23 +1,23 @@
-import { IsDateString, IsEnum, IsJSON, IsOptional, IsString, IsUUID } from "class-validator";
+import { IsDateString, IsEnum, IsJSON, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class JobLogDataDto {
-    @IsString()
-    message: string;
+  @IsString()
+  message: string;
 
-    @IsJSON()
-    @IsOptional()
-    meta?: Record<string, any>;
+  @IsJSON()
+  @IsOptional()
+  meta?: Record<string, any>;
 
-    @IsDateString()
-    timestamp: string;
+  @IsDateString()
+  timestamp: string;
 
-    @IsUUID('4')
-    jobId: string;
+  @IsUUID('4')
+  jobId: string;
 
-    @IsUUID('4')
-    @IsOptional()
-    taskId?: string;
+  @IsUUID('4')
+  @IsOptional()
+  taskId?: string;
 
-    @IsEnum(['info', 'warn', 'error', 'debug'])
-    level: 'info' | 'warn' | 'error' | 'debug';
+  @IsEnum(['info', 'warn', 'error', 'debug'])
+  level: 'info' | 'warn' | 'error' | 'debug';
 }

@@ -1,4 +1,5 @@
 import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes.enum';
+import { NotFoundMTIException } from 'src/core/errorhandling/exceptions/not-found.mti-exception';
 import { UnauthorizedMTIException } from 'src/core/errorhandling/exceptions/unauthorized.mti-exception';
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -11,7 +12,6 @@ import { AccountEntity, UserRole } from './entities/account.entity';
 import { EntraIdTokenPayload } from './strategies/entraID/interface/emtra-token.interface';
 import { AuthJwtService } from './strategies/jwt/jwt.service';
 import { RefreshTokenService } from './strategies/refreshtoken/refreshtoken.service';
-import { NotFoundMTIException } from 'src/core/errorhandling/exceptions/not-found.mti-exception';
 
 @Injectable()
 export class AuthService {
@@ -78,10 +78,7 @@ export class AuthService {
 
   public async refreshAccessToken(refreshToken?: string): Promise<LoginResultDto> {
     if (!refreshToken) {
-      throw new NotFoundMTIException(
-        MTIErrorCodes.REFRESHTOKEN_INVALID,
-        'Refreshtoken invalid',
-      );
+      throw new NotFoundMTIException(MTIErrorCodes.REFRESHTOKEN_INVALID, 'Refreshtoken invalid');
     }
 
     const account = await this.refreshTokenService.getAccountByToken(refreshToken);

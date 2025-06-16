@@ -6,8 +6,8 @@ import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes
 import { NotFoundMTIException } from 'src/core/errorhandling/exceptions/not-found.mti-exception';
 import { CustomerEntity } from 'src/customers/entities/customer.entity';
 import { FileManagementConfigService } from 'src/fileManagement/file-management.config.service';
+import { LocalFileMetadataEntity } from 'src/fileManagement/local-file/local-file-metadata.entity';
 import { LocalFileService } from 'src/fileManagement/local-file/local-file.service';
-import Stream from 'stream';
 
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
@@ -21,7 +21,6 @@ import { CreateTaskDto } from './dto/task-create.dto';
 import { TaskBundleEntity } from './entities/task-bundle.entity';
 import { TaskOrderEntity } from './entities/task-order.entity';
 import { TasksEntity as TaskEntity } from './entities/task.entity';
-import { LocalFileMetadataEntity } from 'src/fileManagement/local-file/local-file-metadata.entity';
 
 @Injectable()
 export class TaskService {
@@ -175,7 +174,11 @@ export class TaskService {
     return this.localFileService.getFilesOverview(task.contentFile);
   }
 
-  public async getTaskBundleContent(id: string, basePathInZip?: string, rawContentOnly = true): Promise<archiver.Archiver> {
+  public async getTaskBundleContent(
+    id: string,
+    basePathInZip?: string,
+    rawContentOnly = true,
+  ): Promise<archiver.Archiver> {
     this.logger.debug(`Getting content for task-bundle ${id}`);
 
     const taskBundle = await this.taskBundleRepository.findOneOrFail(id, {
@@ -184,23 +187,25 @@ export class TaskService {
 
     const tasks = taskBundle.taskList.getItems();
     const taskFiles = tasks
-        .filter(task => task.contentFile) // Only include tasks with content
-        .map<(LocalFileMetadataEntity & {zipFolderName: string})>(task => {
-          (task.contentFile as any).zipFolderName = join(basePathInZip, task.id);
-          return task.contentFile as (LocalFileMetadataEntity & {zipFolderName: string});
-        })
+      .filter(task => task.contentFile) // Only include tasks with content
+      .map<LocalFileMetadataEntity & { zipFolderName: string }>(task => {
+        (task.contentFile as any).zipFolderName = join(basePathInZip, task.id);
+        return task.contentFile as LocalFileMetadataEntity & { zipFolderName: string };
+      });
 
-        const archive = await this.localFileService.getFilesAsArchive(taskFiles);
+    const archive = await this.localFileService.getFilesAsArchive(taskFiles);
 
-        if (!rawContentOnly) {
-          tasks.forEach(task => {
-            if (task.installScript) {
-              archive.append(task.installScript, { name: join(basePathInZip, task.id, 'install.ps1') });
-            } else {
-              archive.append('# No install script provided', { name: join(basePathInZip, task.id, 'install.ps1') });
-            }
-          })
+    if (!rawContentOnly) {
+      tasks.forEach(task => {
+        if (task.installScript) {
+          archive.append(task.installScript, { name: join(basePathInZip, task.id, 'install.ps1') });
+        } else {
+          archive.append('# No install script provided', {
+            name: join(basePathInZip, task.id, 'install.ps1'),
+          });
         }
+      });
+    }
 
     return archive;
   }
