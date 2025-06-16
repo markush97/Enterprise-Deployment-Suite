@@ -79,9 +79,18 @@ export class JobsService {
       );
     }
 
-    const bundleContent = await this.taskService.getTaskBundleContent(taskBundle.id);
+    const archive = await this.taskService.getTaskBundleContent(taskBundle.id, 'jobs', false); 
 
-    return bundleContent
+    const jobData = {
+      id: job.id,
+      customerId: job.customer?.id,
+      customerName: job.customer?.name,
+      customerShortCode: job.customer?.shortCode,
+    }
+
+    archive.append(JSON.stringify(jobData), { name: 'job.json' });
+
+    return archive;
   }
 
   async assignJobToCustomer(jobId: string, customerId: string): Promise<JobEntity> {

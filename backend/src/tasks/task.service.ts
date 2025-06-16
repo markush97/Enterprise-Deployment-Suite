@@ -175,22 +175,34 @@ export class TaskService {
     return this.localFileService.getFilesOverview(task.contentFile);
   }
 
-  public async getTaskBundleContent(id: string): Promise<archiver.Archiver> {
+  public async getTaskBundleContent(id: string, basePathInZip?: string, rawContentOnly = true): Promise<archiver.Archiver> {
     this.logger.debug(`Getting content for task-bundle ${id}`);
 
     const taskBundle = await this.taskBundleRepository.findOneOrFail(id, {
       populate: ['taskList', 'taskList.contentFile'],
     });
 
-    return this.localFileService.getFilesAsArchive(
-      taskBundle.taskList
-        .getItems()
+    const tasks = taskBundle.taskList.getItems();
+    const taskFiles = tasks
         .filter(task => task.contentFile) // Only include tasks with content
         .map<(LocalFileMetadataEntity & {zipFolderName: string})>(task => {
-          (task.contentFile as any).zipFolderName = task.id;
+          (task.contentFile as any).zipFolderName = join(basePathInZip, task.id);
           return task.contentFile as (LocalFileMetadataEntity & {zipFolderName: string});
         })
-    );
+
+        const archive = await this.localFileService.getFilesAsArchive(taskFiles);
+
+        if (!rawContentOnly) {
+          tasks.forEach(task => {
+            if (task.installScript) {
+              archive.append(task.installScript, { name: join(basePathInZip, task.id, 'install.ps1') });
+            } else {
+              archive.append('# No install script provided', { name: join(basePathInZip, task.id, 'install.ps1') });
+            }
+          })
+        }
+
+    return archive;
   }
 
   public async deleteTask(id: string): Promise<void> {
