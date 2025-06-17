@@ -10,6 +10,7 @@ import { TaskContentOverviewCard } from './TaskContentOverview.component';
 import { UploadDropzone } from './UploadModal.component';
 import { ConfirmDeleteModal } from '../utils/ConfirmDeleteModal';
 import { ScriptContentCard } from './ScriptContentCard.component';
+import { ScriptHelpText } from './ScriptHelpText.component';
 
 interface TaskDetailProps {
     task: Task;

@@ -21,6 +21,8 @@ import { RegisterJobDto } from './dto/register-job.dto';
 import { TaskInfoDto } from './dto/task-info.dto';
 import { JobConnectionsEntity } from './entities/job-connections.entity';
 import { JobEntity, JobStatus } from './entities/job.entity';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class JobsService {
@@ -88,6 +90,11 @@ export class JobsService {
     };
 
     archive.append(JSON.stringify(jobData), { name: 'job.json' });
+
+    // Add PowerShell logging utils script to the archive (for use in tasks)
+    // Use __dirname to resolve path relative to this file, works in dev and built Docker
+    const psLoggingUtilsPath = join(__dirname, '../../../resources/scripts/utils');
+    archive.directory(psLoggingUtilsPath, 'utils');
 
     return archive;
   }

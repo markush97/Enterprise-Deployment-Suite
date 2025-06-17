@@ -11,7 +11,7 @@ export interface Job {
         shortCode: string;
     };
     imageName: string;
-    status: 'preparing' | 'imaging' | 'pxe_selection' | 'installing' | 'verifying' | 'ready' | 'done' | 'failed' | 'canceled' | 'waiting_for_instructions';
+    status: 'preparing' | 'imaging' | 'pxe_selection' | 'installing' | 'verifying' | 'ready' | 'done' | 'failed' | 'canceled' | 'waiting_for_instructions' | 'starting';
     createdAt: string;
     completedAt?: string;
     lastConnection: string;

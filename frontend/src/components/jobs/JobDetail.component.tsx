@@ -1,14 +1,15 @@
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { jobService } from '../../services/job.service';
 import type { Job } from '../../types/job.interface';
-import { ArrowLeft, Ban, ChevronDownIcon, CrossIcon, Edit, Loader2, Server, XCircle } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Ban, CheckCircle, Edit, HelpCircle, Loader2, Server, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { JobModal } from './JobModal.component';
 import { customerService } from '../../services/customer.service';
 import { taskBundleService } from '../../services/taskbundle.service';
-import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/react';
+import { AssignCustomerCard } from './AssignCustomerCard.component';
+import { AssignTaskBundleCard } from './AssignTaskBundleCard.component';
+import { Task } from '../../types/task.interface';
 
 interface JobDetailProps {
     job: Job;
@@ -40,7 +41,7 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
     // const [isCanceling, setIsCanceling] = useState(false);
 
     const [customerOptions, setCustomerOptions] = useState<{ id: string; name: string; shortCode: string }[]>([]);
-    const [taskBundleOptions, setTaskBundleOptions] = useState<{ id: string; name: string; description?: string }[]>([]);
+    const [taskBundleOptions, setTaskBundleOptions] = useState<{ id: string; name: string; description?: string; taskList?: Task[] }[]>([]);
     // Use id if available, else try to match by shortCode
     const getCustomerId = () => {
         if (job.customer && 'id' in job.customer) return (job.customer as any).id;
@@ -116,6 +117,48 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
         }
     };
 
+    function getStatusIcon(status: Job['status']) {
+        switch (status) {
+            case 'preparing':
+            case 'imaging':
+            case 'pxe_selection':
+            case 'installing':
+            case 'starting':
+            case 'verifying':
+                return <Loader2 className="h-5 w-5 animate-spin text-blue-500" />;
+            case 'ready':
+                return <AlertCircle className="h-5 w-5 text-yellow-500" />;
+            case 'done':
+                return <CheckCircle className="h-5 w-5 text-green-500" />;
+            case 'waiting_for_instructions':
+                return <HelpCircle className="h-5 w-5 text-gray-500" />;
+            case 'canceled':
+                return <XCircle className="h-5 w-5 text-red-500" />;
+            default:
+                return <XCircle className="h-5 w-5 text-red-500" />;
+        }
+    }
+
+    function getStatusColor(status: Job['status']) {
+        switch (status) {
+            case 'preparing':
+            case 'imaging':
+            case 'pxe_selection':
+            case 'installing':
+            case 'waiting_for_instructions':
+                return 'text-yellow-600 dark:text-yellow-400';
+            case 'verifying':
+            case 'starting':
+                return 'text-blue-600 dark:text-blue-400';
+            case 'ready':
+                return 'text-yellow-600 dark:text-yellow-400';
+            case 'done':
+                return 'text-green-600 dark:text-green-400';
+            default:
+                return 'text-red-600 dark:text-red-400';
+        }
+    }
+
     const handleAssign = async (type: 'customer' | 'taskBundle', value: string) => {
         setIsAssigning(true);
         try {
@@ -133,6 +176,24 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
     };
 
     const navigate = useNavigate();
+
+    // Fetch full task bundle details when stagedTaskBundle changes
+    useEffect(() => {
+        if (!stagedTaskBundle) return;
+        taskBundleService.getTaskBundle(stagedTaskBundle).then(tb => {
+            setTaskBundleOptions(prev => {
+                // Replace or add the updated bundle in the options
+                const others = prev.filter(b => b.id !== tb.id);
+                return [...others, tb];
+            });
+        });
+    }, [stagedTaskBundle]);
+
+    const [showStartConfirm, setShowStartConfirm] = useState(false);
+    const [isStarting, setIsStarting] = useState(false);
+
+    // Determine if job is started (not waiting for instructions)
+    const isJobStarted = job.status !== 'waiting_for_instructions';
 
     return (
         <div className="space-y-6 animate-fadeIn">
@@ -166,14 +227,14 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
                             Edit
                         </button>
 
-                        { job.status !== 'canceled' && ( 
-                        <button
-                            onClick={() => setIsCancelConfirmOpen(true)}
-                            className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                        >
-                            <Ban className="h-4 w-4 mr-1 text-red-500" />
-                            Cancel
-                        </button>)}
+                        {job.status !== 'canceled' && (
+                            <button
+                                onClick={() => setIsCancelConfirmOpen(true)}
+                                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                            >
+                                <Ban className="h-4 w-4 mr-1 text-red-500" />
+                                Cancel
+                            </button>)}
                     </div>
                 </div>
 
@@ -215,10 +276,15 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
                                 )}
                             </dd>
                         </div>
-   
+
                         <div>
                             <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>
-                            <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">{job.status}</dd>
+                            <dd className="flex items-center space-x-2">
+                                {getStatusIcon(job.status)}
+                                <span className={`text-sm font-medium ${getStatusColor(job.status)}`}>
+                                    {job.status.split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                </span>
+                            </dd>
                         </div>
                         <div>
                             <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Started</dt>
@@ -234,16 +300,16 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
                         </div>
                     </dl>
                 </div>
-                
+
                 <JobModal
                     isOpen={isEditModalOpen}
                     onClose={() => {
-                    setIsEditModalOpen(false);
-                    // Remove /edit from the URL when closing the modal
-                    if (editMode) {
-                        navigate(`/jobs/${job.id}`, { replace: true });
-                    }
-                }}
+                        setIsEditModalOpen(false);
+                        // Remove /edit from the URL when closing the modal
+                        if (editMode) {
+                            navigate(`/jobs/${job.id}`, { replace: true });
+                        }
+                    }}
                     onSave={handleEditJob}
                     job={job}
                 />
@@ -272,131 +338,87 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
                 )}
             </div>
 
-            {/* Customer Assignment Card */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg mt-6">
-                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Assign Customer</h2>
-                </div>
-                <div className="px-6 py-4 flex flex-col gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customer</label>
-                        <Combobox value={customerOptions.find(c => c.id === stagedCustomer) || null} onChange={val => {
-                            if (val) setStagedCustomer(val.id);
-                        }} disabled={isAssigning || savingCustomer}>
-                            <div className="relative">
-                                <ComboboxInput
-                                    className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                                    displayValue={(c: any) => c ? `${c.shortCode} - ${c.name}` : ''}
-                                    placeholder="Select customer..."
-                                />
-                                <ComboboxButton className="group absolute inset-y-0 right-0 px-2.5">
-                                    <ChevronDownIcon className="size-4 fill-white/60 group-data-hover:fill-white" />
-                                </ComboboxButton>
-                                <ComboboxOptions className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-auto">
-                                    {customerOptions.length === 0 && (
-                                        <div className="px-4 py-2 text-gray-500">No customers found</div>
-                                    )}
-                                    {customerOptions.map(c => (
-                                        <ComboboxOption
-                                            key={c.id}
-                                            value={c}
-                                            className={({ active }) => `cursor-pointer select-none px-4 py-2 ${active ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-gray-100'}`}
-                                        >
-                                            {c.shortCode} - {c.name}
-                                        </ComboboxOption>
-                                    ))}
-                                </ComboboxOptions>
-                            </div>
-                        </Combobox>
-                    </div>
-                    {stagedCustomer && (
-                        <div className="text-sm text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 rounded p-3 border border-gray-200 dark:border-gray-600">
-                            {(() => {
-                                const c = customerOptions.find(c => c.id === stagedCustomer);
-                                if (!c) return null;
-                                return <>
-                                    <div><span className="font-semibold">Name:</span> {c.name}</div>
-                                    <div><span className="font-semibold">Short Code:</span> {c.shortCode}</div>
-                                </>;
-                            })()}
-                        </div>
-                    )}
+            {/* Start Job Button */}
+            {!isJobStarted && (
+                <div className="flex justify-center my-8">
                     <button
-                        className="mt-2 px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-400 transition disabled:opacity-50"
-                        onClick={async () => {
-                            setSavingCustomer(true);
-                            await handleAssign('customer', stagedCustomer);
-                            setSavingCustomer(false);
-                        }}
-                        disabled={isAssigning || savingCustomer || stagedCustomer === selectedCustomer}
+                        className="px-8 py-4 text-lg font-bold rounded bg-green-600 hover:bg-green-700 text-white shadow-lg transition focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
+                        onClick={() => setShowStartConfirm(true)}
+                        disabled={isStarting}
                     >
-                        {savingCustomer ? 'Saving...' : 'Save'}
+                        {isStarting ? 'Starting...' : 'Start Job'}
                     </button>
                 </div>
-            </div>
+            )}
+            {/* Start Confirmation Dialog */}
+            {showStartConfirm && (
+                <div className="fixed inset-0 bg-gray-800 bg-opacity-60 flex items-center justify-center z-50">
+                    <div className="bg-white dark:bg-gray-900 p-8 rounded shadow-lg w-full max-w-lg">
+                        <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Start Job?</h3>
+                        <p className="mb-4 text-gray-700 dark:text-gray-200">
+                            Are you sure you want to start this job? <br />
+                            <span className="font-semibold text-red-600 dark:text-red-400">After starting, changes to the customer or task bundle are no longer possible.</span>
+                        </p>
+                        <div className="mb-4 space-y-2">
+                            <div><span className="font-semibold">Task Bundle:</span> {job.taskBundle?.name || (job.taskBundle as any)?.name || 'N/A'}</div>
+                            <div><span className="font-semibold">Customer:</span> {job.customer?.shortCode || (job.customer as any)?.shortCode || job.customer?.name || (job.customer as any)?.name || 'N/A'}</div>
+                            <div><span className="font-semibold">Device:</span> {job.device?.name || job.device?.serialNumber || (job.device as any)?.name || (job.device as any)?.serialNumber || 'N/A'}</div>
+                        </div>
+                        <div className="flex justify-end space-x-2">
+                            <button
+                                className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-600 transition"
+                                onClick={() => setShowStartConfirm(false)}
+                                disabled={isStarting}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="px-4 py-2 bg-green-600 dark:bg-green-500 text-white rounded hover:bg-green-700 dark:hover:bg-green-400 transition"
+                                onClick={async () => {
+                                    setIsStarting(true);
+                                    try {
+                                        await jobService.startJob(job.id);
+                                        toast.success('Job started');
+                                        setShowStartConfirm(false);
+                                        if (onJobUpdated) onJobUpdated({ ...job, status: 'starting' });
+                                    } catch (e: any) {
+                                        toast.error(e.message || 'Failed to start job');
+                                    } finally {
+                                        setIsStarting(false);
+                                    }
+                                }}
+                                disabled={isStarting}
+                            >
+                                Yes, Start Job
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Customer Assignment Card */}
+            <AssignCustomerCard
+                customerOptions={customerOptions}
+                stagedCustomer={stagedCustomer}
+                setStagedCustomer={setStagedCustomer}
+                isAssigning={isAssigning || isJobStarted}
+                savingCustomer={savingCustomer}
+                selectedCustomer={selectedCustomer}
+                handleAssign={handleAssign}
+                tooltip={isJobStarted ? 'Customer cannot be changed after the job has started.' : undefined}
+            />
 
             {/* Task Bundle Assignment Card */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg mt-6">
-                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Assign Task Bundle</h2>
-                </div>
-                <div className="px-6 py-4 flex flex-col gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Task Bundle</label>
-                        <Combobox value={taskBundleOptions.find(tb => tb.id === stagedTaskBundle) || null} onChange={val => {
-                            if (val) setStagedTaskBundle(val.id);
-                        }} disabled={isAssigning || savingTaskBundle}>
-                            <div className="relative">
-                                <ComboboxInput
-                                    className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                                    displayValue={(tb: any) => tb ? tb.name : ''}
-                                    placeholder="Select task bundle..."
-                                />
-                                <ComboboxButton className="group absolute inset-y-0 right-0 px-2.5">
-                                    <ChevronDownIcon className="size-4 fill-white/60 group-data-hover:fill-white" />
-                                </ComboboxButton>
-                                <ComboboxOptions className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-auto">
-                                    {taskBundleOptions.length === 0 && (
-                                        <div className="px-4 py-2 text-gray-500">No task bundles found</div>
-                                    )}
-                                    {taskBundleOptions.map(tb => (
-                                        <ComboboxOption
-                                            key={tb.id}
-                                            value={tb}
-                                            className={({ active }) => `cursor-pointer select-none px-4 py-2 ${active ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-gray-100'}`}
-                                        >
-                                            {tb.name}
-                                        </ComboboxOption>
-                                    ))}
-                                </ComboboxOptions>
-                            </div>
-                        </Combobox>
-                    </div>
-                    {stagedTaskBundle && (
-                        <div className="text-sm text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 rounded p-3 border border-gray-200 dark:border-gray-600">
-                            {(() => {
-                                const tb = taskBundleOptions.find(tb => tb.id === stagedTaskBundle);
-                                if (!tb) return null;
-                                return <>
-                                    <div><span className="font-semibold">Name:</span> {tb.name}</div>
-                                    {tb.description && <div><span className="font-semibold">Description:</span> {tb.description}</div>}
-                                </>;
-                            })()}
-                        </div>
-                    )}
-                    <button
-                        className="mt-2 px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-400 transition disabled:opacity-50"
-                        onClick={async () => {
-                            setSavingTaskBundle(true);
-                            await handleAssign('taskBundle', stagedTaskBundle);
-                            setSavingTaskBundle(false);
-                        }}
-                        disabled={isAssigning || savingTaskBundle || stagedTaskBundle === selectedTaskBundle}
-                    >
-                        {savingTaskBundle ? 'Saving...' : 'Save'}
-                    </button>
-                </div>
-            </div>
+            <AssignTaskBundleCard
+                taskBundleOptions={taskBundleOptions}
+                stagedTaskBundle={stagedTaskBundle}
+                setStagedTaskBundle={setStagedTaskBundle}
+                isAssigning={isAssigning || isJobStarted}
+                savingTaskBundle={savingTaskBundle}
+                selectedTaskBundle={selectedTaskBundle}
+                handleAssign={handleAssign}
+                tooltip={isJobStarted ? 'Task bundle cannot be changed after the job has started.' : undefined}
+            />
         </div>
     );
 }

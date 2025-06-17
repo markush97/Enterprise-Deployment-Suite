@@ -20,6 +20,7 @@ import { JobConnectionsEntity } from './job-connections.entity';
 
 export enum JobStatus {
   WAITING_FOR_INSTRUCTIONS = 'waiting_for_instructions',
+  STARTING = 'starting',
   PREPARING = 'preparing',
   IMAGING = 'imaging',
   PXE_SELECTION = 'pxe_selection',

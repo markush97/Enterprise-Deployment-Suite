@@ -3,6 +3,7 @@ import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus, prism } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useThemeStore } from '../../states/themeStore';
 import powershell from 'react-syntax-highlighter/dist/esm/languages/hljs/powershell';
+import { ScriptHelpText } from './ScriptHelpText.component';
 
 interface ScriptContentCardProps {
   script: string;
@@ -39,6 +40,9 @@ export function ScriptContentCard({ script, onSave, isSaving }: ScriptContentCar
         >
           {editing ? 'Cancel' : 'Edit'}
         </button>
+      </div>
+      <div className="px-4 sm:px-8 py-2">
+        <ScriptHelpText />
       </div>
       <div className="px-6 py-4">
         {editing ? (

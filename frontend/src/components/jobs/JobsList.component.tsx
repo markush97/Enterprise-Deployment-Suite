@@ -117,6 +117,7 @@ export function JobsList() {
             case 'pxe_selection':
             case 'installing':
             case 'verifying':
+            case 'starting':
                 return <Loader2 className="h-5 w-5 animate-spin text-blue-500" />;
             case 'ready':
                 return <AlertCircle className="h-5 w-5 text-yellow-500" />;
@@ -140,6 +141,7 @@ export function JobsList() {
             case 'waiting_for_instructions':
                 return 'text-yellow-600 dark:text-yellow-400';
             case 'verifying':
+            case 'starting':
                 return 'text-blue-600 dark:text-blue-400';
             case 'ready':
                 return 'text-yellow-600 dark:text-yellow-400';
