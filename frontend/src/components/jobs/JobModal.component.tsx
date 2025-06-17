@@ -18,14 +18,6 @@ const jobFields: FieldConfig[] = [
         required: false,
         placeholder: 'Device name',
     },
-    {
-        name: 'status',
-        label: 'Status',
-        type: 'text',
-        required: true,
-        placeholder: 'Status',
-    },
-    // Add more fields as needed
 ];
 
 export function JobModal({ job, isOpen, onClose, onSave, loading }: JobModalProps) {

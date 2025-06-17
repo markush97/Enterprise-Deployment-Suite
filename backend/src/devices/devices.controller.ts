@@ -1,7 +1,7 @@
 import { UseDeviceTokenGuard } from 'src/auth/decorators/device-token.decorator';
 import { Device } from 'src/auth/decorators/device.decorator';
 
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { DevicesService } from './devices.service';
@@ -46,7 +46,7 @@ export class DevicesController {
     return this.devicesService.updateDeviceInfo(device, updateDeviceDto);
   }
 
-  @Put(':id')
+  @Patch(':id')
   @ApiOperation({ summary: 'Update a device' })
   @ApiResponse({ status: 200, description: 'Device updated successfully' })
   async update(

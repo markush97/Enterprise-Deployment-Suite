@@ -63,9 +63,22 @@ export class JobsService {
     job.lastConnection = new Date();
     await this.em.persistAndFlush(job);
 
-    return {
-      action: JobInstructionAction.WAIT_FOR_INSTRUCTIONS,
-    };
+    if (job.status === JobStatus.WAITING_FOR_INSTRUCTIONS) {
+      return {
+        action: JobInstructionAction.WAIT_FOR_INSTRUCTIONS,
+      };
+    } else if (job.status === JobStatus.STARTING) {
+      return {
+        action: JobInstructionAction.START_INSTALLATION,
+        context: {
+          deviceName: job.device?.name,
+          organisationName: job.customer?.name,
+          organisationShortName: job.customer?.shortCode,
+          createdBy: 'Automatic',
+      }
+    }
+    }
+
   }
 
   async getJobContent(id: string): Promise<archiver.Archiver> {
@@ -104,44 +117,6 @@ export class JobsService {
     const job = await this.findOneOrFail(jobId);
     const customer = await this.customersService.findOne(customerId);
     job.customer = customer;
-    await this.em.flush();
-    return job;
-  }
-
-  async createDeviceForJobAutomatically(
-    jobId: string,
-    deviceType: DeviceType = DeviceType.PC,
-  ): Promise<JobEntity> {
-    this.logger.debug(`Creating device for job with ID ${jobId} and device type ${deviceType}`);
-    const job = await this.findOneOrFail(jobId);
-
-    if (job.device) {
-      throw new BadRequestMTIException(
-        MTIErrorCodes.AUTODEVICECREATION_DEVICE_EXISTS,
-        'Autoassign is only possible if the job has no device assigned',
-      );
-    }
-
-    if (!job.customer) {
-      throw new BadRequestMTIException(
-        MTIErrorCodes.AUTODEVICECREATION_NEEDS_CUSTOMER,
-        'Autoassign is only possible if the job has a customer assigned',
-      );
-    }
-
-    const newDevice = await this.devicesService.create({
-      name: `${job.customer.shortCode}-${deviceType}${(await this.customersService.increaseDeviceNumber(job.customer.id, deviceType)).toString().padStart(3, '0')}`,
-      type: deviceType,
-      serialNumber: job.deviceSerialNumber,
-      customerId: job.customer.id,
-      createdBy: 'system',
-    });
-
-    job.device = newDevice;
-
-    this.em.persist(newDevice);
-    this.em.persist(job);
-
     await this.em.flush();
     return job;
   }

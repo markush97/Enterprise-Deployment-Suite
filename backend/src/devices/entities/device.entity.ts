@@ -22,7 +22,7 @@ export class DeviceEntity extends CoreBaseEntity {
   @Enum(() => DeviceType)
   type: DeviceType;
 
-  @ManyToOne(() => CustomerEntity)
+  @ManyToOne(() => CustomerEntity, {nullable: true})
   customer: CustomerEntity;
 
   @Property({ nullable: true })

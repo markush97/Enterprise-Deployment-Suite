@@ -4,10 +4,13 @@ import { TaskBundle } from "./task.interface";
 export interface Job {
     id: string;
     device: {
+        id: string; // <-- ensure deviceId is always present
         name?: string;
         serialNumber?: string;
+        type?: string;
     };
     customer: {
+        id?: string; // <-- allow id for customer
         shortCode: string;
     };
     imageName: string;

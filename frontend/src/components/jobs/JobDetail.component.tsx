@@ -10,6 +10,8 @@ import { taskBundleService } from '../../services/taskbundle.service';
 import { AssignCustomerCard } from './AssignCustomerCard.component';
 import { AssignTaskBundleCard } from './AssignTaskBundleCard.component';
 import { Task } from '../../types/task.interface';
+import Tippy from '@tippyjs/react';
+import { DeviceNameCard } from './DeviceNameCard.component';
 
 interface JobDetailProps {
     job: Job;
@@ -66,8 +68,6 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
     // Local state for staged selection (not immediately applied)
     const [stagedCustomer, setStagedCustomer] = useState<string>(selectedCustomer);
     const [stagedTaskBundle, setStagedTaskBundle] = useState<string>(selectedTaskBundle);
-    const [savingCustomer, setSavingCustomer] = useState(false);
-    const [savingTaskBundle, setSavingTaskBundle] = useState(false);
 
     useEffect(() => {
         customerService.getCustomers().then((data) => setCustomerOptions(data));
@@ -144,11 +144,11 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
             case 'preparing':
             case 'imaging':
             case 'pxe_selection':
-            case 'installing':
             case 'waiting_for_instructions':
                 return 'text-yellow-600 dark:text-yellow-400';
             case 'verifying':
             case 'starting':
+            case 'installing':
                 return 'text-blue-600 dark:text-blue-400';
             case 'ready':
                 return 'text-yellow-600 dark:text-yellow-400';
@@ -253,6 +253,12 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
                             </dd>
                         </div>
                         <div>
+                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Device Type</dt>
+                            <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                {(job.device && 'type' in job.device) ? (job.device as any).type : 'N/A'}
+                            </dd>
+                        </div>
+                        <div>
                             <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Customer</dt>
                             <dd className="mt-1 text-sm text-blue-600 dark:text-blue-400">
                                 {'id' in (job.customer || {}) ? (
@@ -341,13 +347,21 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
             {/* Start Job Button */}
             {!isJobStarted && (
                 <div className="flex justify-center my-8">
-                    <button
-                        className="px-8 py-4 text-lg font-bold rounded bg-green-600 hover:bg-green-700 text-white shadow-lg transition focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
-                        onClick={() => setShowStartConfirm(true)}
-                        disabled={isStarting}
+                    <Tippy
+                        content={(!job.customer || !job.taskBundle) ? 'Assign both a customer and a task bundle before starting the job.' : ''}
+                        disabled={!!job.customer && !!job.taskBundle}
+                        placement="top"
                     >
-                        {isStarting ? 'Starting...' : 'Start Job'}
-                    </button>
+                        <div>
+                            <button
+                                className="px-8 py-4 text-lg font-bold rounded bg-green-600 hover:bg-green-700 text-white shadow-lg transition focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 disabled:opacity-60"
+                                onClick={() => setShowStartConfirm(true)}
+                                disabled={isStarting || !job.customer || !job.taskBundle}
+                            >
+                                {isStarting ? 'Starting...' : 'Start Job'}
+                            </button>
+                        </div>
+                    </Tippy>
                 </div>
             )}
             {/* Start Confirmation Dialog */}
@@ -396,16 +410,23 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
                 </div>
             )}
 
+            {/* Device Name Card (moved above assignment cards) */}
+            <DeviceNameCard
+                job={job}
+                isJobStarted={isJobStarted}
+                onJobUpdated={onJobUpdated}
+            />
+
             {/* Customer Assignment Card */}
             <AssignCustomerCard
                 customerOptions={customerOptions}
                 stagedCustomer={stagedCustomer}
                 setStagedCustomer={setStagedCustomer}
                 isAssigning={isAssigning || isJobStarted}
-                savingCustomer={savingCustomer}
                 selectedCustomer={selectedCustomer}
                 handleAssign={handleAssign}
                 tooltip={isJobStarted ? 'Customer cannot be changed after the job has started.' : undefined}
+                savingCustomer={false}
             />
 
             {/* Task Bundle Assignment Card */}
@@ -414,7 +435,7 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
                 stagedTaskBundle={stagedTaskBundle}
                 setStagedTaskBundle={setStagedTaskBundle}
                 isAssigning={isAssigning || isJobStarted}
-                savingTaskBundle={savingTaskBundle}
+                savingTaskBundle={false}
                 selectedTaskBundle={selectedTaskBundle}
                 handleAssign={handleAssign}
                 tooltip={isJobStarted ? 'Task bundle cannot be changed after the job has started.' : undefined}

@@ -137,11 +137,11 @@ export function JobsList() {
             case 'preparing':
             case 'imaging':
             case 'pxe_selection':
-            case 'installing':
             case 'waiting_for_instructions':
                 return 'text-yellow-600 dark:text-yellow-400';
             case 'verifying':
             case 'starting':
+            case 'installing':
                 return 'text-blue-600 dark:text-blue-400';
             case 'ready':
                 return 'text-yellow-600 dark:text-yellow-400';

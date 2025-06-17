@@ -19,9 +19,8 @@ export class CreateDeviceDto {
   serialNumber: string;
 
   @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  customerId: string;
+  @IsOptional()
+  customerId?: string;
 
   @ApiProperty()
   @IsString()

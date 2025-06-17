@@ -15,6 +15,7 @@ import { CustomersService } from '../customers/customers.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { DeviceInformationDto } from './dto/update-device-info.dto';
 import { DeviceEntity } from './entities/device.entity';
+import { CustomerEntity } from 'src/customers/entities/customer.entity';
 
 @Injectable()
 export class DevicesService {
@@ -74,7 +75,11 @@ export class DevicesService {
   }
 
   async create(createDeviceDto: CreateDeviceDto): Promise<DeviceEntity> {
-    const customer = await this.customersService.findOne(createDeviceDto.customerId);
+    let customer: CustomerEntity;
+    if (createDeviceDto.customerId) {
+      customer = await this.customersService.findOne(createDeviceDto.customerId);
+    }
+    
     const device = this.deviceRepository.create({
       ...createDeviceDto,
       customer,

@@ -106,6 +106,7 @@ export class JobsController {
     return this.jobsService.registerJob(RegisterJobDto);
   }
 
+
   @Post('notify/:jobid/task/:taskid')
   @UseDeviceTokenGuard()
   @ApiOperation({ summary: 'Notify the server about the current task-status' })
@@ -124,13 +125,6 @@ export class JobsController {
   @ApiOperation({ summary: 'Notify the server about the current setup-status' })
   async clientNotification(@Param('jobid') jobId: string, @Query() jobStatus: JobStatusQueryDto) {
     return this.jobsService.clientNotification(jobId, jobStatus.jobStatus);
-  }
-
-  @Post(':id/device/autocreate')
-  @ApiOperation({ summary: 'Create a new device for a job' })
-  @ApiResponse({ status: 200, description: 'Device created successfully' })
-  async createDeviceForJob(@Param('id') id: string, @Query('type') deviceType: DeviceType) {
-    return this.jobsService.createDeviceForJobAutomatically(id, deviceType);
   }
 
   @Put(':jobid/status')
