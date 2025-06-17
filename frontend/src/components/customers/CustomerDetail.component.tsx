@@ -8,6 +8,7 @@ import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
 import { useNavigate } from 'react-router-dom';
 import { ConfirmDeleteModal } from '../utils/ConfirmDeleteModal';
+import { CustomerDeviceCountersCard } from './CustomerDeviceCountersCard.component';
 
 interface CustomerPageProps {
     customer: Customer;
@@ -204,6 +205,8 @@ export function CustomerDetail({ customer, onBack, onCustomerUpdated, onCustomer
                     </dl>
                 </div>
             </div>
+
+            <CustomerDeviceCountersCard customer={customer} onCustomerUpdated={onCustomerUpdated} />
 
             {/* Edit Customer Modal */}
             <CustomerModal

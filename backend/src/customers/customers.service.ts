@@ -7,6 +7,7 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/sqlite';
 
 import { CreateCustomerDto } from './dto/create-customer.dto';
+import { SetDeviceCountersAndOUsDto } from './dto/set-device-counters-ou.dto';
 import { CustomerEntity } from './entities/customer.entity';
 
 @Injectable()
@@ -79,5 +80,15 @@ export class CustomersService {
 
     await this.em.persistAndFlush(customer);
     return nextDeviceNumber;
+  }
+
+  async setDeviceCountersAndOUs(
+    id: string,
+    data: SetDeviceCountersAndOUsDto
+  ): Promise<CustomerEntity> {
+    const customer = await this.customerRepository.findOneOrFail(id);
+    Object.assign(customer, data);
+    await this.em.flush();
+    return customer;
   }
 }

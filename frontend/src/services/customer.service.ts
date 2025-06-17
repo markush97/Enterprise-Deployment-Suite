@@ -18,4 +18,12 @@ export const customerService = {
         const res = await api.post<Customer>('/customers', data);
         return res.data;
     },
+    async setDeviceCountersAndOUs(id: string, data: Partial<Customer>) {
+        const res = await api.put<Customer>(`/customers/${id}/device-counters`, data);
+        return res.data;
+    },
+    async getNextDeviceNumber(customerId: string, type: string): Promise<{ nextNumber: number }> {
+        const res = await api.get<{ nextNumber: number }>(`/customers/${customerId}/next-device-number?type=${type}`);
+        return res.data;
+    },
 };

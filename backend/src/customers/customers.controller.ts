@@ -4,6 +4,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { CustomerEntity } from './entities/customer.entity';
+import { SetDeviceCountersAndOUsDto } from './dto/set-device-counters-ou.dto';
 
 @ApiTags('customers')
 @Controller('customers')
@@ -46,5 +47,15 @@ export class CustomersController {
   @ApiResponse({ status: 200, description: 'Customer deleted successfully' })
   async remove(@Param('id') id: string): Promise<void> {
     return this.customersService.remove(id);
+  }
+
+  @Put(':id/device-counters')
+  @ApiOperation({ summary: 'Set all device counters and OUs for a customer' })
+  @ApiResponse({ status: 200, description: 'Device counters and OUs updated successfully' })
+  async setDeviceCountersAndOUs(
+    @Param('id') id: string,
+    @Body() data: SetDeviceCountersAndOUsDto
+  ): Promise<CustomerEntity> {
+    return this.customersService.setDeviceCountersAndOUs(id, data);
   }
 }
