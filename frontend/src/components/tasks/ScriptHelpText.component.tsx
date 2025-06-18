@@ -24,12 +24,12 @@ export function ScriptHelpText() {
   const loggingExample = `Write-EDSLog -Message "Step started" -Level info -Meta @{ extraInfo = 1 }
 # Automatically uses $eds for context`;
   const contextExample = `# Set context for first subtask
-Set-EDSLogContext -JobId $JobId -TaskId $TaskId1 -LocalLogPath $LocalLogPath -BackendUrl $BackendUrl
+Set-EDSLogContext -JobId $JobId -TaskId1 -LocalLogPath $LocalLogPath -BackendUrl $BackendUrl
 # $eds is now available with .jobId, .taskId, .localLogPath, .backendUrl
 & "$PSScriptRoot/subtask1.ps1"
 
 # Set context for second subtask
-Set-EDSLogContext -JobId $JobId -TaskId $TaskId2 -LocalLogPath $LocalLogPath -BackendUrl $BackendUrl
+Set-EDSLogContext -JobId $JobId -TaskId2 -LocalLogPath $LocalLogPath -BackendUrl $BackendUrl
 & "$PSScriptRoot/subtask2.ps1"
 
 # Each subtask can just call Write-EDSLog with no context arguments`;
@@ -83,6 +83,14 @@ Set-EDSLogContext -JobId $JobId -TaskId $TaskId2 -LocalLogPath $LocalLogPath -Ba
               </ul>
             </div>
             <div>
+              <div className="font-semibold mb-1 text-gray-800 dark:text-gray-200">Using uploaded files / content</div>
+              <div className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                Any files you upload for this task will be available on the target device in a subfolder named <span className="font-mono text-blue-700 dark:text-blue-300">content</span> inside the same directory as your <span className="font-mono text-blue-700 dark:text-blue-300">install.ps1</span> script. You can reference these files in your script using relative paths, for example:
+                <br />
+                <span className="font-mono text-xs block mt-1">.\content\yourfile.txt</span>
+                <br />
+                This allows you to use additional resources, configuration files, or binaries as part of your installation or verification process.
+              </div>
               <div className="font-semibold mb-1 text-gray-800 dark:text-gray-200">Available Functions</div>
               <ul className="list-disc pl-5 text-gray-700 dark:text-gray-300 text-sm">
                 {availableFuncs.map(f => (

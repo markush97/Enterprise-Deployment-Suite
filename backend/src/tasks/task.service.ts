@@ -216,6 +216,17 @@ export class TaskService implements OnModuleInit {
             name: join(basePathInZip, task.id, 'install.ps1'),
           });
         }
+
+        if (task.verifyScript) {
+          archive.append(task.verifyScript, { name: join(basePathInZip, task.id, 'verify.ps1') });
+        } else {
+          archive.append('# No verify script provided', {
+            name: join(basePathInZip, task.id, 'verify.ps1'),
+          });
+        }
+
+        archive.append(JSON.stringify(task.options), { name: join(basePathInZip, task.id, 'taskOptions.json') })
+
       });
     }
 

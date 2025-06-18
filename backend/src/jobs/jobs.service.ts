@@ -79,6 +79,7 @@ export class JobsService {
           organisationShortName: job.customer?.shortCode,
           organisationId: job.customer?.id,
           startedBy: job.startedBy?.name,
+          startedById: job.startedBy?.id,
       }
     }
     }
@@ -97,7 +98,7 @@ export class JobsService {
       );
     }
 
-    const archive = await this.taskService.getTaskBundleContent(taskBundle.id, 'jobs', false);
+    const archive = await this.taskService.getTaskBundleContent(taskBundle.id, 'tasks', false);
 
     const jobData = {
       id: job.id,

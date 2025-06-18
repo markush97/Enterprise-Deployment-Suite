@@ -202,10 +202,18 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                 </div>
             </div>
 
-            {/* Script Content Card */}
+            {/* Combined Install & Verify Script Content Card */}
             <ScriptContentCard
-                script={task.installScript || ''}
-                onSave={handleSaveScript}
+                installScript={task.installScript || ''}
+                verifyScript={task.verifyScript || ''}
+                onSave={async (newInstallScript, newVerifyScript) => {
+                    setSavingScript(true);
+                    try {
+                        await handleEditTask({ installScript: newInstallScript, verifyScript: newVerifyScript });
+                    } finally {
+                        setSavingScript(false);
+                    }
+                }}
                 isSaving={savingScript}
             />
 

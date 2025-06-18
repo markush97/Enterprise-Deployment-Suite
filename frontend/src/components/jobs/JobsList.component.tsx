@@ -77,10 +77,6 @@ export function JobsList() {
             render: (job: Job) => job.taskBundle?.name || 'N/A',
         },
         {
-            label: 'Started',
-            render: (job: Job) => new Date(job.createdAt).toLocaleString(),
-        },
-        {
             label: 'Last Connection',
             render: (job: Job) => formatRelativeTime(job.lastConnection),
         },

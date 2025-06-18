@@ -35,6 +35,9 @@ export class TasksEntity extends CoreBaseEntity {
   @Property({ type: 'longtext', nullable: true })
   installScript: string;
 
+  @Property({ type: 'longtext', nullable: true })
+  verifyScript: string;
+
   @ManyToMany(() => CustomerEntity, customer => customer.tasks)
   customers = new Collection<CustomerEntity>(this);
 
@@ -46,6 +49,9 @@ export class TasksEntity extends CoreBaseEntity {
     eager: false,
   })
   taskBundles = new Collection<TaskBundleEntity>(this);
+
+  @Property({ type: 'json'})
+  options: Record<string, any> = {};
 
   @OneToOne(() => LocalFileMetadataEntity, {
     nullable: true,

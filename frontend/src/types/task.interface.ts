@@ -5,6 +5,7 @@ export interface Task {
     description?: string;
     global: boolean;
     installScript?: string;
+    verifyScript?: string;
     createdAt: string;
 }
 
