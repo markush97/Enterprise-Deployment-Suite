@@ -13,6 +13,7 @@ import { JobEntity } from './entities/job.entity';
 import { JobLogsService } from './job-logs.service';
 import { JobsController } from './jobs.controller';
 import { JobsService } from './jobs.service';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { JobsService } from './jobs.service';
     CustomersModule,
     ImagesModule,
     TaskModule,
+    AuthModule
   ],
   controllers: [JobsController],
   providers: [JobsService, JobLogsService],

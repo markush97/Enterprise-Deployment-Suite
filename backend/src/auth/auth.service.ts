@@ -66,10 +66,16 @@ export class AuthService {
     return this.accountRepository.findOne({ entraIdUserId });
   }
 
-  async findOneById(accountId: string): Promise<AccountEntity | null> {
+  async findOne(accountId: string): Promise<AccountEntity | null> {
     this.logger.debug(`Fetching user by their id ${accountId}`);
 
     return this.accountRepository.findOne({ id: accountId });
+  }
+
+    async findOneOrFail(accountId: string): Promise<AccountEntity | null> {
+    this.logger.debug(`Fetching user by their id ${accountId}`);
+
+    return this.accountRepository.findOneOrFail({ id: accountId });
   }
 
   async getAccounts(): Promise<AccountEntity[]> {

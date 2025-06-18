@@ -29,6 +29,9 @@ import { JobLogEntity } from './entities/job-log.entity';
 import { JobEntity } from './entities/job.entity';
 import { JobLogsService } from './job-logs.service';
 import { JobsService } from './jobs.service';
+import { AccountInfo } from 'src/utils/decorators/auth-user.decorator';
+import { AccountEntity } from 'src/auth/entities/account.entity';
+import { AuthTokenPayload } from 'src/auth/strategies/jwt/auth-token.interface';
 
 @ApiTags('jobs')
 @Controller('jobs')
@@ -124,13 +127,14 @@ export class JobsController {
   @UseDeviceTokenGuard()
   @ApiOperation({ summary: 'Notify the server about the current setup-status' })
   async clientNotification(@Param('jobid') jobId: string, @Query() jobStatus: JobStatusQueryDto) {
-    return this.jobsService.clientNotification(jobId, jobStatus.jobStatus);
+    return this.jobsService.changeStatus(jobId, jobStatus.jobStatus);
   }
 
   @Put(':jobid/status')
   @ApiOperation({ summary: 'Notify the server about the current setup-status' })
-  async statusUpdate(@Param('jobid') jobId: string, @Query() jobStatus: JobStatusQueryDto) {
-    return this.jobsService.clientNotification(jobId, jobStatus.jobStatus);
+  async statusUpdate(@Param('jobid') jobId: string, @Query() jobStatus: JobStatusQueryDto, @AccountInfo() accountInfo: AuthTokenPayload) {
+    console.error(accountInfo)
+    return this.jobsService.changeStatus(jobId, jobStatus.jobStatus, accountInfo.sub);
   }
 
   @Put(':id/customer/:customerId')

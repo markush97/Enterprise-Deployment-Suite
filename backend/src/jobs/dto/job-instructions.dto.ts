@@ -4,7 +4,9 @@ export class JobInstructionsDto {
     deviceName?: string;
     organisationName?: string;
     organisationShortName?: string;
-    createdBy?: string;
+    organisationId?: string;
+    startedBy?: string;
+    startedById?: string;
   }
 }
 

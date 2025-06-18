@@ -18,6 +18,7 @@ import { CustomerEntity } from '../../customers/entities/customer.entity';
 import { DeviceEntity } from '../../devices/entities/device.entity';
 import { ImageEntity } from '../../images/entities/image.entity';
 import { JobConnectionsEntity } from './job-connections.entity';
+import { AccountEntity } from 'src/auth/entities/account.entity';
 
 export enum JobStatus {
   WAITING_FOR_INSTRUCTIONS = 'waiting_for_instructions',
@@ -48,6 +49,9 @@ export class JobEntity extends CoreBaseEntity {
 
   @Enum(() => JobStatus)
   status: JobStatus = JobStatus.PREPARING;
+
+  @ManyToOne(() => AccountEntity, { nullable: true })
+  startedBy: AccountEntity;
 
   @Property({ type: 'timestamptz' })
   lastConnection: Date = new Date();

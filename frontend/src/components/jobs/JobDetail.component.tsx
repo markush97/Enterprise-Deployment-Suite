@@ -221,6 +221,12 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
         }
     }, [job.status, job.id, onJobUpdated]);
 
+
+    useEffect(() => {
+        if (!onJobUpdated) return;
+        onJobUpdated(job);
+    }, [job.customer?.id, job.name, job.taskBundle?.id]);
+
     // Add a key to DeviceNameCard to force re-mount on customer change
     const [deviceNameCardKey, setDeviceNameCardKey] = useState(0);
 
@@ -323,7 +329,7 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
                         </div>
                         <div>
                             <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Started</dt>
-                            <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">{new Date(job.createdAt).toLocaleString()}</dd>
+                            <dd className="mt-1 text-sm text-gray-900 dark:text-gray-100">{new Date(job.createdAt).toLocaleString()} by {job.startedBy?.name}</dd>
                         </div>
                         <div>
                             <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Completed</dt>

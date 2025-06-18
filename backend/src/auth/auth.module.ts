@@ -27,6 +27,9 @@ import { RefreshTokenModule } from './strategies/refreshtoken/refreshtoken.modul
     RefreshTokenModule,
   ],
   controllers: [EntraIdController, AuthController],
+  exports: [
+    AuthService
+  ],
   providers: [
     AuthService,
     AuthConfigService,

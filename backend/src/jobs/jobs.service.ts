@@ -23,6 +23,8 @@ import { JobConnectionsEntity } from './entities/job-connections.entity';
 import { JobEntity, JobStatus } from './entities/job.entity';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { AccountEntity } from 'src/auth/entities/account.entity';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class JobsService {
@@ -34,6 +36,7 @@ export class JobsService {
     private readonly devicesService: DevicesService,
     private readonly customersService: CustomersService,
     private readonly imagesService: ImagesService,
+    private readonly authService: AuthService,
     private readonly mailService: EMailService,
     private readonly em: EntityManager,
     private readonly taskService: TaskService,
@@ -50,7 +53,7 @@ export class JobsService {
   async findOneOrFail(id: string): Promise<JobEntity> {
     this.logger.debug(`Searching for job with ID ${id}`);
     const job = await this.jobRepository.findOne(id, {
-      populate: ['device', 'customer', 'image', 'taskBundle'],
+      populate: ['device', 'customer', 'image', 'taskBundle', 'startedBy'],
     });
     if (!job) {
       throw new NotFoundException(`Job with ID ${id} not found`);
@@ -59,7 +62,7 @@ export class JobsService {
   }
 
   async getJobInstructions(id: string): Promise<JobInstructionsDto> {
-    const job = await this.jobRepository.findOneOrFail(id);
+    const job = await this.jobRepository.findOneOrFail(id, {populate: ['device', 'customer', 'taskBundle']});
     job.lastConnection = new Date();
     await this.em.persistAndFlush(job);
 
@@ -74,7 +77,8 @@ export class JobsService {
           deviceName: job.device?.name,
           organisationName: job.customer?.name,
           organisationShortName: job.customer?.shortCode,
-          createdBy: 'Automatic',
+          organisationId: job.customer?.id,
+          startedBy: job.startedBy?.name,
       }
     }
     }
@@ -177,12 +181,11 @@ export class JobsService {
     return job;
   }
 
-  async updateStatus(id: string, status: JobStatus): Promise<JobEntity> {
-    const job = await this.findOneOrFail(id);
+  async updateStatus(job: JobEntity, status: JobStatus, user?: AccountEntity): Promise<JobEntity> {
     job.status = status;
 
     if (status === JobStatus.DONE) {
-      this.logger.debug(`Job with ID ${id} is done, sending email...`);
+      this.logger.debug(`Job with ID ${job.id} is done, sending email...`);
       job.completedAt = new Date();
       this.mailService
         .sendEmail(
@@ -193,6 +196,11 @@ Visit https://cwi.eu.itglue.com/${job.customer.itGlueId}/configurations/${job.de
         `,
         )
         .then(() => {});
+    }
+
+    if (status === JobStatus.STARTING) {
+      this.logger.debug(`Job with ID ${job.id} is starting`);
+      job.startedBy = user;
     }
 
     await this.em.flush();
@@ -215,7 +223,7 @@ Visit https://cwi.eu.itglue.com/${job.customer.itGlueId}/configurations/${job.de
       this.logger.debug(
         `Found job for client ${clientInfo.clientIp} with ID ${job.id}, updating status to "pxe-selection"`,
       );
-      await this.updateStatus(job.id, JobStatus.PXE_SELECTION);
+      await this.updateStatus(job, JobStatus.PXE_SELECTION);
     } else {
       this.logger.debug(`No job found for client ${clientInfo.clientIp}, creating new job...`);
       job = this.jobRepository.create({
@@ -233,9 +241,11 @@ configfile grub/config/main.cfg
     `;
   }
 
-  async clientNotification(jobId: string, status: JobStatus): Promise<void> {
-    this.logger.debug(`Client notified us about current status ${status} for job  ${jobId}...`);
-    await this.updateStatus(jobId, status);
+  async changeStatus(jobId: string, status: JobStatus, userId?: string): Promise<void> {
+    this.logger.debug(`Status updated to ${status} for job  ${jobId}...`);
+    const job = await this.findOneOrFail(jobId);
+    const account = await this.authService.findOne(userId);
+    await this.updateStatus(job, status, account);
   }
 
   async taskNotification(jobId: string, taskInfo: TaskInfoDto): Promise<void> {
