@@ -3,6 +3,7 @@ import { TaskBundle } from "./task.interface";
 // src/types/job.interface.ts
 export interface Job {
     id: string;
+    name?: string;
     device: {
         id: string; // <-- ensure deviceId is always present
         name?: string;

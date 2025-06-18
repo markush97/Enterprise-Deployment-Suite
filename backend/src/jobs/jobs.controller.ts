@@ -102,7 +102,7 @@ export class JobsController {
   })
   async register(
     @Body() RegisterJobDto: RegisterJobDto,
-  ): Promise<{ jobId: string; deviceToken: string }> {
+  ): Promise<{ jobId: string; deviceToken: string, jobName?: string }> {
     return this.jobsService.registerJob(RegisterJobDto);
   }
 

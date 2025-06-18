@@ -1,5 +1,6 @@
 import { CoreBaseEntity } from 'src/core/persistence/base.entity';
 import { TaskBundleEntity } from 'src/tasks/entities/task-bundle.entity';
+import { generate } from "random-words";
 
 import {
   Cascade,
@@ -62,4 +63,21 @@ export class JobEntity extends CoreBaseEntity {
 
   @Property({ nullable: true })
   completedAt?: Date;
+
+  @Property({ nullable: true })
+  name?: string = generateJobName();
+
+
 }
+
+const generateJobName = (): string => {
+    // <YYMMDD>-<RandomEnglishWord>-<RandomEnglishWord>
+    const now = new Date();
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const y = now.getFullYear().toString().slice(-2);
+    const m = pad(now.getMonth() + 1);
+    const d = pad(now.getDate());
+    // Use random-words package for two random words
+    const words = generate({ wordsPerString: 2, exactly: 1, separator: '-' });
+    return `${y}${m}${d}-${words}`;
+  }

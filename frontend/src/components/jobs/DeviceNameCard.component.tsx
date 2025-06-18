@@ -3,17 +3,20 @@ import { deviceService } from '../../services/device.service';
 import { customerService } from '../../services/customer.service';
 import toast from 'react-hot-toast';
 import type { Job } from '../../types/job.interface';
+import Tippy from '@tippyjs/react';
 
 interface DeviceNameCardProps {
     job: Job;
     isJobStarted: boolean;
     onJobUpdated?: (job: Job) => void;
+    customerOptions?: { id: string; name: string; shortCode: string }[];
 }
 
 export function DeviceNameCard({
     job,
     isJobStarted,
     onJobUpdated,
+    customerOptions = [],
 }: DeviceNameCardProps) {
     // Helper to get deviceId for API call
     const deviceId = job.device?.id;
@@ -120,9 +123,13 @@ export function DeviceNameCard({
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
                     <div className="flex items-center gap-2">
                         Auto-Name:
-                        <span className="text-sm text-gray-700 dark:text-gray-200 font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded border border-gray-200 dark:border-gray-600">
-                            {autoNameLoading ? 'Generating...' : autoName || 'No auto-name available'}
-                        </span>
+
+                        <Tippy disabled={!!autoName} content="No name generation available without a customer set." placement="top">
+                            <span className="text-sm text-gray-700 dark:text-gray-200 font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded border border-gray-200 dark:border-gray-600">
+                                {autoNameLoading ? 'Generating...' : autoName || 'No auto-name available'}
+                            </span>
+                        </Tippy>
+
                         {autoName && (
                             <button
                                 className="ml-2 px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"

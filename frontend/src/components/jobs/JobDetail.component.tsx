@@ -195,6 +195,35 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
     // Determine if job is started (not waiting for instructions)
     const isJobStarted = job.status !== 'waiting_for_instructions';
 
+    // When the job's customer changes, refresh the device name generator (autoName) instantly
+    useEffect(() => {
+        setDeviceNameCardKey(prev => prev + 1);
+    }, [job.customer?.id]);
+
+    // When the job is started, instantly refresh the job status from the backend
+    useEffect(() => {
+        if (job.status === 'starting') {
+            let interval: ReturnType<typeof setInterval>;
+            const pollStatus = async () => {
+                try {
+                    const updated = await jobService.getJob(job.id);
+                    if (updated.status !== 'starting' && onJobUpdated) {
+                        onJobUpdated(updated);
+                        clearInterval(interval);
+                    } else if (updated.status !== job.status && onJobUpdated) {
+                        // If status changed for any reason, update
+                        onJobUpdated(updated);
+                    }
+                } catch {}
+            };
+            interval = setInterval(pollStatus, 1500);
+            return () => clearInterval(interval);
+        }
+    }, [job.status, job.id, onJobUpdated]);
+
+    // Add a key to DeviceNameCard to force re-mount on customer change
+    const [deviceNameCardKey, setDeviceNameCardKey] = useState(0);
+
     return (
         <div className="space-y-6 animate-fadeIn">
             <div className="flex items-center mb-6">
@@ -206,7 +235,7 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
                     Back to Jobs
                 </button>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {job.id}
+                    {job?.name ?? job.id}
                 </h1>
             </div>
 
@@ -412,9 +441,11 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
 
             {/* Device Name Card (moved above assignment cards) */}
             <DeviceNameCard
+                key={deviceNameCardKey}
                 job={job}
                 isJobStarted={isJobStarted}
                 onJobUpdated={onJobUpdated}
+                customerOptions={customerOptions}
             />
 
             {/* Customer Assignment Card */}

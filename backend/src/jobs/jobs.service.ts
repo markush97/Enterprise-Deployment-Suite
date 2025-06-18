@@ -123,7 +123,7 @@ export class JobsService {
 
   async registerJob(
     registerJobDto: RegisterJobDto,
-  ): Promise<{ jobId: string; deviceToken: string }> {
+  ): Promise<{ jobId: string; deviceToken: string, jobName?: string }> {
     this.logger.debug(
       `Registering job for device with serial: ${registerJobDto.deviceSerial} for organization ${registerJobDto.organizationId}`,
     );
@@ -158,7 +158,7 @@ export class JobsService {
 
     await this.em.persistAndFlush(job);
     this.logger.debug(`Job created with ID ${job.id}`);
-    return { deviceToken: device.deviceSecret, jobId: job.id };
+    return { deviceToken: device.deviceSecret, jobId: job.id, jobName: job.name };
   }
 
   async create(createJobDto: CreateJobDto): Promise<JobEntity> {

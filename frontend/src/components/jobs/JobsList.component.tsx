@@ -61,6 +61,10 @@ export function JobsList() {
 
     const columns = [
         {
+            label: 'Name',
+            render: (job: Job) => job?.name || job.id || 'N/A',
+        },
+        {
             label: 'Device',
             render: (job: Job) => job.device?.name || job.device?.serialNumber || 'N/A',
         },
