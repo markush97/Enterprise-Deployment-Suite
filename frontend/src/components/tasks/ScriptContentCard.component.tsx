@@ -10,11 +10,12 @@ interface ScriptContentCardProps {
   onSave: (newInstallScript: string, newVerifyScript: string) => Promise<void>;
   isSaving?: boolean;
   hint?: string;
+  disabled?: boolean;
 }
 
 SyntaxHighlighter.registerLanguage('powershell', powershell);
 
-export function ScriptContentCard({ installScript, verifyScript, onSave, isSaving, hint }: ScriptContentCardProps) {
+export function ScriptContentCard({ installScript, verifyScript, onSave, isSaving, hint, disabled }: ScriptContentCardProps) {
   const [editInstallScript, setEditInstallScript] = useState(installScript || '');
   const [editVerifyScript, setEditVerifyScript] = useState(verifyScript || '');
   const [editing, setEditing] = useState(false);
@@ -36,15 +37,18 @@ export function ScriptContentCard({ installScript, verifyScript, onSave, isSavin
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Install & Verify Scripts</h2>
         <button
-          className="ml-auto px-3 py-1 text-sm rounded bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-400 transition"
+          className="ml-auto px-3 py-1 text-sm rounded bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-400 transition disabled:opacity-50"
           onClick={() => setEditing((v) => !v)}
-          disabled={isSaving}
+          disabled={isSaving || disabled}
+          title={disabled ? 'Editing scripts is not allowed for built-in tasks' : undefined}
         >
           {editing ? 'Cancel' : 'Edit'}
         </button>
       </div>
-      {hint && (
-        <div className="px-6 pb-2 text-xs text-blue-700 dark:text-blue-300 italic">{hint}</div>
+      {(hint || disabled) && (
+        <div className="px-6 pb-2 text-xs text-blue-700 dark:text-blue-300 italic">
+          {disabled ? 'Built-in tasks cannot be edited.' : hint}
+        </div>
       )}
       <div className="px-4 sm:px-8 py-2">
         <ScriptHelpText />

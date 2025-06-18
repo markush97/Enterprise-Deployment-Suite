@@ -11,7 +11,7 @@ import { LocalFileService } from 'src/fileManagement/local-file/local-file.servi
 
 import { HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 
-import { EntityManager, EntityRepository, OnInit } from '@mikro-orm/core';
+import { EnsureRequestContext, EntityManager, EntityRepository, OnInit } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 
 import { FileOverviewDto } from '../fileManagement/local-file/file-overview.dto';
@@ -37,17 +37,29 @@ export class TaskService implements OnModuleInit {
     private readonly em: EntityManager,
     private readonly localFileService: LocalFileService,
     private readonly fileConfigService: FileManagementConfigService,
-  ) {}
+  ) { }
 
   async onModuleInit() {
-    // Ensure built-in tasks are created on startup
-    this.logger.log(`Initializing built-in tasks...`); 
+    await this.createBuiltInTasks();
+  }
+
+  @EnsureRequestContext()
+  private async createBuiltInTasks(): Promise<void> {
+    this.logger.log(`Creating built-in tasks...`);
     for (const builtin of BUILTIN_TASKS) {
-      const exists = await this.taskRepository.findOne({ name: builtin.name, buildIn: true });
-      if (!exists) {
-        await this.em.persistAndFlush(this.taskRepository.create(builtin));
+      const task = await this.taskRepository.findOne({ name: builtin.name, builtIn: true });
+      
+      if (!task) {
+        this.taskRepository.create(builtin);
       }
+
+      task.assign(builtin);
+      task.builtIn = true;
+
+      this.em.persist(task)
     }
+
+    await this.em.flush();
   }
 
   public async getTasks(): Promise<TaskEntity[]> {
@@ -286,6 +298,13 @@ export class TaskService implements OnModuleInit {
     this.logger.debug(`Updating task with id ${taskId}`);
     const task = await this.taskRepository.findOneOrFail(taskId);
 
+    if (task.builtIn) {
+      throw new BadRequestMTIException(
+        MTIErrorCodes.CANNOT_EDIT_BUILD_IN_TASK,
+        `Cannot edit built-in task ${task.name}.`,
+      );
+    }
+
     Object.assign(task, taskInfo);
     await this.em.persistAndFlush(task);
     return task;
@@ -306,6 +325,14 @@ export class TaskService implements OnModuleInit {
     if (!task) {
       throw new NotFoundMTIException(MTIErrorCodes.TASK_NOT_FOUND, `Task with id ${id} not found`);
     }
+
+    if (task.builtIn) {
+      throw new BadRequestMTIException(
+        MTIErrorCodes.CANNOT_EDIT_BUILD_IN_TASK,
+        `Cannot edit built-in task ${task.name}.`,
+      );
+    }
+
     const fileMetadata = await this.localFileService.saveUnpackedArchive(
       file.buffer,
       join('tasks', id, 'content'),

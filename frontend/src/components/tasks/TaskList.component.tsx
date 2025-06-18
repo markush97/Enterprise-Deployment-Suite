@@ -96,6 +96,7 @@ export function TaskList() {
                     { label: 'Name', render: (task) => task.name },
                     { label: 'Description', render: (task) => task.description },
                     { label: 'Global', render: (task) => (task.global ? (<Check />) : (<X />)) },
+                    { label: 'BuiltIn', render: (task) => (task.builtIn ? (<Check />) : (<X />)) },
                 ]}
                 actions={[
                     {

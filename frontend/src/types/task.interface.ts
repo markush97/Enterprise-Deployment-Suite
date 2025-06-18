@@ -7,6 +7,7 @@ export interface Task {
     installScript?: string;
     verifyScript?: string;
     createdAt: string;
+    builtIn?: boolean;
 }
 
 export interface TaskBundle {

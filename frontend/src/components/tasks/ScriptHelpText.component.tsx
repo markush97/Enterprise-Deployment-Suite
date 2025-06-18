@@ -39,6 +39,11 @@ Set-EDSLogContext -JobId $JobId -TaskId2 -LocalLogPath $LocalLogPath -BackendUrl
     { name: '$eds.deviceName', desc: 'The name of the device (string)' },
     { name: '$eds.domainName', desc: 'The domain name' },
     { name: '$eds.entraTenant', desc: 'The entraID Tenant Id' },
+    { name: '$eds.domainController', desc: 'The domain controller used by this device' },
+    { name: '$eds.jobConfig', desc: 'The job configuration object' },
+    { name: '$eds.domainjoin.username', desc: 'The username for domain join' },
+    { name: '$eds.domainjoin.password', desc: 'The password for domain join' },
+    { name: '$eds.domainjoin.ou', desc: 'The OU for domain join adapted to the current device type' },
     { name: "$eds.customerId", desc: 'The customer ID' },
     { name: "$eds.teamviewerId", desc: 'The Customer TeamViewer ID' },
 

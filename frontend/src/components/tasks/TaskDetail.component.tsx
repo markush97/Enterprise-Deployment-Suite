@@ -1,4 +1,4 @@
-import { ArrowLeft, Building2, Trash2, Edit, Files, Download } from 'lucide-react';
+import { ArrowLeft, Building2, Trash2, Edit, Files, Download, Check, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import 'tippy.js/dist/tippy.css';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,7 @@ import { UploadDropzone } from './UploadModal.component';
 import { ConfirmDeleteModal } from '../utils/ConfirmDeleteModal';
 import { ScriptContentCard } from './ScriptContentCard.component';
 import { ScriptHelpText } from './ScriptHelpText.component';
+import Tippy from '@tippyjs/react';
 
 interface TaskDetailProps {
     task: Task;
@@ -136,13 +137,18 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                         </h2>
                     </div>
                     <div className="flex space-x-2">
-                        <button
-                            onClick={() => setIsUploadModalOpen(true)}
-                            className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
-                        >
-                            <Files className="h-4 w-4 mr-1" />
-                            Upload Content
-                        </button>
+                        <Tippy content="Cannot upload content for built-in tasks" disabled={!task.builtIn} placement="top">
+                            <span>
+                                <button
+                                    onClick={() => setIsUploadModalOpen(true)}
+                                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                    disabled={task.builtIn}
+                                >
+                                    <Files className="h-4 w-4 mr-1" />
+                                    Upload Content
+                                </button>
+                            </span>
+                        </Tippy>
                         {hasContent && (
                             <a
                                 href={`/api/tasks/${task.id}/content`}
@@ -154,21 +160,30 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                                 Download
                             </a>
                         )}
-                        <button
-                            onClick={() => navigate(`/tasks/${task.id}/edit`)}
-                            className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
-                        >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
-                        </button>
-
-                        <button
-                            onClick={() => setIsDeleteConfirmOpen(true)}
-                            className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                        >
-                            <Trash2 className="h-4 w-4 mr-1 text-red-500" />
-                            Delete
-                        </button>
+                        <Tippy content="Cannot edit built-in tasks" disabled={!task.builtIn} placement="top">
+                            <span>
+                                <button
+                                    onClick={() => navigate(`/tasks/${task.id}/edit`)}
+                                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                    disabled={task.builtIn}
+                                >
+                                    <Edit className="h-4 w-4 mr-1" />
+                                    Edit
+                                </button>
+                            </span>
+                        </Tippy>
+                        <Tippy content="Cannot delete built-in tasks" disabled={!task.builtIn} placement="top">
+                            <span>
+                                <button
+                                    onClick={() => setIsDeleteConfirmOpen(true)}
+                                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                    disabled={task.builtIn}
+                                >
+                                    <Trash2 className="h-4 w-4 mr-1 text-red-500" />
+                                    Delete
+                                </button>
+                            </span>
+                        </Tippy>
                     </div>
                 </div>
 
@@ -198,6 +213,14 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                                 {new Date(task.createdAt).toLocaleDateString()}
                             </dd>
                         </div>
+                        <div>
+                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                Built-in Task
+                            </dt>
+                            <dd className="mt-1 text-lg text-gray-900 dark:text-white">
+                                {task.builtIn ? (<Check />) : (<X />)}
+                            </dd>
+                        </div>
                     </dl>
                 </div>
             </div>
@@ -215,6 +238,7 @@ export function TaskDetail({ task, onBack, onTaskUpdated, onTaskDeleted, editMod
                     }
                 }}
                 isSaving={savingScript}
+                disabled={task.builtIn}
             />
 
             {/* Task Content Overview Card */}

@@ -14,4 +14,8 @@ export class CreateTaskDto {
   @IsString()
   @IsOptional()
   installScript: string;
+
+  @IsString()
+  @IsOptional()
+  verifyScript: string;
 }
