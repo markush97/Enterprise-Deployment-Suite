@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus, prism } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';import { vscDarkPlus, prism } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useThemeStore } from '../../states/themeStore';
-import powershell from 'react-syntax-highlighter/dist/esm/languages/hljs/powershell';
+import powershell from 'react-syntax-highlighter/dist/esm/languages/prism/powershell';
 import { ScriptHelpText } from './ScriptHelpText.component';
 
 interface ScriptContentCardProps {
