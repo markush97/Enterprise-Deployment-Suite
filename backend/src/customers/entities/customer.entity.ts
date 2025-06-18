@@ -17,15 +17,17 @@ import { DeviceEntity } from '../../devices/entities/device.entity';
 import { VpnProfile } from '../../vpn/entities/vpn-profile.entity';
 
 @Embeddable()
-export class DeviceEnrollmentCredentials {
+export class DomainJoinCredentials {
   @Property()
   username: string;
 
   @Property()
   password: string;
+}
 
-  @Property()
-  domain: string;
+@Embeddable()
+export class EntraJoinCredentials {
+
 }
 
 @Entity()
@@ -36,6 +38,9 @@ export class CustomerEntity extends CoreBaseEntity {
   @Property()
   shortCode: string;
 
+  @Property({nullable: true})
+  entraTenantId: string;
+
   @Property()
   zohoId: number;
 
@@ -44,6 +49,9 @@ export class CustomerEntity extends CoreBaseEntity {
 
   @Property()
   itGlueId: number;
+
+  @Property({ nullable: true })
+  teamviewerId: string;
 
   @Property({ nullable: true })
   adDomain: string;
@@ -99,6 +107,6 @@ export class CustomerEntity extends CoreBaseEntity {
   @Property({ hidden: true })
   localAdministratorPassword: string = generateSecureRandomString(10);
 
-  @Embedded(() => DeviceEnrollmentCredentials, { nullable: true })
-  deviceEnrollmentCredentials?: DeviceEnrollmentCredentials;
+  @Embedded(() => DomainJoinCredentials, { nullable: true })
+  deviceEnrollmentCredentials?: DomainJoinCredentials;
 }

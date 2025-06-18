@@ -30,7 +30,7 @@ export class CoreConfigService extends ConfigService {
   /**
    * HTTP Port the API is listening on
    */
-  public get httpsPort(): number {
+  public get httpPort(): number {
     return this.get<number>('API_PORT', 3333);
   }
 
@@ -55,6 +55,15 @@ export class CoreConfigService extends ConfigService {
     return `${this.hostname}.${this.domainName}`;
   }
 
+  public get https(): boolean {
+    return this.get<boolean>('API_HTTPS', true);
+  }
+
+  public get apiUrl(): string {
+    const protocol = this.https ? 'https' : 'http';
+    return `${protocol}://${this.fqdn()}/api`;
+  }
+
   get storagePath(): string {
     return path.resolve(this.get<string>('UPLOAD_LOCATION', '/srv/eds/uploads'));
   }
@@ -64,5 +73,9 @@ export class CoreConfigService extends ConfigService {
    */
   get maxFileSize(): number {
     return this.get<number>('UPLOAD_SIZE_LIMIT_MB', DEFAULT_MAX_UPLOAD_SIZE_MB) * 1024 * 1024;
+  }
+
+  get localWindowsInstallerLogPath(): string {
+    return this.get<string>('WINDOWS_INSTALLER_LOCAL_LOG_PATH', 'C:\\Windows\\Setup\\EDS\\Logs');
   }
 }

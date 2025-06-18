@@ -25,6 +25,8 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountEntity } from 'src/auth/entities/account.entity';
 import { AuthService } from 'src/auth/auth.service';
+import { CoreConfigService } from 'src/core/config/core.config.service';
+import { CustomerEntity } from 'src/customers/entities/customer.entity';
 
 @Injectable()
 export class JobsService {
@@ -40,7 +42,8 @@ export class JobsService {
     private readonly mailService: EMailService,
     private readonly em: EntityManager,
     private readonly taskService: TaskService,
-  ) {}
+    private readonly coreConfig: CoreConfigService
+  ) { }
 
   async findAll(): Promise<JobEntity[]> {
     this.logger.debug('Fetching all jobs');
@@ -62,7 +65,7 @@ export class JobsService {
   }
 
   async getJobInstructions(id: string): Promise<JobInstructionsDto> {
-    const job = await this.jobRepository.findOneOrFail(id, {populate: ['device', 'customer', 'taskBundle']});
+    const job = await this.jobRepository.findOneOrFail(id, { populate: ['device', 'customer', 'taskBundle'] });
     job.lastConnection = new Date();
     await this.em.persistAndFlush(job);
 
@@ -80,10 +83,9 @@ export class JobsService {
           organisationId: job.customer?.id,
           startedBy: job.startedBy?.name,
           startedById: job.startedBy?.id,
+        }
       }
     }
-    }
-
   }
 
   async getJobContent(id: string): Promise<archiver.Archiver> {
@@ -101,16 +103,28 @@ export class JobsService {
     const archive = await this.taskService.getTaskBundleContent(taskBundle.id, 'tasks', false);
 
     const jobData = {
-      id: job.id,
+      jobId: job.id,
       customerId: job.customer?.id,
       customerName: job.customer?.name,
       customerShortCode: job.customer?.shortCode,
+      localLogPath: this.coreConfig.localWindowsInstallerLogPath + '\\install.log',
+      apiUrl: this.coreConfig.apiUrl,
+      entraTenant: job.customer?.entraTenantId,
+      deviceName: job.device?.name,
+      domainName: job.customer.adDomain,
+      jobConfig: {},
+      domainjoin: {
+        username: job.customer.deviceEnrollmentCredentials?.username,
+        password: job.customer.deviceEnrollmentCredentials?.password,
+        ou: getOuForDeviceType(job.device?.type, job.customer),
+      },
+      teamviewerId: job.customer?.teamviewerId,
+
     };
 
     archive.append(JSON.stringify(jobData), { name: 'job.json' });
+    archive.append(join(__dirname, '../../../resources/scripts/main.ps1'), { name: 'main.ps1' });
 
-    // Add PowerShell logging utils script to the archive (for use in tasks)
-    // Use __dirname to resolve path relative to this file, works in dev and built Docker
     const psLoggingUtilsPath = join(__dirname, '../../../resources/scripts/utils');
     archive.directory(psLoggingUtilsPath, 'utils');
 
@@ -196,7 +210,7 @@ Visit https://cwi.eu.itglue.com/${job.customer.itGlueId}/configurations/${job.de
 
         `,
         )
-        .then(() => {});
+        .then(() => { });
     }
 
     if (status === JobStatus.STARTING) {
@@ -272,4 +286,42 @@ configfile grub/config/main.cfg
     await this.em.flush();
     return job;
   }
+}
+
+function getOuForDeviceType(deviceType: DeviceType, customer: CustomerEntity): string {
+  const domain = customer?.adDomain;
+  const domainParts = domain ? domain.split('.').map(part => `DC=${part}`).join(',') : undefined;
+
+  let ou: string | undefined;
+  switch (deviceType) {
+    case DeviceType.PC:
+      ou = customer.deviceOUPc;
+      break;
+    case DeviceType.NOTEBOOK:
+    case 'NB': // fallback for string value
+      ou = customer.deviceOUNb;
+      break;
+    case DeviceType.TABLET:
+    case 'TAB':
+      ou = customer.deviceOUTab;
+      break;
+    case DeviceType.MAC:
+      ou = customer.deviceOUMac;
+      break;
+    case DeviceType.SERVER:
+    case 'SRV':
+      ou = customer.deviceOUSrv;
+      break;
+    case DeviceType.OTHER:
+    case 'DIV':
+      ou = customer.deviceOUDiv;
+      break;
+    default:
+      ou = undefined;
+  }
+
+  if (ou && ou.trim()) {
+    return domainParts ? `${ou},${domainParts}` : ou;
+  }
+  return domainParts ? `OU=Computers,${domainParts}` : 'OU=Computers';
 }
