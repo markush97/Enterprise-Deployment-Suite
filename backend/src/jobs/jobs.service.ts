@@ -118,6 +118,7 @@ export class JobsService {
         password: job.customer.deviceEnrollmentCredentials?.password,
         ou: getOuForDeviceType(job.device?.type, job.customer),
       },
+      assetTag: job.device?.assetTag,
       teamviewerId: job.customer?.teamviewerId,
 
     };

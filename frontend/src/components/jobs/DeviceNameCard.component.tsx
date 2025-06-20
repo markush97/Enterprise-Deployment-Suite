@@ -3,6 +3,7 @@ import { deviceService } from '../../services/device.service';
 import { customerService } from '../../services/customer.service';
 import toast from 'react-hot-toast';
 import type { Job } from '../../types/job.interface';
+import type { Device } from '../../types/device.interface';
 import Tippy from '@tippyjs/react';
 
 interface DeviceNameCardProps {
@@ -12,7 +13,7 @@ interface DeviceNameCardProps {
     customerOptions?: { id: string; name: string; shortCode: string }[];
 }
 
-export function DeviceNameCard({
+export function JobDeviceInfoCard({
     job,
     isJobStarted,
     onJobUpdated,
@@ -73,22 +74,34 @@ export function DeviceNameCard({
         updateAutoName();
     }, [selectedType, customerId, customer, job.customer?.shortCode]);
 
-    // Staged state for device name/type
+    // Staged state for device name/type/assetTag
     const [stagedDeviceName, setStagedDeviceName] = useState(deviceName);
     const [stagedType, setStagedType] = useState(selectedType);
+    const [stagedAssetTag, setStagedAssetTag] = useState((job.device as Device)?.assetTag || '');
+    const [assetTagError, setAssetTagError] = useState<string | null>(null);
     useEffect(() => {
         setStagedDeviceName(deviceName);
         setStagedType(selectedType);
-    }, [deviceName, selectedType]);
+        setStagedAssetTag((job.device as Device)?.assetTag || '');
+    }, [deviceName, selectedType, job.device]);
 
     const isStaged =
         stagedDeviceName !== (job.device?.name || '') ||
-        stagedType !== (job.device?.type || '');
+        stagedType !== (job.device?.type || '') ||
+        stagedAssetTag !== ((job.device as Device)?.assetTag || '');
+
+    // AssetTag validation
+    const validateAssetTag = (value: string) => {
+        if (!/^AS\d{4}$/.test(value)) {
+            return 'AssetTag must start with "AS" followed by 4 digits (e.g. AS1234)';
+        }
+        return null;
+    };
 
     return (
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg mt-6">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Device Name</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Device Information</h2>
             </div>
             <div className="px-6 py-4 flex flex-col gap-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Device Type</label>
@@ -120,6 +133,22 @@ export function DeviceNameCard({
                     onChange={e => setStagedDeviceName(e.target.value)}
                     disabled={isJobStarted}
                 />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Asset Tag</label>
+                <input
+                    type="text"
+                    className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    value={stagedAssetTag}
+                    onChange={e => {
+                        setStagedAssetTag(e.target.value.toUpperCase());
+                        setAssetTagError(validateAssetTag(e.target.value.toUpperCase()));
+                    }}
+                    maxLength={6}
+                    placeholder="AS1234"
+                    disabled={isJobStarted}
+                />
+                {assetTagError && (
+                    <span className="text-xs text-red-500">{assetTagError}</span>
+                )}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
                     <div className="flex items-center gap-2">
                         Auto-Name:
@@ -154,6 +183,10 @@ export function DeviceNameCard({
                             toast.error('Device ID not found.');
                             return;
                         }
+                        if (assetTagError) {
+                            toast.error(assetTagError);
+                            return;
+                        }
                         if (usedAutoName && stagedDeviceName === autoName && customerId && stagedType) {
                             try {
                                 await customerService.setDeviceCountersAndOUs(customerId, {
@@ -169,9 +202,9 @@ export function DeviceNameCard({
                         setUsedAutoName(false);
                         await toast.promise(
                             (async () => {
-                                await deviceService.updateDevice(deviceId, { name: stagedDeviceName, type: stagedType });
+                                await deviceService.updateDevice(deviceId, { name: stagedDeviceName, type: stagedType, assetTag: stagedAssetTag });
                                 if (onJobUpdated) {
-                                    onJobUpdated({ ...job, device: { ...job.device, name: stagedDeviceName, type: stagedType } });
+                                    onJobUpdated({ ...job, device: { ...job.device, name: stagedDeviceName, type: stagedType, assetTag: stagedAssetTag } });
                                 }
                                 toast.success('Device updated successfully.');
                             })(),
@@ -182,7 +215,7 @@ export function DeviceNameCard({
                             }
                         );
                     }}
-                    disabled={isJobStarted || !isStaged}
+                    disabled={isJobStarted || !isStaged || !!assetTagError}
                 >
                     Save
                 </button>

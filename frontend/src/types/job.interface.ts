@@ -1,15 +1,11 @@
 import { TaskBundle } from "./task.interface";
+import type { Device } from "./device.interface";
 
 // src/types/job.interface.ts
 export interface Job {
     id: string;
     name?: string;
-    device: {
-        id: string; // <-- ensure deviceId is always present
-        name?: string;
-        serialNumber?: string;
-        type?: string;
-    };
+    device: Device;
     customer: {
         id?: string; // <-- allow id for customer
         shortCode: string;

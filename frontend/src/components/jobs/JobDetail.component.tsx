@@ -11,7 +11,7 @@ import { AssignCustomerCard } from './AssignCustomerCard.component';
 import { AssignTaskBundleCard } from './AssignTaskBundleCard.component';
 import { Task } from '../../types/task.interface';
 import Tippy from '@tippyjs/react';
-import { DeviceNameCard } from './DeviceNameCard.component';
+import { JobDeviceInfoCard } from './DeviceNameCard.component';
 
 interface JobDetailProps {
     job: Job;
@@ -446,7 +446,7 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
             )}
 
             {/* Device Name Card (moved above assignment cards) */}
-            <DeviceNameCard
+            <JobDeviceInfoCard
                 key={deviceNameCardKey}
                 job={job}
                 isJobStarted={isJobStarted}

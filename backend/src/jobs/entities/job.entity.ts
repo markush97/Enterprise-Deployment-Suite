@@ -38,7 +38,7 @@ export class JobEntity extends CoreBaseEntity {
   @ManyToOne(() => DeviceEntity, { nullable: true })
   device?: DeviceEntity;
 
-  @Property({ type: StringType, nullable: true })
+  @Property({ nullable: true })
   deviceSerialNumber: string;
 
   @ManyToOne(() => CustomerEntity, { nullable: true })

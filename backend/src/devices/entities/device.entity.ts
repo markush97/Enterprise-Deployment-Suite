@@ -22,6 +22,9 @@ export class DeviceEntity extends CoreBaseEntity {
   @Enum(() => DeviceType)
   type: DeviceType;
 
+  @Property({nullable: true})
+  assetTag?: string;
+
   @ManyToOne(() => CustomerEntity, {nullable: true})
   customer: CustomerEntity;
 
@@ -61,6 +64,4 @@ export class DeviceEntity extends CoreBaseEntity {
   @Property({ nullable: true })
   pulsewayId: string;
 
-  @Property({ nullable: true })
-  assetTag?: string;
 }
