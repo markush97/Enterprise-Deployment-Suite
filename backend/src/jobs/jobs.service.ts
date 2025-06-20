@@ -123,7 +123,7 @@ export class JobsService {
     };
 
     archive.append(JSON.stringify(jobData), { name: 'job.json' });
-    archive.append(join(__dirname, '../../../resources/scripts/main.ps1'), { name: 'main.ps1' });
+    archive.file(join(__dirname, '../../../resources/scripts/main.ps1'), { name: 'main.ps1' });
 
     const psLoggingUtilsPath = join(__dirname, '../../../resources/scripts/utils');
     archive.directory(psLoggingUtilsPath, 'utils');

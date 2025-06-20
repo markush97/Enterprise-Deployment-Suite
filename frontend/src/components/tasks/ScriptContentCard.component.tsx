@@ -45,11 +45,6 @@ export function ScriptContentCard({ installScript, verifyScript, onSave, isSavin
           {editing ? 'Cancel' : 'Edit'}
         </button>
       </div>
-      {(hint || disabled) && (
-        <div className="px-6 pb-2 text-xs text-blue-700 dark:text-blue-300 italic">
-          {disabled ? 'Built-in tasks cannot be edited.' : hint}
-        </div>
-      )}
       <div className="px-4 sm:px-8 py-2">
         <ScriptHelpText />
       </div>

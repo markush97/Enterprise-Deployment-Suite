@@ -10,7 +10,7 @@ function Set-JobLogContext {
     param(
         [Parameter(Mandatory)]
         [string]$JobId,
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory=$false)]
         [string]$TaskId,
         [Parameter(Mandatory)]
         [string]$LocalLogPath,
@@ -22,6 +22,11 @@ function Set-JobLogContext {
         taskId       = $TaskId
         localLogPath = $LocalLogPath
         backendUrl   = $BackendUrl
+    }
+
+    $logDir = Split-Path $LocalLogPath -Parent
+    if (-not (Test-Path $logDir)) {
+        New-Item -Path $logDir -ItemType Directory -Force | Out-Null
     }
 }
 
@@ -45,7 +50,7 @@ function Write-JobLog {
         [hashtable]$Meta
     )
 
-    if (-not $JobId -or -not $TaskId -or -not $LocalLogPath -or -not $BackendUrl) {
+    if (-not $JobId -or -not $LocalLogPath -or -not $BackendUrl) {
         throw "Write-JobLog: JobId, TaskId, LocalLogPath, and BackendUrl must be set (either as parameters or via Set-JobLogContext)."
     }
 
@@ -74,4 +79,4 @@ function Write-JobLog {
     }
 }
 
-Export-ModuleMember -Function Write-JobLog,Set-JobLogContext
+Export-ModuleMember -Function *
