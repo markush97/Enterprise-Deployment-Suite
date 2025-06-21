@@ -1,12 +1,12 @@
 import { Route, Routes } from "react-router-dom";
 import { DashboardModule } from "../../types/dashboard-module.interface";
 import { Header } from "./Header.component";
-import { DevicesModule } from "../devices/devicesPage.component";
 import { AccountPage } from "../account/AccountPage.component";
 import { CustomersModule } from '../customers/CustomerModule';
 import { TasksModule } from "../tasks/TaskModule";
 import { TaskBundleModule } from "../taskBundle/TaskBundleModule";
 import { JobsModule } from "../jobs/JobModule";
+import { DevicesModule } from "../devices/DeviceModule";
 
 const modules: DashboardModule[] = [
     CustomersModule,
