@@ -12,7 +12,7 @@ export interface Job {
         name: string;
     };
     imageName: string;
-    status: 'preparing' | 'imaging' | 'pxe_selection' | 'installing' | 'verifying' | 'ready' | 'done' | 'failed' | 'canceled' | 'waiting_for_instructions' | 'starting';
+    status: 'preparing' | 'imaging' | 'pxe_selection' | 'installing' | 'verifying' | 'ready' | 'done' | 'failed' | 'canceled' | 'waiting_for_instructions' | 'starting' | 'timeout' | 'timout';
     createdAt: string;
     completedAt?: string;
     lastConnection: string;

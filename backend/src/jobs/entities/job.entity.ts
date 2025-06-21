@@ -30,6 +30,7 @@ export enum JobStatus {
   VERIFYING = 'verifying',
   READY = 'ready',
   DONE = 'done',
+  TIMOUT = 'timeout',
   CANCELED = 'canceled',
 }
 

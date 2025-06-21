@@ -5,9 +5,10 @@ import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes
 import { DeviceType } from 'src/devices/entities/device.entity';
 import { TaskService } from 'src/tasks/task.service';
 
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { Interval } from '@nestjs/schedule';
 
-import { EntityManager, EntityRepository } from '@mikro-orm/core';
+import { EnsureRequestContext, EntityManager, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 
 import { CustomersService } from '../customers/customers.service';
@@ -29,7 +30,7 @@ import { CoreConfigService } from 'src/core/config/core.config.service';
 import { CustomerEntity } from 'src/customers/entities/customer.entity';
 
 @Injectable()
-export class JobsService {
+export class JobsService implements OnModuleInit {
   private readonly logger = new Logger('JobsService');
 
   constructor(
@@ -44,6 +45,10 @@ export class JobsService {
     private readonly taskService: TaskService,
     private readonly coreConfig: CoreConfigService
   ) { }
+
+  async onModuleInit() {
+    await this.checkForStuckJobs()
+  }
 
   async findAll(): Promise<JobEntity[]> {
     this.logger.debug('Fetching all jobs');
@@ -286,6 +291,34 @@ configfile grub/config/main.cfg
     }
     await this.em.flush();
     return job;
+  }
+
+  /**
+   * Timeout jobs stuck for more than 24 hours in certain statuses.
+   */
+  @Interval(1000 * 60 * 15) // Check every 15 minutes
+  @EnsureRequestContext()
+  async checkForStuckJobs() {
+    this.logger.log('Checking for stuck jobs (installing, starting, imaging, pxe_selection, verifying)...');
+    const stuckStatuses = [
+      JobStatus.INSTALLING,
+      JobStatus.STARTING,
+      JobStatus.IMAGING,
+      JobStatus.PXE_SELECTION,
+      JobStatus.VERIFYING,
+      JobStatus.WAITING_FOR_INSTRUCTIONS
+    ];
+    const fourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000); 
+    const stuckJobs = await this.jobRepository.find({
+      status: { $in: stuckStatuses },
+      lastConnection: { $lt: fourHoursAgo },
+    });
+    for (const job of stuckJobs) {
+      this.logger.warn(`Job ${job.id} has been stuck in status ${job.status} since ${job.lastConnection}, setting to TIMEOUT.`);
+      job.status = JobStatus.TIMOUT;
+      await this.em.persistAndFlush(job);
+    }
+    this.logger.log(`Checked ${stuckJobs.length} stuck jobs.`);
   }
 }
 

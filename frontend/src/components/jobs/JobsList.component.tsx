@@ -127,6 +127,9 @@ export function JobsList() {
                 return <HelpCircle className="h-5 w-5 text-gray-500" />;
             case 'canceled':
                 return <XCircle className="h-5 w-5 text-red-500" />;
+            case 'timeout':
+            case 'timout':
+                return <AlertCircle className="h-5 w-5 text-orange-500" />;
             default:
                 return <XCircle className="h-5 w-5 text-red-500" />;
         }
@@ -147,6 +150,9 @@ export function JobsList() {
                 return 'text-yellow-600 dark:text-yellow-400';
             case 'done':
                 return 'text-green-600 dark:text-green-400';
+            case 'timeout':
+            case 'timout':
+                return 'text-orange-600 dark:text-orange-400';
             default:
                 return 'text-red-600 dark:text-red-400';
         }
