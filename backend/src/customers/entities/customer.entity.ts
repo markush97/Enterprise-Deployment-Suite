@@ -54,6 +54,15 @@ export class CustomerEntity extends CoreBaseEntity {
   teamviewerId: string;
 
   @Property({ nullable: true })
+  pulsewayDownloadUrl: string;
+
+  @Property({ nullable: true })
+  bitdefenderDownloadUrl: string;
+
+  @Property({ nullable: true })
+  pulsewayAssignmentId: string;
+
+  @Property({ nullable: true })
   adDomain: string;
 
   @OneToMany(() => DeviceEntity, device => device.customer)

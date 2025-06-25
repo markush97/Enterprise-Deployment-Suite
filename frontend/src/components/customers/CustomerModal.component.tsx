@@ -46,6 +46,20 @@ const customerFields: FieldConfig[] = [
         type: 'number',
         placeholder: 'e.g. 3980381753180365',
     },
+    {
+        name: 'pulsewayDownloadUrl',
+        label: 'Pulseway Download URL',
+        type: 'text',
+        required: false,
+        placeholder: 'https://...',
+    },
+    {
+        name: 'bitdefenderDownloadUrl',
+        label: 'Bitdefender Download URL',
+        type: 'text',
+        required: false,
+        placeholder: 'https://...',
+    },
 ];
 
 export function CustomerModal({ customer, isOpen, onClose, onSave, loading }: CustomerModalProps) {
@@ -55,12 +69,28 @@ export function CustomerModal({ customer, isOpen, onClose, onSave, loading }: Cu
         rmmId: customer.rmmId,
         zohoId: customer.zohoId,
         itGlueId: customer.itGlueId,
+        pulsewayDownloadUrl: customer.pulsewayDownloadUrl || '',
+        bitdefenderDownloadUrl: customer.bitdefenderDownloadUrl || '',
+        deviceCounterPc: customer.deviceCounterPc || 0,
+        deviceCounterNb: customer.deviceCounterNb || 0,
+        deviceCounterTab: customer.deviceCounterTab || 0,
+        deviceCounterMac: customer.deviceCounterMac || 0,
+        deviceCounterSrv: customer.deviceCounterSrv || 0,
+        deviceCounterDiv: customer.deviceCounterDiv || 0,
     } : {
         name: '',
         shortCode: '',
         rmmId: 0,
         zohoId: 0,
         itGlueId: 0,
+        pulsewayDownloadUrl: '',
+        bitdefenderDownloadUrl: '',
+        deviceCounterPc: 0,
+        deviceCounterNb: 0,
+        deviceCounterTab: 0,
+        deviceCounterMac: 0,
+        deviceCounterSrv: 0,
+        deviceCounterDiv: 0,
     };
 
     // Custom validation for uniqueness or other async errors can be handled in onSave

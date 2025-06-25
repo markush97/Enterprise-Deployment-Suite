@@ -3,7 +3,7 @@ import { CustomerModal } from './CustomerModal.component';
 import { ArrowLeft, Building2, Trash2, Edit } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { customerService } from '../../services/customer.service';
-import { Customer } from '../../types/customer.interface';
+import { Customer, DomainJoinCredentials } from '../../types/customer.interface';
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
 import { useNavigate } from 'react-router-dom';
@@ -65,6 +65,29 @@ export function CustomerDetail({ customer, onBack, onCustomerUpdated, onCustomer
         } finally {
             setIsDeleting(false);
             setIsDeleteConfirmOpen(false);
+        }
+    };
+
+    // Domain Join Credentials state
+    const [credentials, setCredentials] = useState<DomainJoinCredentials>({
+        username: customer.deviceEnrollmentCredentials?.username || '',
+        password: customer.deviceEnrollmentCredentials?.password || '',
+    });
+    const [domain, setDomain] = useState(customer.adDomain || '');
+    const [savingCredentials, setSavingCredentials] = useState(false);
+
+    const handleSaveCredentials = async () => {
+        setSavingCredentials(true);
+        try {
+            const updatedCustomer = await customerService.updateCustomer(customer.id, {
+                deviceEnrollmentCredentials: credentials,
+            });
+            toast.success('Domain join credentials updated');
+            if (onCustomerUpdated) onCustomerUpdated(updatedCustomer);
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to update credentials');
+        } finally {
+            setSavingCredentials(false);
         }
     };
 
@@ -202,11 +225,96 @@ export function CustomerDetail({ customer, onBack, onCustomerUpdated, onCustomer
                                 {new Date(customer.createdAt).toLocaleDateString()}
                             </dd>
                         </div>
+                        <div>
+                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                Pulseway Download URL
+                            </dt>
+                            <dd className="mt-1 text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                                {customer.pulsewayDownloadUrl ? (
+                                    <span className="text-green-600 dark:text-green-400" title="Set">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                    </span>
+                                ) : (
+                                    <span className="text-red-500 dark:text-red-400" title="Not set">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                    </span>
+                                )}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                Bitdefender Download URL
+                            </dt>
+                            <dd className="mt-1 text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                                {customer.bitdefenderDownloadUrl ? (
+                                    <span className="text-green-600 dark:text-green-400" title="Set">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                    </span>
+                                ) : (
+                                    <span className="text-red-500 dark:text-red-400" title="Not set">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                    </span>
+                                )}
+                            </dd>
+                        </div>
                     </dl>
                 </div>
             </div>
 
             <CustomerDeviceCountersCard customer={customer} onCustomerUpdated={onCustomerUpdated} />
+
+            {/* Domain Join Credentials Section */}
+            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h3 className="text-lg font-semibold mb-4">Domain Join Credentials</h3>
+                <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1">Username</label>
+                    <input
+                        type="text"
+                        className="w-full border rounded px-3 py-2"
+                        value={credentials.username}
+                        onChange={e => setCredentials(c => ({ ...c, username: e.target.value }))}
+                    />
+                </div>
+                <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1">Password</label>
+                    <input
+                        type="password"
+                        className="w-full border rounded px-3 py-2"
+                        value={credentials.password}
+                        onChange={e => setCredentials(c => ({ ...c, password: e.target.value }))}
+                    />
+                </div>
+                <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1">Domain</label>
+                    <input
+                        type="text"
+                        className="w-full border rounded px-3 py-2"
+                        value={domain}
+                        onChange={e => setDomain(e.target.value)}
+                    />
+                </div>
+                <button
+                    className="px-4 py-2 bg-blue-600 text-white rounded"
+                    onClick={async () => {
+                        setSavingCredentials(true);
+                        try {
+                            const updatedCustomer = await customerService.updateCustomer(customer.id, {
+                                deviceEnrollmentCredentials: credentials,
+                                adDomain: domain,
+                            });
+                            toast.success('Domain join credentials updated');
+                            if (onCustomerUpdated) onCustomerUpdated(updatedCustomer);
+                        } catch (error: any) {
+                            toast.error(error.message || 'Failed to update credentials');
+                        } finally {
+                            setSavingCredentials(false);
+                        }
+                    }}
+                    disabled={savingCredentials}
+                >
+                    {savingCredentials ? 'Saving...' : 'Save Credentials'}
+                </button>
+            </div>
 
             {/* Edit Customer Modal */}
             <CustomerModal

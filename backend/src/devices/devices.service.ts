@@ -126,15 +126,17 @@ export class DevicesService {
         `Operating System is invalid`,
       );
     }
+    const customer = await this.customersService.findOne(device.customer?.id);
 
     updateDeviceDto.operatingSystem = operatingSystem;
 
     const serialNumber = updateDeviceDto.serialNumber || device.serialNumber;
+    updateDeviceDto.assetTag = updateDeviceDto.assetTag || device.assetTag;
     updateDeviceDto.serialNumber = serialNumber;
 
     const itGlueDevice = await this.itGlue.upsertDevice(
       updateDeviceDto,
-      device.customer.itGlueId,
+      customer.itGlueId,
       device.id,
     );
     device.itGlueId = itGlueDevice.id;
