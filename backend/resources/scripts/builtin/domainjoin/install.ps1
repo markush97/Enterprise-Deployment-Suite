@@ -2,7 +2,7 @@ $DomainName = $eds.domainName
 
 try {
     Write-EDSLog -Level info -Message "Preparing to join domain: $DomainName"
-    $secpasswd = ConvertTo-SecureString$eds.domainjoin.password -AsPlainText -Force
+    $secpasswd = ConvertTo-SecureString $eds.domainjoin.password -AsPlainText -Force
     $creds = New-Object System.Management.Automation.PSCredential ($eds.domainjoin.username, $secpasswd)
 
     $params = @{
