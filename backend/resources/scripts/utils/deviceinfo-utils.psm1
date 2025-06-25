@@ -1,13 +1,13 @@
-function Get-OperatingSystemNotes {
-    $os = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
-    $version = $os.DisplayVersion
-    $build = "$($os.CurrentBuild).$($os.UBR)"
-    return "$version Build: $build"
-}
+Import-Module "$PSScriptRoot\local-config-utils.psm1"
 
 function Get-SystemInformation {
     [CmdletBinding()]
-    param()
+    param(
+        [Parameter(Mandatory=$false)]
+        [string]$ConfigFolder = "C:\ProgramData\eds"    
+    )
+
+    $localConfig = Get-DeviceConfig -ConfigFolder $ConfigFolder
 
     $bitlockerInfo = Get-Bitlockerinfo
 
@@ -20,10 +20,9 @@ function Get-SystemInformation {
             networkInterfaces = Get-NetworkInterfaces
             operatingSystem = Get-OperatingSystem
             operatingSystemNotes = Get-OperatingSystemNotes
-            assetTag = Get-AssetTag
-            installedBy = Get-InstalledBy;
-            bitlockerId = $bitlockerInfo.KeyProtectorId | Select-Object -First 1
-            bitlockerKey = $bitlockerInfo.RecoveryPassword | Select-Object -First 1
+            installedBy = $localConfig.installedBy
+            bitlockerId = $bitlockerInfo.KeyProtectorId
+            bitlockerKey = $bitlockerInfo.RecoveryPassword
 	    deviceType = "PC"
         }
 
@@ -35,18 +34,29 @@ function Get-SystemInformation {
     }
 }
 
+function Get-OperatingSystemNotes {
+    $os = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+    $version = $os.DisplayVersion
+    $build = "$($os.CurrentBuild).$($os.UBR)"
+    return "$version Build: $build"
+}
+
 function Get-Bitlockerinfo {
-	[CmdletBinding()]
-	param()
+    [CmdletBinding()]
+    param()
 
-	try {
-	  $bitlockerVolume = Get-BitLockerVolume -MountPoint "C:"
-	  $bitlockerInfo = $bitlockerVolume.KeyProtector | Where-Object { $_.KeyProtectorType -eq "RecoveryPassword" } | Select-Object @{Name='KeyProtectorId';Expression={ $_.KeyProtectorId -replace '[{}]' }},RecoveryPassword
-
-          return $bitlockerInfo
+    try {
+        $bitlockerVolume = Get-BitLockerVolume -MountPoint "C:" -ErrorAction Stop
+        if ($bitlockerVolume.ProtectionStatus -eq 1) {
+            $bitlockerInfo = $bitlockerVolume.KeyProtector | Where-Object { $_.KeyProtectorType -eq "RecoveryPassword" } | 
+                Select-Object @{Name='KeyProtectorId';Expression={ $_.KeyProtectorId -replace '[{}]' }},RecoveryPassword
+            return $bitlockerInfo
+        } else {
+            return $null
+        }
     } catch {
-       	Write-Warning "Error retrieving BitlockerInfo: $_"
-       	return "Unknown"
+        Write-Warning "Error retrieving BitlockerInfo or BitLocker not enabled: $_"
+        return $null
     }
 }
 

@@ -8,29 +8,72 @@
 function Set-JobLogContext {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory=$false)]
         [string]$JobId,
         [Parameter(Mandatory=$false)]
         [string]$TaskId,
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory=$false)]
         [string]$LocalLogPath,
-        [Parameter(Mandatory)]
-        [string]$BackendUrl
+        [Parameter(Mandatory=$false)]
+        [string]$apiUrl,
+        [Parameter(Mandatory=$false)]
+        [string]$DeviceToken
     )
-    $Global:eds = [PSCustomObject]@{
-        jobId        = $JobId
-        taskId       = $TaskId
-        localLogPath = $LocalLogPath
-        backendUrl   = $BackendUrl
+    if (-not $Global:eds) {
+        $Global:eds = [PSCustomObject]@{}
     }
 
-    $logDir = Split-Path $LocalLogPath -Parent
-    if (-not (Test-Path $logDir)) {
-        New-Item -Path $logDir -ItemType Directory -Force | Out-Null
+    if ($PSBoundParameters.ContainsKey('JobId')) {
+        if (-not ($Global:eds.PSObject.Properties.Match('jobId'))) {
+            $Global:eds | Add-Member -MemberType NoteProperty -Name jobId -Value $JobId
+        } else {
+            # Remove and re-add to avoid SetValueInvocationException
+            $Global:eds.PSObject.Properties.Remove('jobId')
+            $Global:eds | Add-Member -MemberType NoteProperty -Name jobId -Value $JobId
+        }
+    }
+    if ($PSBoundParameters.ContainsKey('TaskId')) {
+        if (-not ($Global:eds.PSObject.Properties.Match('taskId'))) {
+            $Global:eds | Add-Member -MemberType NoteProperty -Name taskId -Value $TaskId
+        } else {
+            $Global:eds.PSObject.Properties.Remove('taskId')
+            $Global:eds | Add-Member -MemberType NoteProperty -Name taskId -Value $TaskId
+        }
+    }
+    if ($PSBoundParameters.ContainsKey('LocalLogPath')) {
+        if (-not ($Global:eds.PSObject.Properties.Match('localLogPath'))) {
+            $Global:eds | Add-Member -MemberType NoteProperty -Name localLogPath -Value $LocalLogPath
+        } else {
+            $Global:eds.PSObject.Properties.Remove('localLogPath')
+            $Global:eds | Add-Member -MemberType NoteProperty -Name localLogPath -Value $LocalLogPath
+        }
+    }
+    if ($PSBoundParameters.ContainsKey('apiUrl')) {
+        if (-not ($Global:eds.PSObject.Properties.Match('apiUrl'))) {
+            $Global:eds | Add-Member -MemberType NoteProperty -Name apiUrl -Value $apiUrl
+        } else {
+            $Global:eds.PSObject.Properties.Remove('apiUrl')
+            $Global:eds | Add-Member -MemberType NoteProperty -Name apiUrl -Value $apiUrl
+        }
+    }
+    if ($PSBoundParameters.ContainsKey('DeviceToken')) {
+        if (-not ($Global:eds.PSObject.Properties.Match('deviceToken'))) {
+            $Global:eds | Add-Member -MemberType NoteProperty -Name deviceToken -Value $DeviceToken
+        } else {
+            $Global:eds.PSObject.Properties.Remove('deviceToken')
+            $Global:eds | Add-Member -MemberType NoteProperty -Name deviceToken -Value $DeviceToken
+        }
+    }
+
+    if ($PSBoundParameters.ContainsKey('LocalLogPath') -and $LocalLogPath) {
+        $logDir = Split-Path $LocalLogPath -Parent
+        if (-not (Test-Path $logDir)) {
+            New-Item -Path $logDir -ItemType Directory -Force | Out-Null
+        }
     }
 }
 
-function Write-JobLog {
+function Write-EDSLog {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$false)]
@@ -40,42 +83,55 @@ function Write-JobLog {
         [Parameter(Mandatory=$false)]
         [string]$LocalLogPath = $Global:eds.localLogPath,
         [Parameter(Mandatory=$false)]
-        [string]$BackendUrl = $Global:eds.backendUrl,
+        [string]$ApiUrl = $Global:eds.apiUrl,
         [Parameter(Mandatory)]
         [string]$Message,
         [Parameter(Mandatory=$false)]
         [ValidateSet('info','warn','error','success','debug')]
         [string]$Level = 'info',
-        [Parameter()]
-        [hashtable]$Meta
+        [Parameter(Mandatory=$false)]
+        [hashtable]$Meta,
+        [Parameter(Mandatory=$false)]
+        [string]$DeviceToken = $Global:eds.deviceToken
     )
 
-    if (-not $JobId -or -not $LocalLogPath -or -not $BackendUrl) {
-        throw "Write-JobLog: JobId, TaskId, LocalLogPath, and BackendUrl must be set (either as parameters or via Set-JobLogContext)."
+    if (-not $JobId -or -not $LocalLogPath -or -not $ApiUrl -or -not $deviceToken) {
+        throw "Write-JobLog: JobId, TaskId, LocalLogPath, deviceToken and ApiUrl must be set (either as parameters or via Set-JobLogContext)."
     }
 
     $timestamp = (Get-Date).ToString('yyyy-MM-ddTHH:mm:ss.fffK')
+    $timestampShort = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
     $logEntry = [PSCustomObject]@{
         timestamp = $timestamp
-        jobId     = $JobId
-        taskId    = $TaskId
         level     = $Level
         message   = $Message
         meta      = $Meta
     }
+    if ($TaskId -and $TaskId -ne '' -and $TaskId -ne $null) {
+        $logEntry | Add-Member -MemberType NoteProperty -Name taskId -Value $TaskId
+        # Write to local log file
+        Add-Content -Path $LocalLogPath -Value "[$timestampShort]: [$Level@$TaskId] $message"
+    } else {
+        # Write to local log file
+        Add-Content -Path $LocalLogPath -Value "[$timestampShort]: [$Level@==================main==============] $message"
+    }
+
     $logLine = $logEntry | ConvertTo-Json -Compress
 
-    # Write to local log file
-    Add-Content -Path $LocalLogPath -Value $logLine
+    Write-Host $Message
 
     # Send to backend (fire-and-forget, but log error if fails)
     try {
         $body = $logEntry | ConvertTo-Json -Compress
-        $headers = @{ 'Content-Type' = 'application/json' }
-        Invoke-RestMethod -Uri "$BackendUrl/jobs/$JobId/logs" -Method Post -Body $body -Headers $headers -TimeoutSec 5 | Out-Null
+        $headers = @{ 
+            'Content-Type' = 'application/json'
+            'X-Device-Token'  = $deviceToken
+        }
+        Invoke-RestMethod -Uri "$apiUrl/jobs/$JobId/logs" -Method Post -Body $body -Headers $headers -TimeoutSec 5 | Out-Null
     } catch {
         $errMsg = "[LOGGING ERROR] Failed to send log to backend: $_"
         Add-Content -Path $LocalLogPath -Value $errMsg
+        Write-Error -Message $errMsg
     }
 }
 
