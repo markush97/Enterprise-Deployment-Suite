@@ -36,4 +36,9 @@ export const jobService = {
         const response = await api.put<Job>(`/jobs/${id}`, data);
         return response.data;
     },
+
+    async getJobLogs(jobId: string) {
+        const response = await api.get(`/jobs/${jobId}/logs`);
+        return response.data;
+    },
 };

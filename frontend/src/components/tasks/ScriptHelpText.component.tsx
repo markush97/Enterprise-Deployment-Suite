@@ -21,15 +21,15 @@ export function ScriptHelpText() {
     }
   }, [open]);
 
-  const loggingExample = `Write-EDSLog -Message "Step started" -Level info -Meta @{ extraInfo = 1 }
+  const loggingExample = `Write-EDSLog -Level info -Message "Step started" -Meta @{ extraInfo = 1 }
 # Automatically uses $eds for context`;
   const contextExample = `# Set context for first subtask
-Set-EDSLogContext -JobId $JobId -TaskId1 -LocalLogPath $LocalLogPath -BackendUrl $BackendUrl
-# $eds is now available with .jobId, .taskId, .localLogPath, .backendUrl
+Set-EDSLogContext -JobId $JobId -TaskId1 -LocalLogPath $LocalLogPath -apiUrl $BackendUrl
+# $eds is now available with .jobId, .taskId, .localLogPath, .apiUrl
 & "$PSScriptRoot/subtask1.ps1"
 
 # Set context for second subtask
-Set-EDSLogContext -JobId $JobId -TaskId2 -LocalLogPath $LocalLogPath -BackendUrl $BackendUrl
+Set-EDSLogContext -JobId $JobId -TaskId2 -LocalLogPath $LocalLogPath -apiUrl $BackendUrl
 & "$PSScriptRoot/subtask2.ps1"
 
 # Each subtask can just call Write-EDSLog with no context arguments`;
@@ -46,6 +46,9 @@ Set-EDSLogContext -JobId $JobId -TaskId2 -LocalLogPath $LocalLogPath -BackendUrl
     { name: '$eds.domainjoin.ou', desc: 'The OU for domain join adapted to the current device type' },
     { name: "$eds.customerId", desc: 'The customer ID' },
     { name: "$eds.teamviewerId", desc: 'The Customer TeamViewer ID' },
+    { name: "$eds.pulsewayDownloadUrl", desc: 'The Customer Pulseway download URL' },
+    { name: "$eds.bitdefenderDownloadUrl", desc: 'The Customer Bitdefender download URL' },
+
 
   ];
   const availableFuncs = [

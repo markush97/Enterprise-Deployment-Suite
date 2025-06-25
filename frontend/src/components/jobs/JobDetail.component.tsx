@@ -12,6 +12,8 @@ import { AssignTaskBundleCard } from './AssignTaskBundleCard.component';
 import { Task } from '../../types/task.interface';
 import Tippy from '@tippyjs/react';
 import { JobDeviceInfoCard } from './DeviceNameCard.component';
+import { JobLogViewer } from './JobLogViewer.component';
+import { useJobLogStore } from '../../states/logStore';
 
 interface JobDetailProps {
     job: Job;
@@ -200,6 +202,21 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
 
     // Determine if job is started (not waiting for instructions)
     const isJobStarted = job.status !== 'waiting_for_instructions';
+    const jobId = job.id;
+    const { loading, error, fetchLogs, getViewerLogs } = useJobLogStore(state => ({
+        loading: state.loading[jobId] || false,
+        error: state.error[jobId] || null,
+        fetchLogs: state.fetchLogs,
+        getViewerLogs: state.getViewerLogs,
+    }));
+    const logs = getViewerLogs(jobId);
+
+    // Fetch logs when job is started or jobId changes
+    useEffect(() => {
+        if (isJobStarted && jobId) {
+            fetchLogs(jobId);
+        }
+    }, [isJobStarted, jobId, fetchLogs]);
 
     // When the job's customer changes, refresh the device name generator (autoName) instantly
     useEffect(() => {
@@ -447,6 +464,23 @@ export function JobDetail({ job, onBack, onJobUpdated, onJobDeleted, editMode }:
                                 Yes, Start Job
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {isJobStarted && (
+                <div className="bg-white dark:bg-gray-800 shadow rounded-lg my-6">
+                    <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
+                        <span className="text-lg font-semibold text-gray-900 dark:text-white">Job Logs</span>
+                    </div>
+                    <div className="px-6 py-4">
+                        {loading ? (
+                            <div className="text-gray-500 dark:text-gray-400">Loading logs...</div>
+                        ) : error ? (
+                            <div className="text-red-500 dark:text-red-400">{error}</div>
+                        ) : (
+                            <JobLogViewer logs={logs} />
+                        )}
                     </div>
                 </div>
             )}

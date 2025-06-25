@@ -12,9 +12,6 @@ export class JobLogDataDto {
   timestamp: string;
 
   @IsUUID('4')
-  jobId: string;
-
-  @IsUUID('4')
   @IsOptional()
   taskId?: string;
 

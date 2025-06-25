@@ -237,7 +237,7 @@ export class TaskService implements OnModuleInit {
           });
         }
 
-        archive.append(JSON.stringify(task.options), { name: join(basePathInZip, task.id, 'taskOptions.json') })
+        archive.append(JSON.stringify({...task.options, taskId: task.id, taskName: task.name ?? task.id}), { name: join(basePathInZip, task.id, 'task.json') })
 
       });
     }

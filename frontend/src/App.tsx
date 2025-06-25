@@ -4,6 +4,12 @@ import { useThemeStore } from "./states/themeStore";
 import { useEffect } from "react";
 import { LoginForm } from "./components/auth/Login-page.component";
 import { Dashboard } from "./components/dashboard/Dashboard.component";
+import { CustomersModule } from "./components/customers/CustomerModule";
+import { DashboardModule } from "./types/dashboard-module.interface";
+import { DevicesModule } from "./components/devices/DeviceModule";
+import { TasksModule } from "./components/tasks/TaskModule";
+import { TaskBundleModule } from "./components/taskBundle/TaskBundleModule";
+import { JobsModule } from "./components/jobs/JobModule";
 
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -11,6 +17,14 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
     const location = useLocation();
     return isAuthenticated ? children : <Navigate to="/login" state={{ from: location }} replace />;
 }
+
+const modules: DashboardModule[] = [
+    CustomersModule,
+    DevicesModule,
+    TasksModule,
+    TaskBundleModule,
+    JobsModule
+];
 
 function App({ }) {
     const { isDarkMode } = useThemeStore();
@@ -36,14 +50,19 @@ function App({ }) {
                             <LoginForm />
                         }
                     />
-                    <Route path="*" element={
+                    <Route path="/info" element={
                         <PrivateRoute>
                             <Dashboard />
                         </PrivateRoute>
                     } />
+                    <Route path="*" element={
+                        <PrivateRoute>
+                            <Dashboard modules={modules}/>
+                        </PrivateRoute>
+                    } />
                     <Route index element={
                         <PrivateRoute>
-                            <Dashboard />
+                            <Dashboard modules={modules}/>
                         </PrivateRoute>
                     } />
                 </Routes>

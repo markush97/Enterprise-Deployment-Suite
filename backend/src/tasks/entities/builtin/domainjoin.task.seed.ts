@@ -1,5 +1,6 @@
 import { TasksEntity } from "../task.entity";
-import { BUILT_IN_TASK_PREFIX, readScript } from "./task-builtin-seed";
+import { BUILT_IN_TASK_PREFIX } from "./builtin-prefix";
+import { readScript } from "./task-builtin-seed";
 
 const installScript = readScript('domainjoin/install.ps1');
 const verifyScript = readScript('domainjoin/verify.ps1');

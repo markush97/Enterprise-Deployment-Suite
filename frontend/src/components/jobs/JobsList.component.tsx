@@ -7,11 +7,17 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ConfirmDeleteModal } from '../utils/ConfirmDeleteModal';
 
+const JOB_STATUSES = [
+    'preparing', 'imaging', 'pxe_selection', 'installing', 'verifying', 'starting',
+    'ready', 'done', 'waiting_for_instructions', 'canceled', 'timeout', 'timout'
+];
+
 export function JobsList() {
     const { jobsQuery, addJobMutation, cancelJobMutation, updateJobMutation } = useJobs();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedJob, setSelectedJob] = useState<Job | null>(null);
     const [jobToCancel, setJobToCancel] = useState<Job | null>(null);
+    const [statusFilter, setStatusFilter] = useState<string>('');
     const navigate = useNavigate();
 
 
@@ -40,6 +46,9 @@ export function JobsList() {
     };
 
     const { data: jobs = [], isLoading, isError, error } = jobsQuery;
+    const filteredJobs = statusFilter
+        ? jobs.filter(job => job.status === statusFilter)
+        : jobs;
 
     function formatRelativeTime(dateString: string) {
         const date = new Date(dateString);
@@ -159,8 +168,22 @@ export function JobsList() {
     }
     return (
         <>
+            <div className="mb-4 flex items-center gap-2">
+                <label htmlFor="statusFilter" className="text-sm font-medium text-gray-700 dark:text-gray-200">Filter by Status:</label>
+                <select
+                    id="statusFilter"
+                    value={statusFilter}
+                    onChange={e => setStatusFilter(e.target.value)}
+                    className="border rounded px-2 py-1 text-sm dark:bg-gray-800 dark:text-gray-100"
+                >
+                    <option value="">All</option>
+                    {JOB_STATUSES.map(status => (
+                        <option key={status} value={status}>{status.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</option>
+                    ))}
+                </select>
+            </div>
             <EntityList<Job>
-                data={jobs}
+                data={filteredJobs}
                 columns={columns}
                 actions={actions}
                 isLoading={isLoading}

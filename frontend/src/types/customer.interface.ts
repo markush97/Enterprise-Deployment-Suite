@@ -3,7 +3,13 @@ export interface CustomerSettings {
     defaultClientImage?: string;
 }
 
+export interface DomainJoinCredentials {
+    username: string;
+    password: string;
+}
+
 export interface Customer {
+    adDomain?: string;
     id: string;
     name: string;
     shortCode: string;
@@ -23,4 +29,7 @@ export interface Customer {
     deviceOUSrv?: string;
     deviceCounterDiv: number;
     deviceOUDiv?: string;
+    deviceEnrollmentCredentials?: DomainJoinCredentials;
+    pulsewayDownloadUrl?: string;
+    bitdefenderDownloadUrl?: string;
 }

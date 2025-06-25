@@ -8,15 +8,12 @@ import { TaskBundleModule } from "../taskBundle/TaskBundleModule";
 import { JobsModule } from "../jobs/JobModule";
 import { DevicesModule } from "../devices/DeviceModule";
 
-const modules: DashboardModule[] = [
-    CustomersModule,
-    DevicesModule,
-    TasksModule,
-    TaskBundleModule,
-    JobsModule
-];
 
-export function Dashboard() {
+export interface DashboardProps {
+    modules?: DashboardModule[];
+}
+
+export function Dashboard({ modules = [] }: DashboardProps) {
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
             <Header modules={modules}></Header>

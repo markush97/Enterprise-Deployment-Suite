@@ -118,6 +118,8 @@ export class JobsService implements OnModuleInit {
       deviceName: job.device?.name,
       domainName: job.customer.adDomain,
       jobConfig: {},
+      pulsewayDownloadUrl: job.customer.pulsewayDownloadUrl,
+      bitdefenderDownloadUrl: job.customer.bitdefenderDownloadUrl,
       domainjoin: {
         username: job.customer.deviceEnrollmentCredentials?.username,
         password: job.customer.deviceEnrollmentCredentials?.password,
@@ -214,6 +216,9 @@ export class JobsService implements OnModuleInit {
           `The imaging process has been completed successfully.
 Visit https://cwi.eu.itglue.com/${job.customer.itGlueId}/configurations/${job.device.itGlueId} to check ITGlue.
 
+Please login into the system aus the root user documented in ITGlue. Fill out the checklist https://cwi.eu.itglue.com/4037605574148284/checklists/4204549932564711 and 
+then execute the following command to cleanup the device: "C:\\CWI\\setup-cleanup.ps1"
+
         `,
         )
         .then(() => { });
@@ -283,6 +288,9 @@ configfile grub/config/main.cfg
     if (update.customerId) {
       const customer = await this.customersService.findOne(update.customerId);
       job.customer = customer;
+      if (job.device) {
+        job.device.customer = customer;
+      }
     }
 
     if (update.taskBundleId) {

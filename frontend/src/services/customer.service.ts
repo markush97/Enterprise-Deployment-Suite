@@ -8,7 +8,7 @@ export const customerService = {
         return res.data;
     },
     async updateCustomer(id: string, data: Partial<Customer>): Promise<Customer> {
-        const res = await api.patch<Customer>(`/customers/${id}`, data);
+        const res = await api.put<Customer>(`/customers/${id}`, data);
         return res.data;
     },
     async deleteCustomer(id: string): Promise<void> {

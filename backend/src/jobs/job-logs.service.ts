@@ -3,7 +3,7 @@ import { MTIErrorCodes } from 'src/core/errorhandling/exceptions/mti.error-codes
 import { DeviceEntity } from 'src/devices/entities/device.entity';
 import { TasksEntity } from 'src/tasks/entities/task.entity';
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { EntityManager } from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/mssql';
@@ -16,6 +16,7 @@ import { JobsService } from './jobs.service';
 
 @Injectable()
 export class JobLogsService {
+  private readonly logger = new Logger('JobLogsService');
   constructor(
     private readonly em: EntityManager,
     @InjectRepository(JobLogEntity)
@@ -23,13 +24,13 @@ export class JobLogsService {
     private readonly jobService: JobsService,
   ) {}
 
-  async addLog(log: JobLogDataDto, device: DeviceEntity): Promise<JobLogEntity> {
-    const job = await this.jobService.findOneOrFail(log.jobId);
+  async addLog(jobId: string, log: JobLogDataDto, device: DeviceEntity): Promise<JobLogEntity> {
+    const job = await this.jobService.findOneOrFail(jobId);
 
     if (job.device.id !== device.id) {
       throw new BadRequestMTIException(
         MTIErrorCodes.JOB_LOG_DEVICE_MISMATCH,
-        `Job with ID ${log.jobId} is not associated with device ${device.id}.`,
+        `Job with ID ${jobId} is not associated with device ${device.id}.`,
       );
     }
 
@@ -47,8 +48,9 @@ export class JobLogsService {
   }
 
   async getLogsForJob(jobId: string): Promise<JobLogEntity[]> {
+    this.logger.debug(`Fetching logs for job with ID: ${jobId}`);
     return this.jobLogRepository.findAll({
-      filters: { job: { id: jobId } },
+      where: { job: this.jobLogRepository.getReference(jobId) },
       orderBy: { timestamp: 'ASC' },
     });
   }

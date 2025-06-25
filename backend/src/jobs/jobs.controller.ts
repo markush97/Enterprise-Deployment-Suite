@@ -117,17 +117,17 @@ export class JobsController {
     return this.jobsService.taskNotification(jobId, taskInfo);
   }
 
-  @Post('logs')
-  @UseDeviceTokenGuard()
-  async writeLog(@Body() logData: JobLogDataDto, @Device() device: DeviceEntity) {
-    return this.jobLogsService.addLog(logData, device);
-  }
-
   @Post('notify/:jobid')
   @UseDeviceTokenGuard()
   @ApiOperation({ summary: 'Notify the server about the current setup-status' })
   async clientNotification(@Param('jobid') jobId: string, @Query() jobStatus: JobStatusQueryDto) {
     return this.jobsService.changeStatus(jobId, jobStatus.jobStatus);
+  }
+
+  @Post(':jobid/logs')
+  @UseDeviceTokenGuard()
+  async writeLog(@Param('jobid') jobId: string, @Body() logData: JobLogDataDto, @Device() device: DeviceEntity) {
+    return this.jobLogsService.addLog(jobId, logData, device);
   }
 
   @Put(':jobid/status')

@@ -16,8 +16,7 @@ interface DeviceNameCardProps {
 export function JobDeviceInfoCard({
     job,
     isJobStarted,
-    onJobUpdated,
-    customerOptions = [],
+    onJobUpdated
 }: DeviceNameCardProps) {
     // Helper to get deviceId for API call
     const deviceId = job.device?.id;
@@ -63,7 +62,7 @@ export function JobDeviceInfoCard({
                     nextNumber = customer[typeKey] + 1;
                 }
                 if (nextNumber) {
-                    setAutoName(`${job.customer.shortCode}-${selectedType}${String(nextNumber).padStart(3, '0')}`);
+                    setAutoName(`${job.customer.shortCode}-${selectedType}${String(nextNumber).padStart(2, '0')}`);
                 }
             } catch (e) {
                 setAutoName('');
@@ -97,6 +96,8 @@ export function JobDeviceInfoCard({
         }
         return null;
     };
+
+    // Placeholder logs array (replace with real logs from API or props)
 
     return (
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg mt-6">
@@ -210,14 +211,14 @@ export function JobDeviceInfoCard({
                             })(),
                             {
                                 loading: 'Updating device...',
-                                success: 'Device updated successfully.',
-                                error: 'Error updating device.',
+                                success: 'Device updated successfully!',
+                                error: 'Failed to update device.',
                             }
                         );
                     }}
-                    disabled={isJobStarted || !isStaged || !!assetTagError}
+                    disabled={isJobStarted || !!assetTagError || !isStaged}
                 >
-                    Save
+                    Save Device Info
                 </button>
             </div>
         </div>
