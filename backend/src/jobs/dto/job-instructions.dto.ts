@@ -7,6 +7,7 @@ export class JobInstructionsDto {
     organisationId?: string;
     startedBy?: string;
     startedById?: string;
+    localPassword?: string;
   }
 }
 

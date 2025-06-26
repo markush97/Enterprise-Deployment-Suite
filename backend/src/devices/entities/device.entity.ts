@@ -64,4 +64,7 @@ export class DeviceEntity extends CoreBaseEntity {
   @Property({ nullable: true })
   pulsewayId: string;
 
+  @Property({ nullable: true, hidden: true })
+  localPassword?: string;
+
 }

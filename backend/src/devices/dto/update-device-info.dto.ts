@@ -1,4 +1,4 @@
-import { Allow, IsOptional, IsString } from 'class-validator';
+import { Allow, IsBoolean, IsOptional, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -74,4 +74,14 @@ export class DeviceInformationDto {
   @ApiProperty()
   @Allow()
   collectionTime?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  password?: string;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
+  autogeneratePassword?: boolean;
 }

@@ -98,6 +98,8 @@ export function JobDeviceInfoCard({
     };
 
     // Placeholder logs array (replace with real logs from API or props)
+    const [localPassword, setLocalPassword] = useState('');
+    const [autogeneratePassword, setAutogeneratePassword] = useState(false);
 
     return (
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg mt-6">
@@ -150,6 +152,26 @@ export function JobDeviceInfoCard({
                 {assetTagError && (
                     <span className="text-xs text-red-500">{assetTagError}</span>
                 )}
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 mt-2">Local Password</label>
+                <div className="flex items-center gap-2 mb-2">
+                    <input
+                        type="password"
+                        className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        value={localPassword}
+                        onChange={e => setLocalPassword(e.target.value)}
+                        disabled={isJobStarted || autogeneratePassword}
+                        placeholder="Set local password"
+                    />
+                    <label className="flex items-center gap-1 text-sm">
+                        <input
+                            type="checkbox"
+                            checked={autogeneratePassword}
+                            onChange={e => setAutogeneratePassword(e.target.checked)}
+                            disabled={isJobStarted}
+                        />
+                        Autogenerate
+                    </label>
+                </div>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
                     <div className="flex items-center gap-2">
                         Auto-Name:
@@ -203,7 +225,13 @@ export function JobDeviceInfoCard({
                         setUsedAutoName(false);
                         await toast.promise(
                             (async () => {
-                                await deviceService.updateDevice(deviceId, { name: stagedDeviceName, type: stagedType, assetTag: stagedAssetTag });
+                                await deviceService.updateDevice(deviceId, {
+                                    name: stagedDeviceName,
+                                    type: stagedType,
+                                    assetTag: stagedAssetTag,
+                                    password: autogeneratePassword ? undefined : localPassword,
+                                    autogeneratePassword,
+                                });
                                 if (onJobUpdated) {
                                     onJobUpdated({ ...job, device: { ...job.device, name: stagedDeviceName, type: stagedType, assetTag: stagedAssetTag } });
                                 }

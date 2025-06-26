@@ -12,6 +12,26 @@ export const generateSecureRandomString = (length: number): string => {
 };
 
 /**
+ * Generate a secure string
+ * 
+ * Generates a secure random alphanumeric string of a given length.
+ * @param {number} length - Desired length of the output string.
+ * @returns {string} - Secure random alphanumeric string.
+ */
+export const generateSecureRandomAlphanumericString = (length: number): string => {
+    const possibleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charsLength = possibleChars.length;
+    const buff = randomBytes(length);
+
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += possibleChars[buff[i] % charsLength];
+    }
+
+    return result;
+}
+
+/**
  * Generate a secure uuid
  *
  * @returns a cryptographically secure uuid

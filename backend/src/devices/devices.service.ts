@@ -16,6 +16,7 @@ import { CreateDeviceDto } from './dto/create-device.dto';
 import { DeviceInformationDto } from './dto/update-device-info.dto';
 import { DeviceEntity } from './entities/device.entity';
 import { CustomerEntity } from 'src/customers/entities/customer.entity';
+import { generateSecureRandomAlphanumericString, generateSecureRandomString } from 'src/core/utils/crypto.helper';
 
 @Injectable()
 export class DevicesService {
@@ -146,6 +147,16 @@ export class DevicesService {
     device.bitlockerId = updateDeviceDto.bitlockerId;
     device.bitlockerKey = updateDeviceDto.bitlockerKey;
     device.name = updateDeviceDto.name;
+
+    // Handle password logic
+    if (updateDeviceDto.autogeneratePassword) {
+      // Generate a 10-char alphanumeric password (no special chars) and encode it in base64
+      // This is of course not secure.
+      const password = generateSecureRandomAlphanumericString(10);
+      device.localPassword = Buffer.from(password).toString('base64');
+    } else if (updateDeviceDto.password) {
+      device.localPassword = Buffer.from(updateDeviceDto.password).toString('base64');
+    }
 
     await this.em.flush();
     this.logger.debug('Device information updated successfully');

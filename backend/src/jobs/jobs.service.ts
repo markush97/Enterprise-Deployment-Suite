@@ -14,7 +14,6 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { CustomersService } from '../customers/customers.service';
 import { DevicesService } from '../devices/devices.service';
 import { ImagesService } from '../images/images.service';
-import { TaskBundleEntity } from '../tasks/entities/task-bundle.entity';
 import { ClientInfoDto } from './dto/client-info.dto';
 import { CreateJobDto } from './dto/create-job.dto';
 import { JobInstructionAction, JobInstructionsDto } from './dto/job-instructions.dto';
@@ -22,7 +21,6 @@ import { RegisterJobDto } from './dto/register-job.dto';
 import { TaskInfoDto } from './dto/task-info.dto';
 import { JobConnectionsEntity } from './entities/job-connections.entity';
 import { JobEntity, JobStatus } from './entities/job.entity';
-import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountEntity } from 'src/auth/entities/account.entity';
 import { AuthService } from 'src/auth/auth.service';
@@ -88,6 +86,7 @@ export class JobsService implements OnModuleInit {
           organisationId: job.customer?.id,
           startedBy: job.startedBy?.name,
           startedById: job.startedBy?.id,
+          localPassword: job.device?.localPassword,
         }
       }
     }
