@@ -5,7 +5,7 @@ interface CustomerModalProps {
     customer?: Customer;
     isOpen: boolean;
     onClose: () => void;
-    onSave: (data: Omit<Customer, 'id' | 'createdAt'>) => Promise<void>;
+    onSave: (data: Partial<Customer>) => Promise<void>;
     loading?: boolean;
 }
 
@@ -69,28 +69,16 @@ export function CustomerModal({ customer, isOpen, onClose, onSave, loading }: Cu
         rmmId: customer.rmmId,
         zohoId: customer.zohoId,
         itGlueId: customer.itGlueId,
-        pulsewayDownloadUrl: customer.pulsewayDownloadUrl || '',
-        bitdefenderDownloadUrl: customer.bitdefenderDownloadUrl || '',
-        deviceCounterPc: customer.deviceCounterPc || 0,
-        deviceCounterNb: customer.deviceCounterNb || 0,
-        deviceCounterTab: customer.deviceCounterTab || 0,
-        deviceCounterMac: customer.deviceCounterMac || 0,
-        deviceCounterSrv: customer.deviceCounterSrv || 0,
-        deviceCounterDiv: customer.deviceCounterDiv || 0,
+        pulsewayDownloadUrl: customer.pulsewayDownloadUrl || undefined,
+        bitdefenderDownloadUrl: customer.bitdefenderDownloadUrl || undefined
     } : {
         name: '',
         shortCode: '',
         rmmId: 0,
         zohoId: 0,
         itGlueId: 0,
-        pulsewayDownloadUrl: '',
-        bitdefenderDownloadUrl: '',
-        deviceCounterPc: 0,
-        deviceCounterNb: 0,
-        deviceCounterTab: 0,
-        deviceCounterMac: 0,
-        deviceCounterSrv: 0,
-        deviceCounterDiv: 0,
+        pulsewayDownloadUrl: undefined,
+        bitdefenderDownloadUrl: undefined
     };
 
     // Custom validation for uniqueness or other async errors can be handled in onSave

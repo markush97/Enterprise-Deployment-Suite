@@ -68,7 +68,9 @@ export class JobsService implements OnModuleInit {
   }
 
   async getJobInstructions(id: string): Promise<JobInstructionsDto> {
-    const job = await this.jobRepository.findOneOrFail(id, { populate: ['device', 'customer', 'taskBundle'] });
+    const job = await this.jobRepository.findOneOrFail(id, { populate: [ 'customer', 'taskBundle'] });
+    const device = await this.devicesService.findOneWithPassword(job.device.id);
+  
     job.lastConnection = new Date();
     await this.em.persistAndFlush(job);
 

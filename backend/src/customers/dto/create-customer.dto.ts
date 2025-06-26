@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, IsUrl } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -25,4 +25,14 @@ export class CreateCustomerDto {
   @ApiProperty()
   @IsNumber()
   itGlueId: number;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsUrl()
+  pulsewayDownloadUrl?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsUrl()
+  bitdefenderDownloadUrl?: string;
 }

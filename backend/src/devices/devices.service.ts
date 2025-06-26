@@ -34,6 +34,15 @@ export class DevicesService {
     return this.deviceRepository.findAll({ populate: ['customer'] });
   }
 
+  async findOneWithPassword(id: string): Promise<DeviceEntity | null> {
+    const device = await this.deviceRepository.findOne(id, {
+      populate: ['customer'],
+      fields: ['*'],
+      
+    });
+    return device;
+  }
+
   async findOne(id: string): Promise<DeviceEntity | null> {
     const device = await this.deviceRepository.findOne(id, { populate: ['customer'] });
     return device;
