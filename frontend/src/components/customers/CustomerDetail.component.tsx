@@ -9,6 +9,7 @@ import 'tippy.js/dist/tippy.css';
 import { useNavigate } from 'react-router-dom';
 import { ConfirmDeleteModal } from '../utils/ConfirmDeleteModal';
 import { CustomerDeviceCountersCard } from './CustomerDeviceCountersCard.component';
+import { DomainJoinCredentialsCard } from './DomainJoinCredentialsCard.component';
 
 interface CustomerPageProps {
     customer: Customer;
@@ -263,58 +264,14 @@ export function CustomerDetail({ customer, onBack, onCustomerUpdated, onCustomer
 
             <CustomerDeviceCountersCard customer={customer} onCustomerUpdated={onCustomerUpdated} />
 
-            {/* Domain Join Credentials Section */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4">Domain Join Credentials</h3>
-                <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Username</label>
-                    <input
-                        type="text"
-                        className="w-full border rounded px-3 py-2"
-                        value={credentials.username}
-                        onChange={e => setCredentials(c => ({ ...c, username: e.target.value }))}
-                    />
-                </div>
-                <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Password</label>
-                    <input
-                        type="password"
-                        className="w-full border rounded px-3 py-2"
-                        value={credentials.password}
-                        onChange={e => setCredentials(c => ({ ...c, password: e.target.value }))}
-                    />
-                </div>
-                <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Domain</label>
-                    <input
-                        type="text"
-                        className="w-full border rounded px-3 py-2"
-                        value={domain}
-                        onChange={e => setDomain(e.target.value)}
-                    />
-                </div>
-                <button
-                    className="px-4 py-2 bg-blue-600 text-white rounded"
-                    onClick={async () => {
-                        setSavingCredentials(true);
-                        try {
-                            const updatedCustomer = await customerService.updateCustomer(customer.id, {
-                                deviceEnrollmentCredentials: credentials,
-                                adDomain: domain,
-                            });
-                            toast.success('Domain join credentials updated');
-                            if (onCustomerUpdated) onCustomerUpdated(updatedCustomer);
-                        } catch (error: any) {
-                            toast.error(error.message || 'Failed to update credentials');
-                        } finally {
-                            setSavingCredentials(false);
-                        }
-                    }}
-                    disabled={savingCredentials}
-                >
-                    {savingCredentials ? 'Saving...' : 'Save Credentials'}
-                </button>
-            </div>
+            <DomainJoinCredentialsCard
+                credentials={credentials}
+                setCredentials={setCredentials}
+                domain={domain}
+                setDomain={setDomain}
+                savingCredentials={savingCredentials}
+                onSave={handleSaveCredentials}
+            />
 
             {/* Edit Customer Modal */}
             <CustomerModal
