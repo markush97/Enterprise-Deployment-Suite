@@ -1,6 +1,13 @@
-import { useState, useEffect } from 'react';
-import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/react';
 import { ChevronDownIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+import {
+  Combobox,
+  ComboboxButton,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
+} from '@headlessui/react';
 import Tippy from '@tippyjs/react';
 
 interface CustomerOption {
@@ -37,17 +44,23 @@ export function AssignCustomerCard({
       </div>
       <div className="px-6 py-4 flex flex-col gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customer</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Customer
+          </label>
           <div className={tooltip ? 'relative' : ''}>
             <Tippy content={tooltip} disabled={!tooltip} placement="top-end">
               <div>
-                <Combobox value={customerOptions.find(c => c.id === stagedCustomer) || null} onChange={val => {
-                  if (val) setStagedCustomer(val.id);
-                }} disabled={isAssigning || savingCustomer}>
+                <Combobox
+                  value={customerOptions.find(c => c.id === stagedCustomer) || null}
+                  onChange={val => {
+                    if (val) setStagedCustomer(val.id);
+                  }}
+                  disabled={isAssigning || savingCustomer}
+                >
                   <div className="relative">
                     <ComboboxInput
                       className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                      displayValue={(c: any) => c ? `${c.shortCode} - ${c.name}` : ''}
+                      displayValue={(c: any) => (c ? `${c.shortCode} - ${c.name}` : '')}
                       placeholder="Select customer..."
                     />
                     <ComboboxButton className="group absolute inset-y-0 right-0 px-2.5">
@@ -61,7 +74,9 @@ export function AssignCustomerCard({
                         <ComboboxOption
                           key={c.id}
                           value={c}
-                          className={({ active }) => `cursor-pointer select-none px-4 py-2 ${active ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-gray-100'}`}
+                          className={({ active }) =>
+                            `cursor-pointer select-none px-4 py-2 ${active ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-gray-100'}`
+                          }
                         >
                           {c.shortCode} - {c.name}
                         </ComboboxOption>
@@ -78,10 +93,16 @@ export function AssignCustomerCard({
             {(() => {
               const c = customerOptions.find(c => c.id === stagedCustomer);
               if (!c) return null;
-              return <>
-                <div><span className="font-semibold">Name:</span> {c.name}</div>
-                <div><span className="font-semibold">Short Code:</span> {c.shortCode}</div>
-              </>;
+              return (
+                <>
+                  <div>
+                    <span className="font-semibold">Name:</span> {c.name}
+                  </div>
+                  <div>
+                    <span className="font-semibold">Short Code:</span> {c.shortCode}
+                  </div>
+                </>
+              );
             })()}
           </div>
         )}

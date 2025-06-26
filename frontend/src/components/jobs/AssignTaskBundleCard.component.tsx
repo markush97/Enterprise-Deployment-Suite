@@ -1,5 +1,12 @@
-import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/react';
 import { ChevronDownIcon } from 'lucide-react';
+
+import {
+  Combobox,
+  ComboboxButton,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
+} from '@headlessui/react';
 import Tippy from '@tippyjs/react';
 
 interface Task {
@@ -50,17 +57,23 @@ export function AssignTaskBundleCard({
       </div>
       <div className="px-6 py-4 flex flex-col gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Task Bundle</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Task Bundle
+          </label>
           <div className={tooltip ? 'relative' : ''}>
             <Tippy content={tooltip} disabled={!tooltip} placement="top-end">
               <div>
-                <Combobox value={taskBundleOptions.find(tb => tb.id === stagedTaskBundle) || null} onChange={val => {
-                  if (val) setStagedTaskBundle(val.id);
-                }} disabled={isAssigning || savingTaskBundle}>
+                <Combobox
+                  value={taskBundleOptions.find(tb => tb.id === stagedTaskBundle) || null}
+                  onChange={val => {
+                    if (val) setStagedTaskBundle(val.id);
+                  }}
+                  disabled={isAssigning || savingTaskBundle}
+                >
                   <div className="relative">
                     <ComboboxInput
                       className="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                      displayValue={(tb: any) => tb ? tb.name : ''}
+                      displayValue={(tb: any) => (tb ? tb.name : '')}
                       placeholder="Select task bundle..."
                     />
                     <ComboboxButton className="group absolute inset-y-0 right-0 px-2.5">
@@ -74,7 +87,9 @@ export function AssignTaskBundleCard({
                         <ComboboxOption
                           key={tb.id}
                           value={tb}
-                          className={({ active }) => `cursor-pointer select-none px-4 py-2 ${active ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-gray-100'}`}
+                          className={({ active }) =>
+                            `cursor-pointer select-none px-4 py-2 ${active ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-gray-100'}`
+                          }
                         >
                           {tb.name}
                         </ComboboxOption>
@@ -91,61 +106,71 @@ export function AssignTaskBundleCard({
             {(() => {
               const tb = taskBundleOptions.find(tb => tb.id === stagedTaskBundle);
               if (!tb) return null;
-              return <>
-                <div>
-                  <span className="font-semibold">Name:</span>{' '}
-                  <a
-                    href={`/taskbundles/${tb.id}`}
-                    className="text-blue-600 dark:text-blue-400 hover:underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {tb.name}
-                  </a>
-                </div>
-                {tb.description && (
+              return (
+                <>
                   <div>
-                    <span className="font-semibold">Description:</span> {tb.description}
-                  </div>
-                )}
-                {tb.taskList && tb.taskList.length > 0 && (
-                  <div className="mt-2">
-                    <span className="font-semibold">Tasks:</span>
-                    <ol className="list-decimal pl-5 mt-1" style={{ listStyleType: 'decimal', paddingLeft: '1.5rem' }}>
-                      {tb.taskList.map((task: any) => {
-                        const desc = task.description || '';
-                        const shortDesc = desc.length > 40 ? desc.slice(0, 40) + '…' : desc;
-                        return (
-                          <li key={task.id} className="truncate" title={desc.length > 40 ? desc : undefined} style={{ display: 'list-item' }}>
-                            <a
-                              href={`/tasks/${task.id}`}
-                              className="text-blue-600 dark:text-blue-400 hover:underline"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              {task.name}
-                            </a>
-                            {desc ? ` (${shortDesc})` : ''}
-                          </li>
-                        );
-                      })}
-                    </ol>
-                  </div>
-                )}
-                {tb.customer && (
-                  <div className="mt-2">
-                    <span className="font-semibold">Customer:</span>{' '}
+                    <span className="font-semibold">Name:</span>{' '}
                     <a
-                      href={`/customers/${tb.customer.id}`}
+                      href={`/taskbundles/${tb.id}`}
                       className="text-blue-600 dark:text-blue-400 hover:underline"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      {tb.customer.shortCode || tb.customer.name || tb.customer.id}
+                      {tb.name}
                     </a>
                   </div>
-                )}
-              </>;
+                  {tb.description && (
+                    <div>
+                      <span className="font-semibold">Description:</span> {tb.description}
+                    </div>
+                  )}
+                  {tb.taskList && tb.taskList.length > 0 && (
+                    <div className="mt-2">
+                      <span className="font-semibold">Tasks:</span>
+                      <ol
+                        className="list-decimal pl-5 mt-1"
+                        style={{ listStyleType: 'decimal', paddingLeft: '1.5rem' }}
+                      >
+                        {tb.taskList.map((task: any) => {
+                          const desc = task.description || '';
+                          const shortDesc = desc.length > 40 ? desc.slice(0, 40) + '…' : desc;
+                          return (
+                            <li
+                              key={task.id}
+                              className="truncate"
+                              title={desc.length > 40 ? desc : undefined}
+                              style={{ display: 'list-item' }}
+                            >
+                              <a
+                                href={`/tasks/${task.id}`}
+                                className="text-blue-600 dark:text-blue-400 hover:underline"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {task.name}
+                              </a>
+                              {desc ? ` (${shortDesc})` : ''}
+                            </li>
+                          );
+                        })}
+                      </ol>
+                    </div>
+                  )}
+                  {tb.customer && (
+                    <div className="mt-2">
+                      <span className="font-semibold">Customer:</span>{' '}
+                      <a
+                        href={`/customers/${tb.customer.id}`}
+                        className="text-blue-600 dark:text-blue-400 hover:underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {tb.customer.shortCode || tb.customer.name || tb.customer.id}
+                      </a>
+                    </div>
+                  )}
+                </>
+              );
             })()}
           </div>
         )}

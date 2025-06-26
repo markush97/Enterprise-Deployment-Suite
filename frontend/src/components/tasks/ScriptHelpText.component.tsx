@@ -1,13 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus, prism } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { useThemeStore } from '../../states/themeStore';
 import powershell from 'react-syntax-highlighter/dist/esm/languages/hljs/powershell';
+import { prism, vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
+import { useThemeStore } from '../../states/themeStore';
 
 SyntaxHighlighter.registerLanguage('powershell', powershell);
 
 export function ScriptHelpText() {
-  const isDarkMode = useThemeStore((state => state.isDarkMode));
+  const isDarkMode = useThemeStore(state => state.isDarkMode);
   const [open, setOpen] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
 
@@ -43,23 +44,47 @@ Set-EDSLogContext -JobId $JobId -TaskId2 -LocalLogPath $LocalLogPath -apiUrl $Ba
     { name: '$eds.jobConfig', desc: 'The job configuration object' },
     { name: '$eds.domainjoin.username', desc: 'The username for domain join' },
     { name: '$eds.domainjoin.password', desc: 'The password for domain join' },
-    { name: '$eds.domainjoin.ou', desc: 'The OU for domain join adapted to the current device type' },
-    { name: "$eds.customerId", desc: 'The customer ID' },
-    { name: "$eds.teamviewerId", desc: 'The Customer TeamViewer ID' },
-    { name: "$eds.pulsewayDownloadUrl", desc: 'The Customer Pulseway download URL' },
-    { name: "$eds.bitdefenderDownloadUrl", desc: 'The Customer Bitdefender download URL' },
-
-
+    {
+      name: '$eds.domainjoin.ou',
+      desc: 'The OU for domain join adapted to the current device type',
+    },
+    { name: '$eds.customerId', desc: 'The customer ID' },
+    { name: '$eds.teamviewerId', desc: 'The Customer TeamViewer ID' },
+    { name: '$eds.pulsewayDownloadUrl', desc: 'The Customer Pulseway download URL' },
+    { name: '$eds.bitdefenderDownloadUrl', desc: 'The Customer Bitdefender download URL' },
   ];
   const availableFuncs = [
-    { name: 'Write-EDSLog', desc: 'Logs a message to both the local log file in "C:\\Windows\\Setup\\EDS" and the backend. Uses $eds for context. Parameters: -Message, -Level, -Meta.' },
+    {
+      name: 'Write-EDSLog',
+      desc: 'Logs a message to both the local log file in "C:\\Windows\\Setup\\EDS" and the backend. Uses $eds for context. Parameters: -Message, -Level, -Meta.',
+    },
   ];
   const logLevels = [
-    { level: 'info', desc: 'General information about script progress or state.', color: 'text-blue-700' },
-    { level: 'warn', desc: 'Something unexpected happened, but the script can continue.', color: 'text-yellow-700' },
-    { level: 'error', desc: 'A serious problem occurred; the script may not be able to continue.', color: 'text-red-700' },
-    { level: 'success', desc: 'Indicates a successful step or completion.', color: 'text-green-700' },
-    { level: 'debug', desc: 'Detailed technical information for debugging purposes.', color: 'text-gray-700' },
+    {
+      level: 'info',
+      desc: 'General information about script progress or state.',
+      color: 'text-blue-700',
+    },
+    {
+      level: 'warn',
+      desc: 'Something unexpected happened, but the script can continue.',
+      color: 'text-yellow-700',
+    },
+    {
+      level: 'error',
+      desc: 'A serious problem occurred; the script may not be able to continue.',
+      color: 'text-red-700',
+    },
+    {
+      level: 'success',
+      desc: 'Indicates a successful step or completion.',
+      color: 'text-green-700',
+    },
+    {
+      level: 'debug',
+      desc: 'Detailed technical information for debugging purposes.',
+      color: 'text-gray-700',
+    },
   ];
 
   return (
@@ -72,9 +97,13 @@ Set-EDSLogContext -JobId $JobId -TaskId2 -LocalLogPath $LocalLogPath -apiUrl $Ba
       >
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
           Script Help & Built-in Functions
-          <span className="ml-2 text-gray-500 dark:text-gray-400 transform transition-transform duration-[1200ms]">{open ? '▲' : '▼'}</span>
+          <span className="ml-2 text-gray-500 dark:text-gray-400 transform transition-transform duration-[1200ms]">
+            {open ? '▲' : '▼'}
+          </span>
         </h3>
-        <span className="text-gray-500 dark:text-gray-400 text-sm italic mt-1 block">Show available functions and variables inside your script</span>
+        <span className="text-gray-500 dark:text-gray-400 text-sm italic mt-1 block">
+          Show available functions and variables inside your script
+        </span>
       </button>
       <div
         className={`overflow-hidden transition-all duration-[1200ms] ${open ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'} `}
@@ -83,26 +112,45 @@ Set-EDSLogContext -JobId $JobId -TaskId2 -LocalLogPath $LocalLogPath -apiUrl $Ba
         {shouldRender && (
           <div className="px-6 pb-6 pt-2 space-y-4">
             <div>
-              <div className="font-semibold mb-1 text-gray-800 dark:text-gray-200">Available Variables</div>
+              <div className="font-semibold mb-1 text-gray-800 dark:text-gray-200">
+                Available Variables
+              </div>
               <ul className="list-disc pl-5 text-gray-700 dark:text-gray-300 text-sm">
                 {availableVars.map(v => (
-                  <li key={v.name}><span className="font-mono text-blue-700 dark:text-blue-300">{v.name}</span>: {v.desc}</li>
+                  <li key={v.name}>
+                    <span className="font-mono text-blue-700 dark:text-blue-300">{v.name}</span>:{' '}
+                    {v.desc}
+                  </li>
                 ))}
               </ul>
             </div>
             <div>
-              <div className="font-semibold mb-1 text-gray-800 dark:text-gray-200">Using uploaded files / content</div>
+              <div className="font-semibold mb-1 text-gray-800 dark:text-gray-200">
+                Using uploaded files / content
+              </div>
               <div className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                Any files you upload for this task will be available on the target device in a subfolder named <span className="font-mono text-blue-700 dark:text-blue-300">content</span> inside the same directory as your <span className="font-mono text-blue-700 dark:text-blue-300">install.ps1</span> script. You can reference these files in your script using relative paths, for example:
+                Any files you upload for this task will be available on the target device in a
+                subfolder named{' '}
+                <span className="font-mono text-blue-700 dark:text-blue-300">content</span> inside
+                the same directory as your{' '}
+                <span className="font-mono text-blue-700 dark:text-blue-300">install.ps1</span>{' '}
+                script. You can reference these files in your script using relative paths, for
+                example:
                 <br />
                 <span className="font-mono text-xs block mt-1">.\content\yourfile.txt</span>
                 <br />
-                This allows you to use additional resources, configuration files, or binaries as part of your installation or verification process.
+                This allows you to use additional resources, configuration files, or binaries as
+                part of your installation or verification process.
               </div>
-              <div className="font-semibold mb-1 text-gray-800 dark:text-gray-200">Available Functions</div>
+              <div className="font-semibold mb-1 text-gray-800 dark:text-gray-200">
+                Available Functions
+              </div>
               <ul className="list-disc pl-5 text-gray-700 dark:text-gray-300 text-sm">
                 {availableFuncs.map(f => (
-                  <li key={f.name}><span className="font-mono text-green-700 dark:text-green-300">{f.name}</span>: {f.desc}</li>
+                  <li key={f.name}>
+                    <span className="font-mono text-green-700 dark:text-green-300">{f.name}</span>:{' '}
+                    {f.desc}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -111,13 +159,20 @@ Set-EDSLogContext -JobId $JobId -TaskId2 -LocalLogPath $LocalLogPath -apiUrl $Ba
               <ul className="list-disc pl-5 text-gray-700 dark:text-gray-300 text-sm">
                 {logLevels.map(level => (
                   <li key={level.level}>
-                    <span className={`font-mono ${level.color} dark:text-${level.color.split('-')[1]}`}>{level.level}</span>: {level.desc}
+                    <span
+                      className={`font-mono ${level.color} dark:text-${level.color.split('-')[1]}`}
+                    >
+                      {level.level}
+                    </span>
+                    : {level.desc}
                   </li>
                 ))}
               </ul>
             </div>
             <div>
-              <div className="font-semibold mb-1 text-gray-800 dark:text-gray-200">Logging Example</div>
+              <div className="font-semibold mb-1 text-gray-800 dark:text-gray-200">
+                Logging Example
+              </div>
               <SyntaxHighlighter
                 style={isDarkMode ? vscDarkPlus : prism}
                 showLineNumbers

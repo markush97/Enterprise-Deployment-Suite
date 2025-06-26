@@ -9,8 +9,8 @@
   "arrowParens": "avoid",
   "bracketSpacing": true,
   "endOfLine": "auto",
-  "importOrder": ["^@(.*)$", "^[./]"],
+  "importOrder": ["^[a-zA-Z]", "^@", "^[./]"],
   "importOrderSeparation": true,
   "importOrderSortSpecifiers": true,
-  "importOrderParserPlugins": ["typescript", "decorators-legacy"]
+  "jsxBracketSameLine": true
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { customerService } from '../../services/customer.service';
 import { toast } from 'react-hot-toast';
+
+import { customerService } from '../../services/customer.service';
 import type { Customer } from '../../types/customer.interface';
 
 interface Props {
@@ -106,13 +107,18 @@ export function CustomerDeviceCountersCard({ customer, onCustomerUpdated }: Prop
   return (
     <div className="bg-white dark:bg-gray-800 shadow rounded-lg mt-6">
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Device Counters &amp; OUs</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Device Counters &amp; OUs
+        </h2>
         <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">
           <p>
-            <span className="font-medium">Number:</span> This is the current highest device number for each type. The automation will use the next number when creating a new device.
+            <span className="font-medium">Number:</span> This is the current highest device number
+            for each type. The automation will use the next number when creating a new device.
           </p>
           <p>
-            <span className="font-medium">OU:</span> This is the LDAP Organizational Unit (OU) where the device will be joined in Active Directory. Example: <code>OU=Computers,DC=example,DC=com</code>
+            <span className="font-medium">OU:</span> This is the LDAP Organizational Unit (OU) where
+            the device will be joined in Active Directory. Example:{' '}
+            <code>OU=Computers,DC=example,DC=com</code>
           </p>
         </div>
       </div>
