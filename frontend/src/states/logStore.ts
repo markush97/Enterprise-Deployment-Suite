@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+
 import type { JobLogEntry } from '../components/jobs/JobLogViewer.component';
 import { jobService } from '../services/job.service';
 
@@ -20,7 +21,9 @@ interface JobLogStore {
   getViewerLogs: (jobId: string) => JobLogEntry[];
 }
 
-export const useJobLogStore: import('zustand').UseBoundStore<import('zustand').StoreApi<JobLogStore>> = create<JobLogStore>((set) => ({
+export const useJobLogStore: import('zustand').UseBoundStore<
+  import('zustand').StoreApi<JobLogStore>
+> = create<JobLogStore>(set => ({
   logs: {},
   loading: {},
   error: {},
@@ -51,13 +54,16 @@ export const useJobLogStore: import('zustand').UseBoundStore<import('zustand').S
     }));
   },
   getViewerLogs: (jobId: string): JobLogEntry[] => {
-    const logs: JobLog[] = (typeof jobId === 'string' && jobId) ? (useJobLogStore.getState().logs[jobId] || []) : [];
+    const logs: JobLog[] =
+      typeof jobId === 'string' && jobId ? useJobLogStore.getState().logs[jobId] || [] : [];
     // Map JobLog to JobLogEntry for JobLogViewer
-    return logs.map((log: JobLog): JobLogEntry => ({
-      timestamp: log.timestamp,
-      level: log.level || 'info',
-      message: log.message,
-      taskId: log.taskId,
-    }));
+    return logs.map(
+      (log: JobLog): JobLogEntry => ({
+        timestamp: log.timestamp,
+        level: log.level || 'info',
+        message: log.message,
+        taskId: log.taskId,
+      }),
+    );
   },
 }));

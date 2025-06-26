@@ -1,4 +1,3 @@
-
 export const APP_NAME = 'System Imaging Portal';
 export const APP_ORG = 'CWI';
 export const APP_ORG_URL = 'https://cwi.at';
