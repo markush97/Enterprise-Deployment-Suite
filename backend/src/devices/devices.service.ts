@@ -110,11 +110,10 @@ export class DevicesService {
       // Generate a 10-char alphanumeric password (no special chars) and encode it in base64
       // This is of course not secure.
       const password = generateSecureRandomAlphanumericString(10);
-      device.localPassword = Buffer.from(password + "Password", 'utf16le').toString('base64');
+      device.localPassword = password
       updateDeviceDto.password = password;
     } else if (updateDeviceDto.password) {
-      const utf16leBuffer = Buffer.from(updateDeviceDto.password + "Password", 'utf16le');
-      device.localPassword = utf16leBuffer.toString('base64');
+      device.localPassword = updateDeviceDto.password
     }
 
     await this.em.flush();
@@ -155,6 +154,8 @@ export class DevicesService {
     const serialNumber = updateDeviceDto.serialNumber || device.serialNumber;
     updateDeviceDto.assetTag = updateDeviceDto.assetTag || device.assetTag;
     updateDeviceDto.serialNumber = serialNumber;
+
+    updateDeviceDto.localPassword = updateDeviceDto.localPassword || device.localPassword;
 
     const itGlueDevice = await this.itGlue.upsertDevice(
       updateDeviceDto,

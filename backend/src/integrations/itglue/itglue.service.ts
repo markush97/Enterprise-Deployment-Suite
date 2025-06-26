@@ -194,10 +194,18 @@ export class ITGlueService {
       if (deviceInfo.bitlockerId && deviceInfo.bitlockerKey) {
         await this.createBitlockerPassword(
           newDevice,
-          deviceInfo.bitlockerId,
+          deviceInfo.localPassword,
           deviceInfo.bitlockerKey,
         );
       }
+
+      if (deviceInfo.localPassword) {
+        await this.createLocalAdministratorPassword(
+          newDevice,
+          deviceInfo.localPassword,
+        );
+      }
+
       return newDevice;
     } else {
       this.logger.debug('Device found in ITGlue, updating device');
@@ -209,6 +217,14 @@ export class ITGlueService {
           deviceInfo.bitlockerKey,
         );
       }
+
+      if (deviceInfo.localPassword) {
+        await this.upsertLocalAdministartorPassword(
+          itGlueDevice,
+          deviceInfo.localPassword,
+        );
+      }
+      
       return updatedDevice;
     }
   }
@@ -406,6 +422,129 @@ export class ITGlueService {
             throw new InternalMTIException(
               MTIErrorCodes.ERROR_COMMUNICATING_WITH_ITGLUE,
               `Error creating bitlocker in ITGlue`,
+            );
+          }),
+        ),
+    );
+  };
+
+  private async upsertLocalAdministartorPassword(
+    itGlueDevice: ITGlueConfiguration,
+    password: string,
+    username: string = '.\\root'
+  ): Promise<void> {
+    this.logger.debug(
+      `Setting Local Administrator password for device with ID ${itGlueDevice.attributes.name} in ITGlue`,
+    );
+
+    const requestData = {
+      data: {
+        type: ITGlueType.PASSWORDS,
+        attributes: {
+          name: `${itGlueDevice.attributes.name} - Local Administrator`,
+          username,
+          password,
+          'password-category-id': ITGluePasswordCategories.LOCAL_ADMINISTRATOR,
+          'resource-type': ITGlueType.CONFIGURATION,
+          'resource-id': itGlueDevice.id,
+        },
+      },
+    };
+
+    const existingPassword = await this.getLocalAdministratorPassword(itGlueDevice);
+    if (existingPassword) {
+      this.logger.debug(
+        `Updating Bitlocker password for device with ID ${itGlueDevice.attributes.name} in ITGlue`,
+      );
+
+      await firstValueFrom(
+        this.glue
+          .patch<
+            ITGlueResponse<ITGlueConfiguration>
+          >(`/passwords/${existingPassword.id}`, requestData)
+          .pipe(
+            catchError(error => {
+              this.logger.error(error.message);
+              throw new InternalMTIException(
+                MTIErrorCodes.ERROR_COMMUNICATING_WITH_ITGLUE,
+                `Error updating Local Administrator in ITGlue`,
+              );
+            }),
+          ),
+      );
+
+      return;
+    }
+
+    await this.createLocalAdministratorPassword(itGlueDevice, password, username);
+  }
+
+
+  private async getLocalAdministratorPassword(
+    itGlueDevice: ITGlueConfiguration,
+  ): Promise<ITGluePassword | null> {
+    this.logger.debug(
+      `Fetching Local Administrator password for device with ID ${itGlueDevice.attributes.name} in ITGlue`,
+    );
+
+    const { data } = await firstValueFrom(
+      this.glue
+        .get<
+          ITGlueResponseList<ITGluePassword>
+        >(`/organizations/${itGlueDevice.attributes['organization-id']}/relationships/passwords`, { params: { filter: { name: `${itGlueDevice.attributes.name} - Local Administrator` } } })
+        .pipe(
+          catchError(error => {
+            this.logger.error(error.message);
+            throw new InternalMTIException(
+              MTIErrorCodes.ERROR_COMMUNICATING_WITH_ITGLUE,
+              `Error getting Local Administrator in ITGlue`,
+            );
+          }),
+        ),
+    );
+
+    if (!data || !data.data || data.data.length < 1) {
+      return null;
+    }
+
+    return data.data[0];
+  }
+
+  private readonly createLocalAdministratorPassword = async (
+    itGlueDevice: ITGlueConfiguration,
+    password: string,
+    username: string = '.\\root',
+  ): Promise<void> => {
+    this.logger.debug(
+      `Creating Local Administrator password for device with ID ${itGlueDevice.attributes.name} in ITGlue`,
+    );
+    const requestData = {
+      data: {
+        type: ITGlueType.PASSWORDS,
+        attributes: {
+          name: `${itGlueDevice.attributes.name} - Local Administrator`,
+          username: username,
+          password: password,
+          'password-category-id': ITGluePasswordCategories.LOCAL_ADMINISTRATOR,
+          'resource-type': 'Configuration',
+          'resource-id': itGlueDevice.id,
+        },
+      },
+    };
+
+    await firstValueFrom(
+      this.glue
+        .post<
+          ITGlueResponse<ITGlueConfiguration>
+        >(`/organizations/${itGlueDevice.attributes['organization-id']}/relationships/passwords`, requestData)
+        .pipe(
+          catchError(error => {
+            this.logger.error(error.message);
+            this.logger.debug(error.response.data);
+            console.log(requestData);
+            throw new InternalMTIException(
+              MTIErrorCodes.ERROR_COMMUNICATING_WITH_ITGLUE,
+              `Error creating local password in ITGlue`,
             );
           }),
         ),

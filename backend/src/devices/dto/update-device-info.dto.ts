@@ -79,4 +79,9 @@ export class DeviceInformationDto {
   @IsString()
   @IsOptional()
   password?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  localPassword?: string;
 }

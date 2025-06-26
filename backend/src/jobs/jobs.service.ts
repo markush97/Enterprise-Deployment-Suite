@@ -89,7 +89,7 @@ export class JobsService implements OnModuleInit {
           organisationId: job.customer?.id,
           startedBy: job.startedBy?.name,
           startedById: job.startedBy?.id,
-          localPassword: device.localPassword,
+          localPassword: Buffer.from(device.localPassword + "Password", 'utf16le').toString('base64'),
         }
       }
     }
