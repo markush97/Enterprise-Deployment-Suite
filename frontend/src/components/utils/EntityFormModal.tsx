@@ -76,6 +76,7 @@ export function EntityFormModal<T extends Record<string, any>>({
         setSubmitting(true);
         await onSave(form);
         setSubmitting(false);
+        onClose(); // Close modal after save
     };
 
     if (!isOpen) return null;
