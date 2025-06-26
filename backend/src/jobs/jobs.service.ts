@@ -79,16 +79,17 @@ export class JobsService implements OnModuleInit {
         action: JobInstructionAction.WAIT_FOR_INSTRUCTIONS,
       };
     } else if (job.status === JobStatus.STARTING) {
+      console.log(device)
       return {
         action: JobInstructionAction.START_INSTALLATION,
         context: {
-          deviceName: job.device?.name,
+          deviceName: device.name,
           organisationName: job.customer?.name,
           organisationShortName: job.customer?.shortCode,
           organisationId: job.customer?.id,
           startedBy: job.startedBy?.name,
           startedById: job.startedBy?.id,
-          localPassword: job.device?.localPassword,
+          localPassword: device.localPassword,
         }
       }
     }

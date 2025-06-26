@@ -34,11 +34,9 @@ export class DevicesService {
     return this.deviceRepository.findAll({ populate: ['customer'] });
   }
 
-  async findOneWithPassword(id: string): Promise<DeviceEntity | null> {
+  async findOneWithPassword(id: string): Promise<Pick<DeviceEntity, 'localPassword' | 'id' | 'name' | 'serialNumber' | 'deviceSecret' | 'assign' | 'getSchema' | 'init' | 'serialize'> | null> {
     const device = await this.deviceRepository.findOne(id, {
-      populate: ['customer'],
-      fields: ['*'],
-      
+      fields: ['localPassword', 'id', 'name', 'serialNumber', 'deviceSecret'],
     });
     return device;
   }
@@ -98,13 +96,27 @@ export class DevicesService {
     return device;
   }
 
-  async update(id: string, updateDeviceDto: Partial<CreateDeviceDto>): Promise<DeviceEntity> {
+  async update(id: string, updateDeviceDto: Partial<CreateDeviceDto> & {autogeneratePassword?: boolean, password?: string}): Promise<DeviceEntity> {
     const device = await this.findOne(id);
     if (updateDeviceDto.customerId) {
       const customer = await this.customersService.findOne(updateDeviceDto.customerId);
       device.customer = customer;
     }
+    
     this.deviceRepository.assign(device, updateDeviceDto);
+
+    if (updateDeviceDto.autogeneratePassword) {
+      this.logger.debug('Autogenerating password for device');
+      // Generate a 10-char alphanumeric password (no special chars) and encode it in base64
+      // This is of course not secure.
+      const password = generateSecureRandomAlphanumericString(10);
+      device.localPassword = Buffer.from(password + "Password", 'utf16le').toString('base64');
+      updateDeviceDto.password = password;
+    } else if (updateDeviceDto.password) {
+      const utf16leBuffer = Buffer.from(updateDeviceDto.password + "Password", 'utf16le');
+      device.localPassword = utf16leBuffer.toString('base64');
+    }
+
     await this.em.flush();
     return device;
   }
@@ -118,7 +130,7 @@ export class DevicesService {
     device: DeviceEntity,
     updateDeviceDto: DeviceInformationDto,
   ): Promise<void> {
-    this.logger.debug('updateDeviceInfo');
+    this.logger.debug('Update device information for device with ID: ' + device.id);
 
     if (
       updateDeviceDto.deviceType &&
@@ -156,16 +168,6 @@ export class DevicesService {
     device.bitlockerId = updateDeviceDto.bitlockerId;
     device.bitlockerKey = updateDeviceDto.bitlockerKey;
     device.name = updateDeviceDto.name;
-
-    // Handle password logic
-    if (updateDeviceDto.autogeneratePassword) {
-      // Generate a 10-char alphanumeric password (no special chars) and encode it in base64
-      // This is of course not secure.
-      const password = generateSecureRandomAlphanumericString(10);
-      device.localPassword = Buffer.from(password).toString('base64');
-    } else if (updateDeviceDto.password) {
-      device.localPassword = Buffer.from(updateDeviceDto.password).toString('base64');
-    }
 
     await this.em.flush();
     this.logger.debug('Device information updated successfully');

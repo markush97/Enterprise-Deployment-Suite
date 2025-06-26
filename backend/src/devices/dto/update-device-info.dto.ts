@@ -79,9 +79,4 @@ export class DeviceInformationDto {
   @IsString()
   @IsOptional()
   password?: string;
-
-  @ApiProperty()
-  @IsBoolean()
-  @IsOptional()
-  autogeneratePassword?: boolean;
 }
